@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tanques Voxel.io</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #2c3e50;
+            font-family: 'Verdana', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+            overflow: hidden; /* Importante para no scrollear en móvil */
+            touch-action: none; /* Desactiva gestos del navegador */
+        }
+
+        #menu-screen {
+            background-color: #abf7b1;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 0 #8de393;
+            text-align: center;
+            width: 300px; /* Un poco más estrecho para móviles pequeños */
+            position: absolute;
+            z-index: 100;
+        }
+
+        h1 {
+            color: #5dade2;
+            text-shadow: 2px 2px 0 #2980b9;
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-transform: uppercase;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+        }
+        #btn-create { background-color: #5dade2; box-shadow: 0 5px 0 #2980b9; }
+        #btn-join { background-color: #f1948a; box-shadow: 0 5px 0 #c0392b; }
+
+        input {
+            width: 85%;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 2px solid #bdc3c7;
+            font-size: 16px;
+            text-align: center;
+            text-transform: uppercase;
+            outline: none;
+        }
+
+        #lobby-screen { display: none; }
+        .room-code-display {
+            background: white; padding: 20px; font-size: 24px; font-weight: bold;
+            letter-spacing: 5px; border-radius: 8px; border: 2px dashed #bdc3c7;
+            margin: 20px 0; color: #555;
+        }
+        .status-text { font-size: 14px; color: #7f8c8d; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+
+    <div id="menu-screen">
+        <div id="start-screen">
+            <h1>Tanques.io</h1>
+            <button id="btn-create" class="btn">CREAR SALA</button>
+            <p style="margin: 10px 0; font-weight: bold; color:#7f8c8d;">- O -</p>
+            <input type="text" id="code-input" placeholder="CÓDIGO" maxlength="4">
+            <button id="btn-join" class="btn">UNIRSE</button>
+        </div>
+        <div id="lobby-screen">
+            <h2>¡SALA CREADA!</h2>
+            <p>Comparte código:</p>
+            <div class="room-code-display" id="display-code">????</div>
+            <p class="status-text">Esperando Jugador 2...</p>
+        </div>
+    </div>
+
+    <div id="game-container"></div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    
+    <script src="https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexvirtualjoystickplugin.min.js"></script>
+    
+    <script>
+        const socket = io();
+        window.initialGameData = {}; 
+        const menuScreen = document.getElementById('menu-screen');
+        const startScreen = document.getElementById('start-screen');
+        const lobbyScreen = document.getElementById('lobby-screen');
+        const displayCode = document.getElementById('display-code');
+        const codeInput = document.getElementById('code-input');
+
+        document.getElementById('btn-create').addEventListener('click', () => socket.emit('createGame'));
+        document.getElementById('btn-join').addEventListener('click', () => {
+            const code = codeInput.value.toUpperCase();
+            if(code.length > 0) socket.emit('joinGame', code);
+            else alert("Escribe un código");
+        });
+
+        socket.on('gameCode', (code) => {
+            startScreen.style.display = 'none';
+            lobbyScreen.style.display = 'block';
+            displayCode.innerText = code;
+        });
+        socket.on('errorMsg', (msg) => alert(msg));
+        socket.on('mapData', (data) => window.initialGameData.map = data);
+        socket.on('currentPlayers', (data) => window.initialGameData.players = data);
+        socket.on('currentWalls', (data) => window.initialGameData.walls = data);
+        socket.on('gameStart', () => {
+            menuScreen.style.display = 'none';
+            iniciarJuego();
+        });
+    </script>
+    <script src="game.js"></script>
+</body>
+</html>
