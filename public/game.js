@@ -20,8 +20,15 @@ function iniciarJuego() {
             default: 'arcade',
             arcade: { debug: false, gravity: { y: 0 } }
         },
-        // --- CAMBIO IMPORTANTE: Quitamos la sección 'plugins' de aquí ---
-        // Esto elimina el ReferenceError porque no buscamos la variable global
+        // --- AQUÍ ESTÁ LA CLAVE ---
+        // Registramos el plugin usando la variable global que cargó el HTML
+        plugins: {
+            global: [{
+                key: 'rexVirtualJoystick',
+                plugin: rexvirtualjoystickplugin, 
+                start: true
+            }]
+        },
         scene: {
             preload: preload,
             create: create,
@@ -32,10 +39,7 @@ function iniciarJuego() {
 }
 
 function preload() {
-    // --- CAMBIO IMPORTANTE: Cargamos el plugin aquí ---
-    // Phaser se encarga de descargarlo y activarlo cuando esté listo
-    var url = 'https://cdn.jsdelivr.net/npm/phaser3-rex-plugins@1.1.107/dist/rexvirtualjoystickplugin.min.js';
-    this.load.plugin('rexvirtualjoystickplugin', url, true);
+    // Ya no cargamos nada aquí, usamos el del HTML
 }
 
 function create() {
@@ -58,9 +62,8 @@ function create() {
         .setAltFillStyle(COLORS.bg)
         .setOutlineStyle(COLORS.grid);
 
-    // --- JOYSTICK ---
-    // Ahora lo pedimos al gestor de plugins interno usando la clave que definimos en preload
-    this.joyStick = this.plugins.get('rexvirtualjoystickplugin').add(this, {
+    // JOYSTICK (Usamos la clave 'rexVirtualJoystick' definida en config arriba)
+    this.joyStick = this.plugins.get('rexVirtualJoystick').add(this, {
         x: 100, y: 500, radius: 60,
         base: { fill: 0x888888, alpha: 0.5 },
         thumb: { fill: 0xcccccc, alpha: 0.8 },
