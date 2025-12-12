@@ -5,17 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tanques Voxel.io</title>
     <style>
-        body {
-            margin: 0; padding: 0; background-color: #2c3e50;
-            font-family: 'Verdana', sans-serif; display: flex;
-            justify-content: center; align-items: center; height: 100vh;
-            color: #333; overflow: hidden; touch-action: none;
-        }
-        #menu-screen {
-            background-color: #abf7b1; padding: 40px; border-radius: 15px;
-            box-shadow: 0 10px 0 #8de393; text-align: center; width: 300px;
-            position: absolute; z-index: 100;
-        }
+        /* (Todo tu CSS igual que antes) */
+        body { margin: 0; padding: 0; background-color: #2c3e50; font-family: 'Verdana', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; color: #333; overflow: hidden; touch-action: none; }
+        #menu-screen { background-color: #abf7b1; padding: 40px; border-radius: 15px; box-shadow: 0 10px 0 #8de393; text-align: center; width: 300px; position: absolute; z-index: 100; }
         h1 { color: #5dade2; text-shadow: 2px 2px 0 #2980b9; margin-bottom: 30px; font-size: 28px; text-transform: uppercase; }
         .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; color: white; }
         #btn-create { background-color: #5dade2; box-shadow: 0 5px 0 #2980b9; }
@@ -28,7 +20,6 @@
     </style>
 </head>
 <body>
-
     <div id="menu-screen">
         <div id="start-screen">
             <h1>Tanques.io</h1>
@@ -44,14 +35,10 @@
             <p class="status-text">Esperando Jugador 2...</p>
         </div>
     </div>
-
     <div id="game-container"></div>
     
     <script src="/socket.io/socket.io.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.0/dist/phaser.min.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/phaser3-rex-plugins@1.1.107/dist/rexvirtualjoystickplugin.min.js"></script>
     
     <script>
         const socket = io();
@@ -83,7 +70,6 @@
             iniciarJuego();
         });
     </script>
-    
     <script src="game.js"></script>
 </body>
 </html>

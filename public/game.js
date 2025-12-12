@@ -1,4 +1,3 @@
-// CORRECCIÓN 1: Usamos 'var' para evitar conflictos si el script se recarga
 var COLORS = {
     player: { main: 0x85c1e9, shadow: 0x5dade2 }, 
     enemy: { main: 0xf1948a, shadow: 0xec7063 },  
@@ -21,14 +20,8 @@ function iniciarJuego() {
             default: 'arcade',
             arcade: { debug: false, gravity: { y: 0 } }
         },
-        // CORRECCIÓN 2: Registramos el plugin aquí usando la variable global del script HTML
-        plugins: {
-            global: [{
-                key: 'rexVirtualJoystick',
-                plugin: rexvirtualjoystickplugin, // Variable global cargada en index.html
-                start: true
-            }]
-        },
+        // --- CAMBIO IMPORTANTE: Quitamos la sección 'plugins' de aquí ---
+        // Esto elimina el ReferenceError porque no buscamos la variable global
         scene: {
             preload: preload,
             create: create,
@@ -39,7 +32,10 @@ function iniciarJuego() {
 }
 
 function preload() {
-    // CORRECCIÓN 3: Ya no cargamos nada aquí, usamos el del HTML
+    // --- CAMBIO IMPORTANTE: Cargamos el plugin aquí ---
+    // Phaser se encarga de descargarlo y activarlo cuando esté listo
+    var url = 'https://cdn.jsdelivr.net/npm/phaser3-rex-plugins@1.1.107/dist/rexvirtualjoystickplugin.min.js';
+    this.load.plugin('rexvirtualjoystickplugin', url, true);
 }
 
 function create() {
@@ -62,14 +58,14 @@ function create() {
         .setAltFillStyle(COLORS.bg)
         .setOutlineStyle(COLORS.grid);
 
-    // JOYSTICK (Usamos la clave 'rexVirtualJoystick' definida en config arriba)
-    this.joyStick = this.plugins.get('rexVirtualJoystick').add(this, {
+    // --- JOYSTICK ---
+    // Ahora lo pedimos al gestor de plugins interno usando la clave que definimos en preload
+    this.joyStick = this.plugins.get('rexvirtualjoystickplugin').add(this, {
         x: 100, y: 500, radius: 60,
         base: { fill: 0x888888, alpha: 0.5 },
         thumb: { fill: 0xcccccc, alpha: 0.8 },
         dir: '4dir', forceMin: 16
     });
-    // Fix para que el joystick funcione fluido
     this.joyStick.on('update', dumpJoyStickState, this);
     this.joystickCursors = this.joyStick.createCursorKeys();
 
@@ -144,13 +140,13 @@ function update(time, delta) {
 
     this.player.body.setVelocity(0);
 
-    if (this.cursors.left.isDown || this.joystickCursors.left.isDown) {
+    if (this.cursors.left.isDown || (this.joystickCursors && this.joystickCursors.left.isDown)) {
         this.player.body.setVelocityX(-speed); this.player.rotation = Math.PI;
-    } else if (this.cursors.right.isDown || this.joystickCursors.right.isDown) {
+    } else if (this.cursors.right.isDown || (this.joystickCursors && this.joystickCursors.right.isDown)) {
         this.player.body.setVelocityX(speed); this.player.rotation = 0;
-    } else if (this.cursors.up.isDown || this.joystickCursors.up.isDown) {
+    } else if (this.cursors.up.isDown || (this.joystickCursors && this.joystickCursors.up.isDown)) {
         this.player.body.setVelocityY(-speed); this.player.rotation = -Math.PI / 2;
-    } else if (this.cursors.down.isDown || this.joystickCursors.down.isDown) {
+    } else if (this.cursors.down.isDown || (this.joystickCursors && this.joystickCursors.down.isDown)) {
         this.player.body.setVelocityY(speed); this.player.rotation = Math.PI / 2;
     }
 
@@ -175,7 +171,7 @@ function update(time, delta) {
     }
 }
 
-// GENERADORES GRÁFICOS (Iguales que antes)
+// GENERADORES GRÁFICOS
 function createTankTexture(scene, name, colorMain, colorShadow) {
     const w = 40, h = 30, sh = 4;
     const g = scene.make.graphics({ x: 0, y: 0, add: false });
