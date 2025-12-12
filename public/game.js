@@ -20,15 +20,6 @@ function iniciarJuego() {
             default: 'arcade',
             arcade: { debug: false, gravity: { y: 0 } }
         },
-        // --- AQUÍ ESTÁ LA CLAVE ---
-        // Registramos el plugin usando la variable global que cargó el HTML
-        plugins: {
-            global: [{
-                key: 'rexVirtualJoystick',
-                plugin: rexvirtualjoystickplugin, 
-                start: true
-            }]
-        },
         scene: {
             preload: preload,
             create: create,
@@ -39,7 +30,9 @@ function iniciarJuego() {
 }
 
 function preload() {
-    // Ya no cargamos nada aquí, usamos el del HTML
+    // CARGA MANUAL DEL PLUGIN (La forma más segura)
+    var url = 'https://cdn.jsdelivr.net/gh/rexrainbow/phaser3-rex-notes@master/dist/rexvirtualjoystickplugin.min.js';
+    this.load.plugin('rex-virtual-joystick', url, true);
 }
 
 function create() {
@@ -62,15 +55,22 @@ function create() {
         .setAltFillStyle(COLORS.bg)
         .setOutlineStyle(COLORS.grid);
 
-    // JOYSTICK (Usamos la clave 'rexVirtualJoystick' definida en config arriba)
-    this.joyStick = this.plugins.get('rexVirtualJoystick').add(this, {
-        x: 100, y: 500, radius: 60,
-        base: { fill: 0x888888, alpha: 0.5 },
-        thumb: { fill: 0xcccccc, alpha: 0.8 },
-        dir: '4dir', forceMin: 16
-    });
-    this.joyStick.on('update', dumpJoyStickState, this);
-    this.joystickCursors = this.joyStick.createCursorKeys();
+    // --- CREACIÓN DEL JOYSTICK ---
+    // Usamos la misma clave que pusimos en preload ('rex-virtual-joystick')
+    var joyStickPlugin = this.plugins.get('rex-virtual-joystick');
+    
+    if (joyStickPlugin) {
+        this.joyStick = joyStickPlugin.add(this, {
+            x: 100, y: 500, radius: 60,
+            base: { fill: 0x888888, alpha: 0.5 },
+            thumb: { fill: 0xcccccc, alpha: 0.8 },
+            dir: '4dir', forceMin: 16
+        });
+        this.joyStick.on('update', dumpJoyStickState, this);
+        this.joystickCursors = this.joyStick.createCursorKeys();
+    } else {
+        console.error("Error: El plugin del joystick no se cargó correctamente.");
+    }
 
     // BOTÓN DISPARO
     this.shootBtn = this.add.circle(700, 500, 40, 0xf1c40f, 0.5).setInteractive().setScrollFactor(0).setDepth(100);
@@ -101,7 +101,8 @@ function create() {
     socket.on('playerShot', (id) => { const enemy = self.enemies[id]; if (enemy) fireBullet(self, enemy, false); });
     socket.on('gameOver', (id) => {
         self.isGameOver = true;
-        this.joyStick.setVisible(false); this.shootBtn.setVisible(false);
+        if (this.joyStick) this.joyStick.setVisible(false); 
+        this.shootBtn.setVisible(false);
         if (id === socket.id) {
             if (self.player) self.player.setVisible(false);
             self.isDead = true; showGameOverUI(self, false);
@@ -112,7 +113,8 @@ function create() {
     });
     socket.on('gameReset', (data) => {
         self.uiGroup.clear(true, true); self.isGameOver = false; self.isDead = false; self.lastFired = 0;
-        self.joyStick.setVisible(true); self.shootBtn.setVisible(true);
+        if (self.joyStick) self.joyStick.setVisible(true); 
+        self.shootBtn.setVisible(true);
         buildMap(self, data.map);
         const myInfo = data.players[socket.id];
         if (!self.player) addPlayer(self, myInfo);
@@ -174,7 +176,7 @@ function update(time, delta) {
     }
 }
 
-// GENERADORES GRÁFICOS
+// GENERADORES GRÁFICOS (Sin cambios)
 function createTankTexture(scene, name, colorMain, colorShadow) {
     const w = 40, h = 30, sh = 4;
     const g = scene.make.graphics({ x: 0, y: 0, add: false });
