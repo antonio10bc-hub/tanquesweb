@@ -20,6 +20,13 @@ function iniciarJuego() {
             default: 'arcade',
             arcade: { debug: false, gravity: { y: 0 } }
         },
+        plugins: {
+            global: [{
+                key: 'rexVirtualJoystick',
+                plugin: rexvirtualjoystickplugin, 
+                start: true
+            }]
+        },
         scene: {
             preload: preload,
             create: create,
@@ -29,11 +36,7 @@ function iniciarJuego() {
     new Phaser.Game(config);
 }
 
-function preload() {
-    // CARGA MANUAL DEL PLUGIN (La forma más segura)
-    var url = 'https://cdn.jsdelivr.net/gh/rexrainbow/phaser3-rex-notes@master/dist/rexvirtualjoystickplugin.min.js';
-    this.load.plugin('rex-virtual-joystick', url, true);
-}
+function preload() {}
 
 function create() {
     var self = this;
@@ -55,26 +58,45 @@ function create() {
         .setAltFillStyle(COLORS.bg)
         .setOutlineStyle(COLORS.grid);
 
-    // --- CREACIÓN DEL JOYSTICK ---
-    // Usamos la misma clave que pusimos en preload ('rex-virtual-joystick')
-    var joyStickPlugin = this.plugins.get('rex-virtual-joystick');
+    // --- JOYSTICK MEJORADO (VISIBILIDAD) ---
+    // Calculamos posición dinámica: 100px desde la izquierda, 100px desde abajo
+    const joyX = 100;
+    const joyY = this.scale.height - 100;
+
+    this.joyStick = this.plugins.get('rexVirtualJoystick').add(this, {
+        x: joyX,
+        y: joyY,
+        radius: 60,
+        base: { fill: 0x888888, alpha: 0.5 },
+        thumb: { fill: 0xcccccc, alpha: 0.8 },
+        dir: '4dir',
+        forceMin: 16
+    });
     
-    if (joyStickPlugin) {
-        this.joyStick = joyStickPlugin.add(this, {
-            x: 100, y: 500, radius: 60,
-            base: { fill: 0x888888, alpha: 0.5 },
-            thumb: { fill: 0xcccccc, alpha: 0.8 },
-            dir: '4dir', forceMin: 16
-        });
-        this.joyStick.on('update', dumpJoyStickState, this);
-        this.joystickCursors = this.joyStick.createCursorKeys();
-    } else {
-        console.error("Error: El plugin del joystick no se cargó correctamente.");
+    // Fix Visual: Asegurar que se ve encima de todo y no se mueve con la cámara
+    if (this.joyStick.base) {
+        this.joyStick.base.setDepth(100).setScrollFactor(0);
+        this.joyStick.thumb.setDepth(101).setScrollFactor(0);
     }
 
-    // BOTÓN DISPARO
-    this.shootBtn = this.add.circle(700, 500, 40, 0xf1c40f, 0.5).setInteractive().setScrollFactor(0).setDepth(100);
-    this.add.text(700, 500, 'FIRE', { fontSize: '15px', color: '#000' }).setOrigin(0.5);
+    this.joyStick.on('update', dumpJoyStickState, this);
+    this.joystickCursors = this.joyStick.createCursorKeys();
+
+    // BOTÓN DISPARO MEJORADO
+    // Posición dinámica: 100px desde la derecha, 100px desde abajo
+    const btnX = this.scale.width - 100;
+    const btnY = this.scale.height - 100;
+
+    this.shootBtn = this.add.circle(btnX, btnY, 40, 0xf1c40f, 0.5)
+        .setInteractive()
+        .setScrollFactor(0) // Pegado a la pantalla
+        .setDepth(100);     // Encima de todo
+        
+    this.btnText = this.add.text(btnX, btnY, 'FIRE', { fontSize: '15px', color: '#000' })
+        .setOrigin(0.5)
+        .setScrollFactor(0)
+        .setDepth(101);
+
     this.shootBtn.on('pointerdown', () => { this.shootBtn.isDown = true; this.shootBtn.setFillStyle(0xf39c12, 0.7); });
     this.shootBtn.on('pointerup', () => { this.shootBtn.isDown = false; this.shootBtn.setFillStyle(0xf1c40f, 0.5); });
     this.shootBtn.on('pointerout', () => { this.shootBtn.isDown = false; this.shootBtn.setFillStyle(0xf1c40f, 0.5); });
@@ -101,8 +123,11 @@ function create() {
     socket.on('playerShot', (id) => { const enemy = self.enemies[id]; if (enemy) fireBullet(self, enemy, false); });
     socket.on('gameOver', (id) => {
         self.isGameOver = true;
+        // Ocultar controles
         if (this.joyStick) this.joyStick.setVisible(false); 
         this.shootBtn.setVisible(false);
+        this.btnText.setVisible(false);
+        
         if (id === socket.id) {
             if (self.player) self.player.setVisible(false);
             self.isDead = true; showGameOverUI(self, false);
@@ -113,8 +138,12 @@ function create() {
     });
     socket.on('gameReset', (data) => {
         self.uiGroup.clear(true, true); self.isGameOver = false; self.isDead = false; self.lastFired = 0;
+        
+        // Mostrar controles
         if (self.joyStick) self.joyStick.setVisible(true); 
         self.shootBtn.setVisible(true);
+        self.btnText.setVisible(true);
+
         buildMap(self, data.map);
         const myInfo = data.players[socket.id];
         if (!self.player) addPlayer(self, myInfo);
@@ -145,6 +174,7 @@ function update(time, delta) {
 
     this.player.body.setVelocity(0);
 
+    // HÍBRIDO: TECLADO O JOYSTICK
     if (this.cursors.left.isDown || (this.joystickCursors && this.joystickCursors.left.isDown)) {
         this.player.body.setVelocityX(-speed); this.player.rotation = Math.PI;
     } else if (this.cursors.right.isDown || (this.joystickCursors && this.joystickCursors.right.isDown)) {
@@ -176,7 +206,7 @@ function update(time, delta) {
     }
 }
 
-// GENERADORES GRÁFICOS (Sin cambios)
+// GENERADORES GRÁFICOS (Igual que antes)
 function createTankTexture(scene, name, colorMain, colorShadow) {
     const w = 40, h = 30, sh = 4;
     const g = scene.make.graphics({ x: 0, y: 0, add: false });
