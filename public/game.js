@@ -21,14 +21,7 @@ function iniciarJuego() {
             default: 'arcade',
             arcade: { debug: false, gravity: { y: 0 } }
         },
-        // AÑADIR EL PLUGIN DEL JOYSTICK
-        plugins: {
-            global: [{
-                key: 'rexVirtualJoystick',
-                plugin: rexvirtualjoystickplugin,
-                start: true
-            }]
-        },
+        
         scene: {
             preload: preload,
             create: create,
@@ -38,8 +31,11 @@ function iniciarJuego() {
     new Phaser.Game(config);
 }
 
-function preload() {}
-
+function preload() {
+    // Cargar el plugin directamente desde el juego
+    var url = 'https://cdn.jsdelivr.net/gh/rexrainbow/phaser3-rex-notes@master/dist/rexvirtualjoystickplugin.min.js';
+    this.load.plugin('rexvirtualjoystickplugin', url, true);
+}
 function create() {
     var self = this;
     this.enemies = {}; 
@@ -63,16 +59,17 @@ function create() {
     // --- CONTROLES MÓVILES ---
     // Detectar si es móvil o si queremos probarlo siempre (quitamos la comprobación de móvil para que lo veas en PC también)
     // El Joystick a la Izquierda
-    this.joyStick = this.plugins.get('rexVirtualJoystick').add(this, {
-        x: 100,
-        y: 500,
-        radius: 60,
-        base: { fill: 0x888888, alpha: 0.5 },
-        thumb: { fill: 0xcccccc, alpha: 0.8 },
-        dir: '4dir', // Solo 4 direcciones
-        forceMin: 16
-    }).on('update', dumpJoyStickState, this);
-
+    // Nota: Ahora la clave es 'rexvirtualjoystickplugin' (minúsculas)
+this.joyStick = this.plugins.get('rexvirtualjoystickplugin').add(this, {
+    x: 100,
+    y: 500,
+    radius: 60,
+    base: { fill: 0x888888, alpha: 0.5 },
+    thumb: { fill: 0xcccccc, alpha: 0.8 },
+    dir: '4dir',
+    forceMin: 16
+});
+this.joyStick.on('update', dumpJoyStickState, this);
     // Mapeamos el joystick a cursores virtuales
     this.joystickCursors = this.joyStick.createCursorKeys();
 
