@@ -4,4 +4,8 @@ export const TILES = {
     '.': { solid: false },
     '#': { solid: true, style: 'wall' },
     'B': { solid: true, style: 'block' },
+    // Muro rompible: aguanta "hp" balas y desaparece dejando suelo.
+    'D': { solid: true, style: 'crate', hp: 3 },
+    // Hierba alta: se atraviesa y esconde al tanque que está dentro.
+    'g': { solid: false, bush: true },
 };

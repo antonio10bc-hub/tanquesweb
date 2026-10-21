@@ -2,7 +2,6 @@ import { Game } from './core/Game.js';
 import { Input } from './core/Input.js';
 import { Sfx } from './core/Audio.js';
 import { Hud } from './ui/Hud.js';
-import { FIRST_LEVEL } from './content/index.js';
 
 const canvas = document.getElementById('view');
 const hud = new Hud();
@@ -14,15 +13,19 @@ const unlock = () => sfx.unlock();
 window.addEventListener('pointerdown', unlock);
 window.addEventListener('keydown', unlock);
 
-const start = () => {
+// JUGAR: el escenario que se ve de fondo en el menú. OTRA VEZ: un arquetipo nuevo.
+hud.onPlay = () => {
     sfx.unlock();
     sfx.play('ui');
-    game.startMatch(game.levelId);
+    game.startMatch(game.levelId, undefined, game.themeId);
 };
-hud.onPlay = start;
-hud.onAgain = start;
+hud.onAgain = () => {
+    sfx.unlock();
+    sfx.play('ui');
+    game.startMatch();
+};
 
-game.showMenu(FIRST_LEVEL);
+game.showMenu();
 
 // Acceso desde la consola para depurar: window.game
 window.game = game;

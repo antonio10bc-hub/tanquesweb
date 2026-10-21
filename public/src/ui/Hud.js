@@ -5,6 +5,8 @@ export class Hud {
         this.el = {
             hud: $('hud'), menu: $('menu'), end: $('end'), banner: $('banner'),
             play: $('btn-play'), again: $('btn-again'),
+            pause: $('pause'), pauseBtn: $('btn-pause'), resume: $('btn-resume'), quit: $('btn-quit'),
+            stage: $('stage'), stageName: $('stage-name'), stageSub: $('stage-sub'), replay: $('replay'),
             endTitle: $('end-title'), endSub: $('end-sub'),
             stealth: $('stealth'), hint: $('hint'),
             p: { name: $('p-name'), hp: $('p-hp') },
@@ -13,6 +15,15 @@ export class Hud {
         this.cache = { p: { hp: -1, max: -1 }, e: { hp: -1, max: -1 }, visible: null };
         this.onPlay = null;
         this.onAgain = null;
+        this.onPause = null;
+        this.onResume = null;
+        this.onQuit = null;
+        this.onToggle = null;
+        this.el.pauseBtn.addEventListener('click', () => this.onPause && this.onPause());
+        this.el.resume.addEventListener('click', () => this.onResume && this.onResume());
+        this.el.quit.addEventListener('click', () => this.onQuit && this.onQuit());
+        this.toggles = [...document.querySelectorAll('.toggle')];
+        for (const t of this.toggles) t.addEventListener('click', () => this.onToggle && this.onToggle(t.dataset.key));
         this.el.play.addEventListener('click', () => this.onPlay && this.onPlay());
         this.el.again.addEventListener('click', () => this.onAgain && this.onAgain());
     }
@@ -26,6 +37,33 @@ export class Hud {
         this.el.menu.classList.toggle('hidden', name !== 'menu');
         this.el.end.classList.toggle('hidden', name !== 'end');
         this.el.hud.classList.toggle('hidden', name === 'menu');
+        this.el.pauseBtn.classList.toggle('hidden', name !== 'play');
+    }
+
+    showPause(on, settings) {
+        this.el.pause.classList.toggle('hidden', !on);
+        if (settings) this.syncToggles(settings);
+    }
+
+    syncToggles(settings) {
+        for (const t of this.toggles) t.classList.toggle('off', !settings[t.dataset.key]);
+    }
+
+    showReplay(on) {
+        this.el.replay.classList.toggle('hidden', !on);
+        this.el.pauseBtn.classList.toggle('hidden', on);
+        this.replaying = on;
+        this.el.stealth.classList.toggle('hidden', on);
+        if (on) this.showHint(false);
+    }
+
+    stage(name, sub) {
+        const s = this.el.stage;
+        this.el.stageName.textContent = name;
+        this.el.stageSub.textContent = sub;
+        s.className = 'stage';
+        void s.offsetWidth;
+        s.className = 'stage show';
     }
 
     setNames(player, enemy) {
@@ -56,11 +94,13 @@ export class Hud {
         c.hp = hp;
     }
 
-    setStealth(visible) {
-        if (this.cache.visible === visible) return;
-        this.cache.visible = visible;
-        this.el.stealth.textContent = visible ? '¡VISIBLE!' : 'OCULTO';
-        this.el.stealth.classList.toggle('visible', visible);
+    // state: 'visible' | 'hidden' | 'bush' | 'cloak'
+    setStealth(state) {
+        if (this.cache.visible === state) return;
+        this.cache.visible = state;
+        const LABELS = { visible: '¡VISIBLE!', hidden: 'OCULTO', bush: 'EN LA HIERBA', cloak: 'INVISIBLE' };
+        this.el.stealth.textContent = LABELS[state];
+        this.el.stealth.className = `stealth ${state === 'hidden' ? '' : state}${this.replaying ? ' hidden' : ''}`;
     }
 
     showHint(on) {

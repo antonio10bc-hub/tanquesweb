@@ -21,9 +21,19 @@ No hay paso de compilación: módulos ES nativos + Three.js desde CDN (import ma
   Bajo la barra de vida de cada tanque se ve su munición o el progreso de la recarga.
 - **Cada partida es un mapa nuevo**, generado con simetría de 180° para que ninguno tenga ventaja.
 - **Objetos**: aparece uno cada vez, dura 5 s y salta a otro sitio. Nunca aparece pegado a un tanque
-  y, si puede, a distancia parecida de los dos. **Vida** (cruz verde: cura 2 sin pasar del máximo) y
-  **Bala de fuego** (tu siguiente bala hace el doble de daño: el cañón echa fuego y la bala sale
-  grande y en llamas). La IA también va a por ellos.
+  y, si puede, a distancia parecida de los dos. La IA también va a por ellos.
+  - **Vida**: cura 2. **Bala de fuego**: la siguiente bala hace el doble. **Escudo**: para un impacto.
+  - **Turbo**: más velocidad 4 s. **Invisible**: 3,5 s sin que te vean ni disparando.
+  - **Rebote**: la siguiente bala rebota 2 veces. **Radar**: ves al rival 2,5 s esté donde esté.
+- **Hierba alta**: dentro solo te ven casi pegados y disparar te delata un instante. Se mueve al pasar.
+- **Muros rompibles**: aguantan 3 balas.
+- **Arquetipos de escenario**: cada partida elige uno (Arena clásica, Emboscada, Demolición, Fortaleza,
+  Carreras, Fantasmas) que decide cuánto muro, qué materiales, cuánta hierba y qué objetos salen,
+  y lo viste con uno de sus temas visuales (caramelo, nieve, playa, montaña, otoño, ciudad).
+- **Música chiptune** generada según el tema, que se acelera con poca vida. **Repetición** a cámara
+  lenta del golpe final. **Vibración** en móviles compatibles. **Pausa** (botón, Esc o P) con ajustes
+  de música, sonido y vibración que se recuerdan.
+- **Instalable**: "Añadir a pantalla de inicio" la abre a pantalla completa con su icono.
 - La IA juega con **las mismas reglas**: solo sabe dónde estás cuando te ve.
 
 ## Estructura
@@ -34,11 +44,12 @@ public/src/
   content/             DATOS del juego: añadir contenido = añadir entradas aquí
     tanks.js           tanques (vida, velocidad, arma, paleta)
     weapons.js         armas (cadencia, velocidad, daño, nº de balas, apertura)
-    levels.js          niveles (mapa ASCII, tema, jugador, lista de enemigos + IA)
+    levels.js          arquetipos de escenario: temas + generador + objetos + rivales
     tiles.js           leyenda de los mapas
-    themes.js          paletas visuales
-    pickups.js         objetos (vida, bala de fuego) y reglas de aparición
-  core/                bucle y estados (Game), entrada, audio sintetizado, eventos
+    themes.js          temas visuales (colores, clima, música): no cambian las reglas
+    pickups.js         objetos (vida, fuego, escudo, turbo, invisible, rebote, radar) y reglas
+  core/                bucle y estados (Game), entrada, audio y música sintetizados, repetición,
+                       ajustes guardados, vibración, eventos
   world/               simulación pura: World, Tank, Arena (colisión, visión, rutas), Bullets
     MapGen.js          generador de arenas simétricas con semilla
     Pickups.js         aparición de objetos (uno a la vez, lejos de los tanques)
@@ -84,6 +95,12 @@ dos: {
 },
 ```
 
+**Un arquetipo nuevo**: una entrada en `content/levels.js` con `themes`, `generator`
+(`materials` con pesos de `#`, `B`, `D`; `bushes` y `bushSize` para la hierba; `pieces`, `density`)
+y `pickups.kinds` con los objetos que salen y su peso.
+
+**Un tema nuevo**: copia uno de `content/themes.js` y cambia colores, `ambient` (clima) y `music`.
+
 **Un objeto nuevo**: añade una entrada en `content/pickups.js` (con `heal` y/o `damageMult`, o un
 efecto nuevo que interpretes en `Tank.applyPickup`) y su modelo en `render/PickupView.js`.
 Las reglas (duración, distancia mínima a los tanques...) están en `PICKUP_RULES`, y un nivel puede
@@ -93,7 +110,11 @@ sobreescribirlas con `pickups: { ... }` o desactivarlas con `pickups: false`.
 partida (simetría de 180°, a veces también espejo; piezas separadas por pasillos; se descartan
 los mapas sin conexión total, con densidad rara o con línea de tiro directa entre salidas).
 Parámetros en `world/MapGen.js` (`pieces`, `density`, `lowBlockChance`, `mirrorChance`...).
-Para repetir un mapa: `game.world.seed` muestra la semilla y `game.startMatch('base', semilla)` lo recrea.
+Para repetir un mapa: `game.levelId`, `game.world.seed` y `game.themeId` lo identifican, y
+`game.startMatch(arquetipo, semilla, tema)` lo recrea.
+
+Los iconos de `public/icons/` se renderizaron con el propio motor (el tanque protagonista en baja
+resolución, ampliado sin suavizado).
 
 **Una IA nueva** — crea una clase con `update(tank, dt, world)` que rellene `tank.intent`
 y regístrala en `ai/brains.js`.

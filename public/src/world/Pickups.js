@@ -10,8 +10,10 @@ export class PickupSpawner {
         this.timer = this.rules.firstDelay;
         this.last = null;
         this.nextId = 1;
-        this.kinds = Object.keys(PICKUPS);
-        this.totalWeight = this.kinds.reduce((s, k) => s + PICKUPS[k].weight, 0);
+        this.weights = this.rules.kinds;
+        this.kinds = Object.keys(this.weights);
+        for (const k of this.kinds) if (!PICKUPS[k]) throw new Error(`[objetos] tipo desconocido: "${k}"`);
+        this.totalWeight = this.kinds.reduce((s, k) => s + this.weights[k], 0);
     }
 
     step(dt, world) {
@@ -57,7 +59,7 @@ export class PickupSpawner {
 
     pickKind() {
         let x = Math.random() * this.totalWeight;
-        for (const k of this.kinds) if ((x -= PICKUPS[k].weight) < 0) return k;
+        for (const k of this.kinds) if ((x -= this.weights[k]) < 0) return k;
         return this.kinds[0];
     }
 

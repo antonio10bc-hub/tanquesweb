@@ -3,6 +3,7 @@ export class Sfx {
     constructor(volume = 0.32) {
         this.ctx = null;
         this.volume = volume;
+        this.enabled = true; // efectos (la música va aparte, en core/Music.js)
     }
 
     // Los navegadores exigen un gesto del usuario para arrancar el audio.
@@ -62,7 +63,7 @@ export class Sfx {
     }
 
     play(name, pan = 0) {
-        if (!this.ctx || this.ctx.state !== 'running') return;
+        if (!this.ctx || this.ctx.state !== 'running' || !this.enabled) return;
         switch (name) {
             case 'shot': this.tone('square', 900, 160, 0.09, 0.2, pan); this.noise(0.06, 0.25, 4000, pan); break;
             case 'shotEnemy': this.tone('square', 520, 110, 0.11, 0.16, pan); this.noise(0.07, 0.22, 2500, pan); break;
@@ -79,6 +80,16 @@ export class Sfx {
             case 'heal': this.seq('square', [523, 659, 784, 1047], 0.05, 0.12, 0.1); break;
             case 'power': this.seq('sawtooth', [330, 440, 660, 880], 0.05, 0.12, 0.12); break;
             case 'grabOther': this.tone('square', 392, 262, 0.15, 0.12, pan); break;
+            case 'crateHit': this.noise(0.08, 0.25, 900, pan); this.tone('square', 180, 120, 0.06, 0.12, pan); break;
+            case 'crateBreak': this.noise(0.35, 0.5, 1400, pan); this.tone('triangle', 260, 60, 0.3, 0.3, pan); break;
+            case 'boing': this.tone('sine', 300, 900, 0.12, 0.2, pan); break;
+            case 'shield': this.tone('square', 1200, 300, 0.2, 0.15, pan); this.noise(0.2, 0.3, 5000, pan); break;
+            case 'shieldGet': this.seq('triangle', [392, 523, 659, 784], 0.05, 0.16, 0.12); break;
+            case 'turbo': this.tone('sawtooth', 200, 1200, 0.3, 0.12); break;
+            case 'cloak': this.tone('sine', 900, 200, 0.4, 0.18); this.noise(0.4, 0.2, 3000); break;
+            case 'bounceGet': this.seq('square', [523, 784, 659, 1047], 0.05, 0.12, 0.08); break;
+            case 'radar': this.tone('sine', 1320, 1320, 0.08, 0.15); this.tone('sine', 1320, 1320, 0.08, 0.1, 0, 0.25); break;
+            case 'pause': this.tone('square', 660, 440, 0.08, 0.12); break;
             case 'tick': this.tone('square', 440, 440, 0.12, 0.14); break;
             case 'go': this.seq('square', [880, 1175, 1760], 0.07, 0.14, 0.2); break;
             case 'ui': this.tone('square', 660, 1320, 0.09, 0.14); break;

@@ -27,6 +27,7 @@ export class World {
 
         // def.pickups: false para desactivarlos, o un objeto que sobreescribe PICKUP_RULES.
         this.pickups = def.pickups === false ? null : new PickupSpawner(def.pickups || {}, this.events);
+        this.name = def.name;
 
         this.player = this.spawn(def.player, 'player', 'player');
         for (const e of def.enemies) this.spawn(e, 'enemy', e.brain);
@@ -57,10 +58,17 @@ export class World {
         return n;
     }
 
+    // Reglas de visibilidad (iguales para jugador e IA):
+    //  radar del observador > invisibilidad del objetivo > disparo reciente > cercanía
+    //  (la hierba reduce la distancia a la que te ven y lo que dura el destello al disparar).
     canSee(observer, target) {
-        if (this.forceReveal || target.reveal > 0) return true;
-        const dx = target.x - observer.x, dz = target.z - observer.z, p = CONFIG.stealth.proximity;
-        return dx * dx + dz * dz < p * p;
+        if (this.forceReveal || observer.radar > 0) return true;
+        const s = CONFIG.stealth;
+        const dx = target.x - observer.x, dz = target.z - observer.z, d2 = dx * dx + dz * dz;
+        if (target.cloak > 0) return d2 < s.cloakProximity ** 2;
+        if (target.reveal > 0) return true;
+        const p = target.inBush ? s.bushProximity : s.proximity;
+        return d2 < p * p;
     }
 
     updateIntel(dt) {
@@ -112,7 +120,11 @@ export class World {
     }
 
     hitTank(tank, owner, damage, dirX, dirZ, x, z, color) {
-        tank.damage(damage, dirX, dirZ, this);
+        const dealt = tank.damage(damage, dirX, dirZ, this);
+        if (!dealt) {
+            this.events.emit('shieldBreak', tank, x, z);
+            return;
+        }
         this.events.emit('hit', tank, x, z, color, damage);
         if (!tank.alive) this.events.emit('death', tank, owner);
     }

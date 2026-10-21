@@ -20,6 +20,9 @@ export const CONFIG = {
         revealOnHit: 0.35,  // al recibir un impacto también te ven un instante
         proximity: 1.9,     // a esta distancia siempre os veis
         playerGhost: 0.45,  // opacidad de tu tanque mientras estás oculto
+        bushRevealTime: 0.3, // disparar desde la hierba te delata mucho menos rato
+        bushProximity: 1.2,  // y dentro de ella solo te ven casi pegados
+        cloakProximity: 0.9, // invisible: solo te ven si te tocan
         fadeSpeed: 10,
     },
     match: {

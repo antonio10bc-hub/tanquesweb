@@ -6,6 +6,7 @@ const DEFAULTS = {
     range: [3, 6.5],    // distancia a la que le gusta pelear
     memory: 3,          // segundos que persigue una pista antigua antes de patrullar
     greed: 0.85,        // probabilidad de ir a por un objeto que le sirve
+    ambush: 1.5,        // preferencia por colocarse en hierba alta
 };
 
 // IA "cazadora" al estilo Archero: se recoloca, se planta, suelta una ráfaga y vuelve a moverse.
@@ -104,6 +105,7 @@ export class HunterBrain {
             s -= Math.abs(dT - mid) * 0.6;
             if (dT < near * 0.7) s -= 3;
             s -= Math.hypot(p.x - tank.x, p.z - tank.z) * 0.15;
+            if (arena.bushAt(p.x, p.z)) s += this.p.ambush; // la hierba es buen sitio para disparar
             s += Math.random() * 0.8;
             if (s > bestScore) {
                 bestScore = s;
@@ -151,7 +153,7 @@ export class HunterBrain {
         if (!item || this.state === 'dodge' || this.considered === item.id) return;
         this.considered = item.id;
 
-        const useful = item.def.heal ? tank.hp < tank.maxHp : tank.damageMult === 1;
+        const useful = item.def.useful ? item.def.useful(tank) : true;
         if (!useful || Math.random() > this.p.greed) return;
         const path = world.arena.findPath(tank.x, tank.z, item.x, item.z);
         if (!path) return;

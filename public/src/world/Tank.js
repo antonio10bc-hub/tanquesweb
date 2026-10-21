@@ -9,6 +9,7 @@ let nextId = 1;
 //  - si se mueve no dispara; quieto, dispara solo cada weapon.interval
 //  - al vaciar el cargador recarga durante weapon.reload (también moviéndose)
 //  - disparar (o recibir un impacto) le hace visible durante un rato
+//  - los objetos dan efectos temporales (escudo, turbo, invisibilidad, radar, rebote, fuego)
 export class Tank {
     constructor(def, team, x, z, brain) {
         this.id = nextId++;
@@ -27,6 +28,13 @@ export class Tank {
         this.cooldown = this.weapon.firstShotDelay;
         this.ammo = this.weapon.magazine;
         this.damageMult = 1; // >1 tras coger un potenciador: se gasta en el siguiente disparo
+        this.bounceNext = 0; // rebotes de la siguiente bala
+        this.shield = 0;     // impactos que absorbe
+        this.turbo = 0;      // segundos restantes de cada efecto temporal
+        this.speedMult = 1;
+        this.cloak = 0;
+        this.radar = 0;
+        this.inBush = false;
         this.reloading = 0;
         this.reveal = 0;
         this.recoil = 0;
@@ -41,6 +49,11 @@ export class Tank {
 
     get revealed() {
         return this.reveal > 0;
+    }
+
+    // Lo que ven los demás: disparar te delata salvo que seas invisible.
+    get exposed() {
+        return this.reveal > 0 && this.cloak <= 0;
     }
 
     // 0..1 mientras recarga; 1 con el cargador listo.
@@ -77,8 +90,9 @@ export class Tank {
 
         const w = this.weapon;
         if (this.moving) {
-            this.x += ix * this.speed * dt;
-            this.z += iz * this.speed * dt;
+            const speed = this.speed * (this.turbo > 0 ? this.speedMult : 1);
+            this.x += ix * speed * dt;
+            this.z += iz * speed * dt;
             world.arena.resolveCircle(this, this.radius);
             this.yaw = turnTowards(this.yaw, Math.atan2(ix, iz), 14 * dt);
             this.aimYaw = turnTowards(this.aimYaw, this.yaw, 14 * dt);
@@ -105,7 +119,11 @@ export class Tank {
             }
         }
 
+        this.inBush = world.arena.bushAt(this.x, this.z);
         this.reveal = Math.max(0, this.reveal - dt);
+        this.turbo = Math.max(0, this.turbo - dt);
+        this.cloak = Math.max(0, this.cloak - dt);
+        this.radar = Math.max(0, this.radar - dt);
         this.recoil = Math.max(0, this.recoil - dt * 5);
         this.flash = Math.max(0, this.flash - dt * 6);
     }
@@ -114,12 +132,14 @@ export class Tank {
         const w = this.weapon;
         const mx = this.x + Math.sin(this.aimYaw) * w.muzzle;
         const mz = this.z + Math.cos(this.aimYaw) * w.muzzle;
-        const power = this.damageMult;
+        const power = this.damageMult, bounce = this.bounceNext;
         this.damageMult = 1;
+        this.bounceNext = 0;
         for (let k = 0; k < w.count; k++) {
-            world.bullets.spawn(this, mx, mz, this.aimYaw + (k - (w.count - 1) / 2) * w.spread, w, power);
+            world.bullets.spawn(this, mx, mz, this.aimYaw + (k - (w.count - 1) / 2) * w.spread, w, power, bounce);
         }
-        this.reveal = Math.max(this.reveal, CONFIG.stealth.revealTime);
+        const s = CONFIG.stealth;
+        this.reveal = Math.max(this.reveal, this.inBush ? s.bushRevealTime : s.revealTime);
         this.recoil = 1;
         this.shots++;
         world.events.emit('shot', this, mx, mz);
@@ -132,9 +152,20 @@ export class Tank {
     applyPickup(def) {
         if (def.heal) this.hp = Math.min(this.maxHp, this.hp + def.heal);
         if (def.damageMult) this.damageMult = Math.max(this.damageMult, def.damageMult);
+        if (def.shield) this.shield = Math.max(this.shield, def.shield);
+        if (def.turbo) { this.turbo = def.turbo; this.speedMult = def.speedMult || 1.5; }
+        if (def.cloak) this.cloak = def.cloak;
+        if (def.bounce) this.bounceNext = Math.max(this.bounceNext, def.bounce);
+        if (def.radar) this.radar = def.radar;
     }
 
+    // Devuelve el daño realmente recibido (0 si lo para el escudo).
     damage(amount, dirX, dirZ, world) {
+        if (this.shield > 0) {
+            this.shield--;
+            this.flash = 0.6;
+            return 0;
+        }
         this.hp = Math.max(0, this.hp - amount);
         this.flash = 1;
         this.reveal = Math.max(this.reveal, CONFIG.stealth.revealOnHit);
@@ -142,5 +173,6 @@ export class Tank {
         this.z += dirZ * 0.15;
         world.arena.resolveCircle(this, this.radius);
         if (this.hp <= 0) this.alive = false;
+        return amount;
     }
 }

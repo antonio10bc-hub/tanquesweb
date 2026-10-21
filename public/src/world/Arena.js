@@ -15,6 +15,9 @@ export class Arena {
         this.rows = map.length;
         this.cols = map[0].length;
         this.solid = new Uint8Array(this.cols * this.rows);
+        this.hp = new Uint8Array(this.cols * this.rows);      // >0: muro rompible
+        this.bush = new Uint8Array(this.cols * this.rows);    // 1: hierba alta
+        this.shake = new Float32Array(this.cols * this.rows); // agitación visual de la hierba
         this.styles = new Array(this.cols * this.rows).fill(null);
         this.spawns = {};
         this.spawnCursor = {};
@@ -29,6 +32,9 @@ export class Arena {
                 if (tile && tile.solid) {
                     this.solid[i] = 1;
                     this.styles[i] = tile.style;
+                    if (tile.hp) this.hp[i] = tile.hp;
+                } else if (tile && tile.bush) {
+                    this.bush[i] = 1;
                 } else if (!tile) {
                     (this.spawns[ch] ||= []).push({ x: c + 0.5, z: r + 0.5 });
                 }
@@ -40,6 +46,8 @@ export class Arena {
         this.trash = [];
         this.animated = [];
         this.introT = 0;
+        this.crates = new Map(); // índice de tile -> { mesh, hull, index, maxHp }
+        this.bushView = null;
     }
 
     // ---------- Consultas ----------
@@ -49,6 +57,45 @@ export class Arena {
 
     solidAt(x, z) {
         return this.isSolid(Math.floor(x), Math.floor(z));
+    }
+
+    bushAt(x, z) {
+        const c = Math.floor(x), r = Math.floor(z);
+        return c >= 0 && r >= 0 && c < this.cols && r < this.rows && this.bush[r * this.cols + c] === 1;
+    }
+
+    // Una bala golpea el tile: si es rompible le quita vida. Devuelve null (muro normal),
+    // 'hit' o 'broken'. Al romperse el tile pasa a ser suelo.
+    damageTile(c, r, amount) {
+        if (c < 0 || r < 0 || c >= this.cols || r >= this.rows) return null;
+        const i = r * this.cols + c;
+        if (!this.hp[i]) return null;
+        const ref = this.crates.get(i);
+        this.hp[i] = Math.max(0, this.hp[i] - amount);
+        if (this.hp[i] > 0) {
+            if (ref) {
+                const k = 0.45 + 0.55 * (this.hp[i] / ref.maxHp);
+                ref.mesh.mesh.setColorAt(ref.index, _c.setRGB(k, k, k));
+                ref.mesh.mesh.instanceColor.needsUpdate = true;
+                ref.mesh.positions[ref.index].kick = 1;
+                this.layout(ref.mesh, this.introT);
+            }
+            return 'hit';
+        }
+        this.solid[i] = 0;
+        if (ref) {
+            ref.mesh.positions[ref.index].gone = true;
+            ref.hull.positions[ref.index].gone = true;
+            this.layout(ref.mesh, this.introT);
+            this.layout(ref.hull, this.introT);
+        }
+        return 'broken';
+    }
+
+    // La hierba se agita cuando algo la atraviesa.
+    rustle(x, z) {
+        const c = Math.floor(x), r = Math.floor(z);
+        if (this.bushAt(x, z)) this.shake[r * this.cols + c] = 1;
     }
 
     takeSpawn(ch) {
@@ -156,9 +203,12 @@ export class Arena {
         islandHull.position.copy(island.position);
         root.add(island, islandHull);
 
-        // Suelo a cuadros
+        // Suelo a cuadros (también bajo los muros rompibles, que dejan suelo al caer)
         const floorTiles = [];
-        for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) if (!this.solid[r * cols + c]) floorTiles.push({ c, r });
+        for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+            const i = r * cols + c;
+            if (!this.solid[i] || this.hp[i]) floorTiles.push({ c, r });
+        }
         const floor = new THREE.InstancedMesh(box(1, 0.3, 1), own(toon(0xffffff)), floorTiles.length);
         floorTiles.forEach(({ c, r }, i) => {
             _c.setHex(theme.floor[(c + r) & 1]).offsetHSL(0, 0, (Math.random() - 0.5) * theme.floorJitter);
@@ -181,20 +231,30 @@ export class Arena {
             const h = st.height;
             const mesh = new THREE.InstancedMesh(box(1, h, 1), [side, side, top, side, side, side], tiles.length);
             const hull = new THREE.InstancedMesh(box(1, 1, 1), own(outline(theme.outline)), tiles.length);
+            const breakable = style === 'crate';
             const pos = tiles.map(({ c, r }) => ({ x: c + 0.5, y: h / 2, z: r + 0.5 }));
-            // El contorno solo sobresale por los lados sin vecino sólido: así los muros
-            // contiguos se leen como un único bloque y no aparecen costuras.
+            // El contorno solo sobresale por los lados sin vecino sólido fijo: así los muros
+            // contiguos se leen como un único bloque. Los rompibles van siempre contorneados,
+            // para que al caer uno sus vecinos no se queden sin borde.
+            const fixed = (c, r) => this.isSolid(c, r) && !this.hp[r * cols + c];
             const hullPos = tiles.map(({ c, r }) => {
-                const ext = (dc, dr) => (this.isSolid(c + dc, r + dr) ? -0.01 : OUTLINE);
+                const ext = (dc, dr) => (!breakable && fixed(c + dc, r + dr) ? -0.01 : OUTLINE);
                 const l = ext(-1, 0), rt = ext(1, 0), t = ext(0, -1), b = ext(0, 1);
                 return {
                     x: c + 0.5 + (rt - l) / 2, y: h / 2, z: r + 0.5 + (b - t) / 2,
                     sx: 1 + l + rt, sy: h + OUTLINE * 2, sz: 1 + t + b,
                 };
             });
-            this.addAnimated(root, mesh, pos, cx, cz, 0.25);
-            this.addAnimated(root, hull, hullPos, cx, cz, 0.25);
+            if (breakable) for (let k = 0; k < tiles.length; k++) mesh.setColorAt(k, _c.setRGB(1, 1, 1));
+            const meshAnim = this.addAnimated(root, mesh, pos, cx, cz, 0.25);
+            const hullAnim = this.addAnimated(root, hull, hullPos, cx, cz, 0.25);
+            if (breakable) tiles.forEach(({ c, r }, index) => {
+                const i = r * cols + c;
+                this.crates.set(i, { mesh: meshAnim, hull: hullAnim, index, maxHp: this.hp[i] });
+            });
         }
+
+        this.buildBushes(root, theme, own, cx, cz);
 
         this.buildFoam(root, theme, own);
         this.buildClouds(root, theme, own);
@@ -203,22 +263,46 @@ export class Arena {
     addAnimated(root, mesh, positions, cx, cz, extraDelay = 0) {
         mesh.frustumCulled = false;
         const delays = positions.map((p) => Math.hypot(p.x - cx, p.z - cz) * 0.045 + extraDelay);
-        this.animated.push({ mesh, positions, delays });
+        const entry = { mesh, positions, delays };
+        this.animated.push(entry);
         root.add(mesh);
-        this.layout(this.animated[this.animated.length - 1], 0);
+        this.layout(entry, 0);
+        return entry;
     }
 
     layout({ mesh, positions, delays }, t) {
         positions.forEach((p, i) => {
             const k = Math.min(1, Math.max(0, (t - delays[i]) / 0.45));
-            const s = k <= 0 ? 0.0001 : easeOutBack(k);
-            _d.position.set(p.x, p.y - (1 - k) * 3, p.z);
-            _d.rotation.set(0, 0, 0);
-            _d.scale.set(p.sx || 1, (p.sy || 1) * s, p.sz || 1);
+            const s = k <= 0 || p.gone ? 0.0001 : easeOutBack(k);
+            const kick = p.kick ? 1 + p.kick * 0.12 : 1;
+            _d.position.set(p.x + (p.jx || 0), p.y - (1 - k) * 3, p.z + (p.jz || 0));
+            _d.rotation.set(0, p.ry || 0, 0);
+            if (p.gone) _d.scale.setScalar(0.0001); // roto: desaparece del todo (también su contorno)
+            else _d.scale.set((p.sx || 1) * kick, (p.sy || 1) * s * kick, (p.sz || 1) * kick);
             _d.updateMatrix();
             mesh.setMatrixAt(i, _d.matrix);
         });
         mesh.instanceMatrix.needsUpdate = true;
+    }
+
+    // Hierba alta: cada tile son 3 matas voxel de alturas y tonos distintos.
+    buildBushes(root, theme, own, cx, cz) {
+        const { cols, rows } = this;
+        const clumps = [];
+        for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+            if (!this.bush[r * cols + c]) continue;
+            const offs = [[-0.2, -0.18], [0.2, -0.1], [0.02, 0.2]];
+            offs.forEach(([ox, oz], k) => {
+                const s = 0.42 + Math.random() * 0.14, h = 0.5 + Math.random() * 0.22;
+                clumps.push({ x: c + 0.5 + ox, y: h / 2, z: r + 0.5 + oz, sx: s, sy: h, sz: s, ry: Math.random() * 1.2, tile: r * cols + c, k });
+            });
+        }
+        if (!clumps.length) return;
+        const mesh = new THREE.InstancedMesh(box(1, 1, 1), own(toon(0xffffff)), clumps.length);
+        clumps.forEach((p, i) => mesh.setColorAt(i, _c.setHex(theme.bush[(i * 7 + p.k) % theme.bush.length])));
+        const hull = new THREE.InstancedMesh(box(1, 1, 1), own(outline(theme.outline)), clumps.length);
+        const hullClumps = clumps.map((p) => ({ ...p, sx: p.sx + OUTLINE * 2, sy: p.sy + OUTLINE * 2, sz: p.sz + OUTLINE * 2 }));
+        this.bushView = [this.addAnimated(root, mesh, clumps, cx, cz, 0.35), this.addAnimated(root, hull, hullClumps, cx, cz, 0.35)];
     }
 
     buildFoam(root, theme, own) {
@@ -258,9 +342,31 @@ export class Arena {
     }
 
     update(dt, time) {
-        if (this.introT < INTRO_TIME + 0.5) {
+        const intro = this.introT < INTRO_TIME + 0.5;
+        if (intro) {
             this.introT += dt;
             for (const a of this.animated) this.layout(a, this.introT);
+        }
+        // Hierba agitada y muros que acaban de recibir un balazo
+        let moved = false;
+        for (let i = 0; i < this.shake.length; i++) {
+            if (this.shake[i] > 0) { this.shake[i] = Math.max(0, this.shake[i] - dt * 3); moved = true; }
+        }
+        if (this.bushView && (moved || this.wasShaking)) {
+            for (const entry of this.bushView) for (const p of entry.positions) {
+                const sh = this.shake[p.tile];
+                p.jx = sh ? Math.sin(time * 40 + p.k) * 0.06 * sh : 0;
+                p.jz = sh ? Math.cos(time * 37 + p.k) * 0.04 * sh : 0;
+            }
+            if (!intro) for (const entry of this.bushView) this.layout(entry, this.introT);
+        }
+        this.wasShaking = moved;
+        for (const ref of this.crates.values()) {
+            const p = ref.mesh.positions[ref.index];
+            if (p.kick) {
+                p.kick = Math.max(0, p.kick - dt * 6);
+                if (!intro) this.layout(ref.mesh, this.introT);
+            }
         }
         const { mesh, pts } = this.foam;
         pts.forEach((p, i) => {

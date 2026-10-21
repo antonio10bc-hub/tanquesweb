@@ -24,6 +24,46 @@ const BUILDERS = {
         ];
         return { flames };
     },
+    // Escudo de caballero con el centro claro
+    shield(add, def) {
+        add(0.5, 0.46, 0.12, def.color, 0, 0.05, 0);
+        add(0.32, 0.16, 0.12, def.color, 0, -0.25, 0);
+        add(0.14, 0.1, 0.12, def.color, 0, -0.37, 0);
+        add(0.28, 0.3, 0.14, def.accent, 0, 0.04, 0.01, false);
+    },
+    // Doble flecha hacia arriba hecha de cubitos: velocidad
+    turbo(add, def) {
+        const arrow = (y, color) => {
+            add(0.13, 0.13, 0.13, color, 0, y + 0.13, 0);
+            for (const x of [-0.12, 0.12]) add(0.13, 0.13, 0.13, color, x, y, 0);
+            for (const x of [-0.24, 0.24]) add(0.13, 0.13, 0.13, color, x, y - 0.13, 0);
+        };
+        arrow(0.12, def.accent);
+        arrow(-0.2, def.color);
+    },
+    // Fantasmita: invisibilidad
+    cloak(add, def) {
+        add(0.44, 0.42, 0.3, def.color, 0, 0.02, 0);
+        add(0.32, 0.12, 0.28, def.color, 0, 0.28, 0);
+        for (const x of [-0.15, 0, 0.15]) add(0.12, 0.12, 0.28, def.color, x, -0.24, 0);
+        for (const x of [-0.09, 0.09]) add(0.07, 0.1, 0.04, def.accent, x, 0.08, 0.16, false);
+    },
+    // Pelota saltarina con brillo: rebote
+    bounce(add, def) {
+        add(0.42, 0.42, 0.42, def.color, 0, 0, 0);
+        add(0.5, 0.28, 0.28, def.color, 0, 0, 0, false);
+        add(0.28, 0.5, 0.28, def.color, 0, 0, 0, false);
+        add(0.28, 0.28, 0.5, def.color, 0, 0, 0, false);
+        add(0.1, 0.1, 0.1, def.accent, -0.1, 0.12, 0.22, false);
+    },
+    // Pantalla de radar con mira y un "blip"
+    radar(add, def) {
+        add(0.58, 0.58, 0.1, def.accent, 0, 0, 0);
+        add(0.05, 0.46, 0.12, def.color, 0, 0, 0.01, false);
+        add(0.46, 0.05, 0.12, def.color, 0, 0, 0.01, false);
+        add(0.11, 0.11, 0.14, 0xffffff, 0.13, 0.12, 0.02, false);
+        add(0.08, 0.08, 0.14, def.color, -0.15, -0.14, 0.02, false);
+    },
 };
 
 export class PickupView {

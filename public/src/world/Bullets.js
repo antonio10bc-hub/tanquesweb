@@ -1,12 +1,14 @@
 import * as THREE from 'three';
 import { box, OUTLINE } from '../render/materials.js';
 
-const FIELDS = ['x', 'z', 'vx', 'vz', 'life', 'ttl', 'size', 'dmg', 'trail', 'power'];
+const FIELDS = ['x', 'z', 'vx', 'vz', 'life', 'ttl', 'size', 'dmg', 'trail', 'power', 'bounce'];
 const _d = new THREE.Object3D();
 const _c = new THREE.Color();
 const HEIGHT = 0.45;
 const POWER_COLOR = 0xffc21a;
 export const FIRE = [0xffe03a, 0xff9a1f, 0xff3e1f, 0xffffff];
+const BOUNCE_COLOR = 0xff4fd8;
+const SPARKS = [0xff4fd8, 0xffffff, 0xffb3f0];
 
 // Proyectiles en pool con arrays planos; se dibujan con 2 InstancedMesh (núcleo + contorno).
 export class BulletSystem {
@@ -34,7 +36,7 @@ export class BulletSystem {
         this.hull.material.color.setHex(color);
     }
 
-    spawn(owner, x, z, yaw, w, power = 1) {
+    spawn(owner, x, z, yaw, w, power = 1, bounce = 0) {
         if (this.n >= this.max) return;
         const i = this.n++;
         this.x[i] = x;
@@ -45,10 +47,12 @@ export class BulletSystem {
         this.ttl[i] = w.range / w.speed;
         this.size[i] = power > 1 ? w.size * 2.1 : w.size;
         this.power[i] = power;
+        this.bounce[i] = bounce;
         this.dmg[i] = w.damage * power;
         this.trail[i] = 0;
         this.owner[i] = owner;
-        this.color[i] = power > 1 ? POWER_COLOR : owner.def.palette.bullet;
+        this.color[i] = power > 1 ? POWER_COLOR : bounce > 0 ? BOUNCE_COLOR : owner.def.palette.bullet;
+        if (bounce > 0) this.ttl[i] *= 1.6;
     }
 
     remove(i) {
@@ -73,6 +77,18 @@ export class BulletSystem {
             }
             const nx = x + this.vx[i] * dt, nz = z + this.vz[i] * dt;
             if (arena.solidAt(nx, nz)) {
+                const c = Math.floor(nx), r = Math.floor(nz);
+                const res = arena.damageTile(c, r, this.dmg[i]);
+                if (res) this.events.emit('tileHit', c, r, res, this.color[i]);
+                if (this.bounce[i] > 0 && res !== 'broken') {
+                    // Rebote: invierte la componente que ha chocado
+                    const hitX = arena.solidAt(nx, z), hitZ = arena.solidAt(x, nz);
+                    if (hitX || !hitZ) this.vx[i] = -this.vx[i];
+                    if (hitZ || !hitX) this.vz[i] = -this.vz[i];
+                    this.bounce[i]--;
+                    this.events.emit('bulletBounce', x, z);
+                    continue;
+                }
                 this.events.emit('bulletWall', x, z, this.color[i]);
                 this.remove(i--);
                 continue;
@@ -104,6 +120,10 @@ export class BulletSystem {
                 const j = () => (Math.random() - 0.5) * s * 0.5;
                 this.particles.spawn(bx + j(), HEIGHT + j(), bz + j(), -this.vx[i] * 0.15, 0.8 + Math.random(), -this.vz[i] * 0.15,
                     s * (0.3 + Math.random() * 0.35), 0.26, FIRE[(Math.random() * FIRE.length) | 0], -3);
+            } else if (this.bounce[i] > 0 && this.trail[i] <= 0) {
+                this.trail[i] = 0.02;
+                this.particles.spawn(nx, HEIGHT, nz, (Math.random() - 0.5), (Math.random() - 0.5), (Math.random() - 0.5),
+                    this.size[i] * 0.45, 0.22, SPARKS[(Math.random() * SPARKS.length) | 0], 0);
             } else if (this.trail[i] <= 0) {
                 this.trail[i] = 0.03;
                 this.particles.spawn(nx, HEIGHT, nz, 0, 0, 0, this.size[i] * 0.55, 0.16, this.color[i], 0);

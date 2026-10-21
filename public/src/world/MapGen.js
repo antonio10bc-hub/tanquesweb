@@ -4,6 +4,8 @@
 //   mismo mapa girado, así que ninguno tiene ventaja. A veces también espejo izquierda/derecha.
 // - El mapa se construye con piezas con forma (barras, L, T, cruces...) separadas por al
 //   menos un tile de pasillo, para que no salgan rincones ni callejones encerrados.
+// - Cada pieza es de un material elegido por peso: muro (#), bloque bajo (B) o rompible (D).
+// - Después se siembran manchas de hierba alta (g), también simétricas: no bloquean, esconden.
 // - Cada mapa se valida: todo el suelo conectado, densidad razonable y sin línea de tiro
 //   directa entre las dos salidas. Si no cumple, se descarta y se genera otro.
 
@@ -24,7 +26,9 @@ const DEFAULTS = {
     rows: 19,
     pieces: [5, 8],         // intentos de pieza (cada una se copia 2 o 4 veces por simetría)
     density: [0.12, 0.3],   // fracción del interior ocupada por obstáculos
-    lowBlockChance: 0.45,   // probabilidad de que una pieza sea bloque bajo (B) en vez de muro (#)
+    materials: { '#': 11, B: 9 },  // peso de cada material por pieza
+    bushes: [0, 0],         // manchas de hierba alta (cada una se copia por simetría)
+    bushSize: [2, 5],       // tiles por mancha
     mirrorChance: 0.5,      // probabilidad de añadir espejo izquierda/derecha
     spawnClear: 2,          // filas libres delante de cada salida
 };
@@ -88,7 +92,7 @@ function tryGenerate(p, rng) {
                 if (!ok) break;
             }
             if (!ok || !hasMargin(grid, set, cols, rows)) continue;
-            const ch = rng() < p.lowBlockChance ? 'B' : '#';
+            const ch = pickWeighted(p.materials, rng);
             for (const [c, r] of set.values()) grid[r][c] = ch;
             break;
         }
@@ -96,7 +100,42 @@ function tryGenerate(p, rng) {
 
     grid[1][mid] = 'E';
     grid[rows - 2][mid] = 'P';
-    return isGood(grid, p) ? grid.map((row) => row.join('')) : null;
+    if (!isGood(grid, p)) return null;
+    sowBushes(grid, p, rng, copies);
+    return grid.map((row) => row.join(''));
+}
+
+function pickWeighted(weights, rng) {
+    const entries = Object.entries(weights);
+    let x = rng() * entries.reduce((s, [, w]) => s + w, 0);
+    for (const [k, w] of entries) if ((x -= w) < 0) return k;
+    return entries[0][0];
+}
+
+// Manchas de hierba: paseo aleatorio por el suelo libre desde una semilla, con sus copias
+// simétricas. Pueden pegarse a muros (es donde más sentido tiene esconderse) pero nunca
+// tapan las salidas: la casilla de salida y la de delante quedan libres.
+function sowBushes(grid, p, rng, copies) {
+    const { cols, rows } = p;
+    const mid = (cols - 1) / 2;
+    const free = (c, r) => c > 0 && r > 0 && c < cols - 1 && r < rows - 1 && grid[r][c] === '.' &&
+        !(c === mid && (r <= 2 || r >= rows - 3));
+    const n = p.bushes[0] + Math.floor(rng() * (p.bushes[1] - p.bushes[0] + 1));
+    for (let k = 0; k < n; k++) {
+        let c = 1 + Math.floor(rng() * (cols - 2)), r = 1 + Math.floor(rng() * Math.ceil((rows - 2) / 2));
+        const size = p.bushSize[0] + Math.floor(rng() * (p.bushSize[1] - p.bushSize[0] + 1));
+        for (let s = 0, guard = 0; s < size && guard < 40; guard++) {
+            if (free(c, r)) {
+                for (const [cc, rr] of copies(c, r)) if (free(cc, rr)) grid[rr][cc] = 'g';
+                s++;
+            }
+            const d = Math.floor(rng() * 4);
+            c += d === 0 ? 1 : d === 1 ? -1 : 0;
+            r += d === 2 ? 1 : d === 3 ? -1 : 0;
+            c = Math.max(1, Math.min(cols - 2, c));
+            r = Math.max(1, Math.min(rows - 2, r));
+        }
+    }
 }
 
 function pickPiece(rng) {
@@ -130,7 +169,7 @@ function hasMargin(grid, set, cols, rows) {
     return true;
 }
 
-const solid = (ch) => ch === '#' || ch === 'B';
+const solid = (ch) => ch === '#' || ch === 'B' || ch === 'D';
 
 function isGood(grid, p) {
     const { cols, rows } = p;
