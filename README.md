@@ -9,7 +9,12 @@ npm install
 npm start          # http://localhost:3000
 ```
 
-No hay paso de compilación: módulos ES nativos + Three.js desde CDN (import map en `public/index.html`).
+No hay paso de compilación: módulos ES nativos. Three.js (`public/vendor/`, MIT) y la fuente
+Press Start 2P (`public/fonts/`, SIL OFL) se sirven desde la propia web, sin dependencias externas.
+
+**Sin conexión**: `public/sw.js` es un service worker de "primero la red": con conexión siempre
+descarga lo último y guarda copia; sin conexión usa la copia. La página le pasa todo lo que ha
+cargado para que lo guarde, así que no hay lista de archivos que mantener a mano.
 
 ## Cómo se juega
 
@@ -33,7 +38,8 @@ No hay paso de compilación: módulos ES nativos + Three.js desde CDN (import ma
 - **Música chiptune** generada según el tema, que se acelera con poca vida. **Repetición** a cámara
   lenta del golpe final. **Vibración** en móviles compatibles. **Pausa** (botón, Esc o P) con ajustes
   de música, sonido y vibración que se recuerdan.
-- **Instalable**: "Añadir a pantalla de inicio" la abre a pantalla completa con su icono.
+- **Instalable y sin conexión**: "Añadir a pantalla de inicio" la abre a pantalla completa con su
+  icono, y tras abrirla una vez con internet funciona también sin conexión.
 - La IA juega con **las mismas reglas**: solo sabe dónde estás cuando te ve.
 
 ## Estructura

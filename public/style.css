@@ -1,3 +1,12 @@
+/* Fuente servida desde la propia web (funciona sin conexión). SIL OFL 1.1, ver fonts/OFL.txt */
+@font-face {
+    font-family: 'Press Start 2P';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('fonts/press-start-2p.woff2') format('woff2');
+}
+
 :root {
     --ink: #1b0b33;
     --cyan: #23e0d6;

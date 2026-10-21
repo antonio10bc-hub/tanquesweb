@@ -29,3 +29,17 @@ game.showMenu();
 
 // Acceso desde la consola para depurar: window.game
 window.game = game;
+
+// Modo sin conexión: registra el service worker y le pasa todo lo cargado para que lo guarde.
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    window.addEventListener('load', async () => {
+        try {
+            await navigator.serviceWorker.register('./sw.js');
+            const reg = await navigator.serviceWorker.ready;
+            const urls = performance.getEntriesByType('resource').map((e) => e.name);
+            reg.active?.postMessage({ type: 'cache-urls', urls: [location.href, ...urls] });
+        } catch {
+            /* sin service worker el juego funciona igual, solo que necesita conexión */
+        }
+    });
+}

@@ -12,12 +12,10 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Tanques">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="preload" href="fonts/press-start-2p.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="style.css">
     <script type="importmap">
-        { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+        { "imports": { "three": "./vendor/three.module.min.js" } }
     </script>
 </head>
 <body>
@@ -61,7 +59,6 @@
         <h1 class="logo">
             <span>T</span><span>A</span><span>N</span><span>Q</span><span>U</span><span>E</span><span>S</span>
         </h1>
-        <p class="tag">¡DUELO VOXEL!</p>
         <button id="btn-play" class="btn" disabled>CARGANDO...</button>
         <p class="help">
             MUÉVETE Y ERES INVISIBLE<br>
