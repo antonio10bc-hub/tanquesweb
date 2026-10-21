@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import { box, OUTLINE } from '../render/materials.js';
 
-const FIELDS = ['x', 'z', 'vx', 'vz', 'life', 'ttl', 'size', 'dmg', 'trail'];
+const FIELDS = ['x', 'z', 'vx', 'vz', 'life', 'ttl', 'size', 'dmg', 'trail', 'power'];
 const _d = new THREE.Object3D();
 const _c = new THREE.Color();
 const HEIGHT = 0.45;
 const POWER_COLOR = 0xffc21a;
+export const FIRE = [0xffe03a, 0xff9a1f, 0xff3e1f, 0xffffff];
 
 // Proyectiles en pool con arrays planos; se dibujan con 2 InstancedMesh (núcleo + contorno).
 export class BulletSystem {
@@ -42,7 +43,8 @@ export class BulletSystem {
         this.vz[i] = Math.cos(yaw) * w.speed;
         this.life[i] = 0;
         this.ttl[i] = w.range / w.speed;
-        this.size[i] = power > 1 ? w.size * 1.6 : w.size;
+        this.size[i] = power > 1 ? w.size * 2.1 : w.size;
+        this.power[i] = power;
         this.dmg[i] = w.damage * power;
         this.trail[i] = 0;
         this.owner[i] = owner;
@@ -93,7 +95,16 @@ export class BulletSystem {
             }
 
             this.trail[i] -= dt;
-            if (this.trail[i] <= 0) {
+            if (this.power[i] > 1 && this.trail[i] <= 0) {
+                // Estela de fuego: llamas que suben y se apagan
+                // Las llamas nacen detrás de la bala para que la bala gorda se siga viendo delante.
+                this.trail[i] = 0.016;
+                const s = this.size[i], sp = Math.hypot(this.vx[i], this.vz[i]);
+                const bx = nx - (this.vx[i] / sp) * s * 0.9, bz = nz - (this.vz[i] / sp) * s * 0.9;
+                const j = () => (Math.random() - 0.5) * s * 0.5;
+                this.particles.spawn(bx + j(), HEIGHT + j(), bz + j(), -this.vx[i] * 0.15, 0.8 + Math.random(), -this.vz[i] * 0.15,
+                    s * (0.3 + Math.random() * 0.35), 0.26, FIRE[(Math.random() * FIRE.length) | 0], -3);
+            } else if (this.trail[i] <= 0) {
                 this.trail[i] = 0.03;
                 this.particles.spawn(nx, HEIGHT, nz, 0, 0, 0, this.size[i] * 0.55, 0.16, this.color[i], 0);
             }

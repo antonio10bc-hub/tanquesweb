@@ -7,10 +7,10 @@ export class Hud {
             play: $('btn-play'), again: $('btn-again'),
             endTitle: $('end-title'), endSub: $('end-sub'),
             stealth: $('stealth'), hint: $('hint'),
-            p: { name: $('p-name'), hp: $('p-hp'), power: $('p-power') },
-            e: { name: $('e-name'), hp: $('e-hp'), power: $('e-power') },
+            p: { name: $('p-name'), hp: $('p-hp') },
+            e: { name: $('e-name'), hp: $('e-hp') },
         };
-        this.cache = { p: { hp: -1, max: -1, power: null }, e: { hp: -1, max: -1, power: null }, visible: null };
+        this.cache = { p: { hp: -1, max: -1 }, e: { hp: -1, max: -1 }, visible: null };
         this.onPlay = null;
         this.onAgain = null;
         this.el.play.addEventListener('click', () => this.onPlay && this.onPlay());
@@ -47,18 +47,13 @@ export class Hud {
             if (off && !pip.classList.contains('off')) {
                 pip.classList.add('off', 'lost');
                 setTimeout(() => pip.classList.remove('lost'), 450);
-            } else if (!off) {
+            } else if (!off && pip.classList.contains('off')) {
                 pip.classList.remove('off');
+                pip.classList.add('gain');
+                setTimeout(() => pip.classList.remove('gain'), 600);
             }
         });
         c.hp = hp;
-    }
-
-    setPower(side, on) {
-        const c = this.cache[side];
-        if (c.power === on) return;
-        c.power = on;
-        this.el[side].power.classList.toggle('hidden', !on);
     }
 
     setStealth(visible) {

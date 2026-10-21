@@ -5,15 +5,13 @@ export const PICKUPS = {
         name: 'VIDA',
         weight: 1,
         heal: 2,              // puntos de vida que cura (sin pasar del máximo)
-        label: '+2',
-        color: 0xff3e6e,
+        color: 0x17d65a,      // verde "botiquín", con borde blanco para destacar sobre el suelo
         accent: 0xffffff,
     },
     power: {
         name: 'DAÑO x2',
         weight: 1,
-        damageMult: 2,        // multiplica el daño de tu SIGUIENTE bala
-        label: 'x2',
+        damageMult: 2,        // multiplica el daño de tu SIGUIENTE bala (sale grande y en llamas)
         color: 0xffc21a,
         accent: 0xff6a00,
     },

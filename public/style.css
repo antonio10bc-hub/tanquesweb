@@ -162,15 +162,6 @@ html, body {
 .team-p .tname { color: var(--cyan); }
 .team-e .tname { color: var(--pink); }
 
-.power {
-    display: inline-block;
-    padding: 2px 4px;
-    background: #ffc21a;
-    color: var(--ink);
-    animation: powerPulse .3s steps(2) infinite;
-}
-@keyframes powerPulse { 50% { background: #fff; } }
-
 .pips { display: flex; gap: 3px; }
 .team-e .pips { justify-content: flex-end; }
 .pip {
@@ -182,6 +173,11 @@ html, body {
 .team-e .pip { background: var(--pink); }
 .pip.off { background: #3b2d6b; box-shadow: inset 2px 2px 0 rgba(0, 0, 0, .4); }
 .pip.lost { animation: pipLost .45s steps(3); }
+.pip.gain { animation: pipGain .6s steps(4); }
+@keyframes pipGain {
+    0%, 50% { background: #17d65a; transform: scale(1.7); }
+    100% { transform: scale(1); }
+}
 @keyframes pipLost {
     0% { background: #fff; transform: scale(1.6); }
     100% { transform: scale(1); }

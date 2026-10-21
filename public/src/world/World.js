@@ -113,7 +113,7 @@ export class World {
 
     hitTank(tank, owner, damage, dirX, dirZ, x, z, color) {
         tank.damage(damage, dirX, dirZ, this);
-        this.events.emit('hit', tank, x, z, color);
+        this.events.emit('hit', tank, x, z, color, damage);
         if (!tank.alive) this.events.emit('death', tank, owner);
     }
 

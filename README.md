@@ -21,8 +21,9 @@ No hay paso de compilación: módulos ES nativos + Three.js desde CDN (import ma
   Bajo la barra de vida de cada tanque se ve su munición o el progreso de la recarga.
 - **Cada partida es un mapa nuevo**, generado con simetría de 180° para que ninguno tenga ventaja.
 - **Objetos**: aparece uno cada vez, dura 5 s y salta a otro sitio. Nunca aparece pegado a un tanque
-  y, si puede, a distancia parecida de los dos. **Vida** (+2, sin pasar del máximo) y
-  **Daño x2** (tu siguiente bala hace el doble). La IA también va a por ellos.
+  y, si puede, a distancia parecida de los dos. **Vida** (cruz verde: cura 2 sin pasar del máximo) y
+  **Bala de fuego** (tu siguiente bala hace el doble de daño: el cañón echa fuego y la bala sale
+  grande y en llamas). La IA también va a por ellos.
 - La IA juega con **las mismas reglas**: solo sabe dónde estás cuando te ve.
 
 ## Estructura
@@ -36,7 +37,7 @@ public/src/
     levels.js          niveles (mapa ASCII, tema, jugador, lista de enemigos + IA)
     tiles.js           leyenda de los mapas
     themes.js          paletas visuales
-    pickups.js         objetos (vida, daño x2) y reglas de aparición
+    pickups.js         objetos (vida, bala de fuego) y reglas de aparición
   core/                bucle y estados (Game), entrada, audio sintetizado, eventos
   world/               simulación pura: World, Tank, Arena (colisión, visión, rutas), Bullets
     MapGen.js          generador de arenas simétricas con semilla

@@ -14,6 +14,7 @@ export class TankModel {
         this.blink = 2;
         this.dropY = 0;
         this.barRatio = 1;
+        this.lastRatio = 1;
 
         const own = (m) => (this.materials.push(m), m);
         const mat = (c) => own(toon(c, this.fx));
@@ -62,16 +63,6 @@ export class TankModel {
         this.part(this.antenna, 0.04, 0.32, 0.04, mat(palette.tread), 0, 0.16, 0, false);
         this.part(this.antenna, 0.1, 0.1, 0.1, mat(palette.accent), 0, 0.34, 0);
 
-        // Aura de daño x2 (gira alrededor del tanque mientras la siguiente bala va cargada)
-        this.aura = new THREE.Group();
-        this.root.add(this.aura);
-        const auraMat = own(toon(0xffc21a, this.fx));
-        for (let i = 0; i < 4; i++) {
-            const a = (i / 4) * Math.PI * 2;
-            this.part(this.aura, 0.09, 0.09, 0.09, auraMat, Math.sin(a) * 0.66, 0.22, Math.cos(a) * 0.66);
-        }
-        this.aura.visible = false;
-
         // Sombra
         this.shadowMat = own(new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3, depthWrite: false }));
         this.shadow = new THREE.Mesh(new THREE.CircleGeometry(0.5, 8), this.shadowMat);
@@ -94,6 +85,7 @@ export class TankModel {
         };
         plane(BAR_W + 0.1, 0.22, barMat(outlineColor, 20));
         this.barTrail = plane(BAR_W, 0.12, barMat(0xffffff, 21));
+        this.barHeal = plane(BAR_W, 0.12, barMat(0x17d65a, 21));
         this.barFill = plane(BAR_W, 0.12, barMat(palette.body, 22));
 
         // Munición: una casilla por bala; al recargar, una barra que se llena.
@@ -148,12 +140,6 @@ export class TankModel {
         if (this.blink < 0) this.blink = 1.5 + Math.random() * 3;
         this.eyes.scale.y = this.blink < 0.12 || !tank.alive ? 0.15 : 1;
 
-        this.aura.visible = tank.damageMult > 1;
-        if (this.aura.visible) {
-            this.aura.rotation.y = this.t * 4 - tank.yaw;
-            this.aura.position.y = Math.sin(this.t * 5) * 0.05;
-        }
-
         this.fx.flash.value = tank.flash;
         this.fx.fade.value = fade;
         const shown = fade > 0.001 && tank.alive;
@@ -164,12 +150,22 @@ export class TankModel {
         this.shadowMat.opacity = 0.3 * Math.min(1, fade * 1.5);
 
         const ratio = tank.hp / tank.maxHp;
-        this.barRatio = damp(this.barRatio, ratio, 5, dt);
+        if (ratio > this.lastRatio) this.healPulse = 1;
+        this.lastRatio = ratio;
+        this.healPulse = Math.max(0, (this.healPulse || 0) - dt * 2.5);
+        this.barRatio = damp(this.barRatio, ratio, this.barRatio < ratio ? 3 : 5, dt);
         this.bar.visible = shown && fade > 0.4;
         this.bar.position.set(tank.x, 1.55 + this.dropY, tank.z);
         this.bar.quaternion.copy(camera.quaternion);
-        this.setBar(this.barFill, ratio);
-        this.setBar(this.barTrail, this.barRatio);
+        // Daño: la barra cae al momento y un tramo blanco se vacía detrás.
+        // Curación: un tramo verde marca lo ganado y la barra crece hasta él con un pulso.
+        const healing = this.barRatio < ratio;
+        this.setBar(this.barFill, healing ? this.barRatio : ratio);
+        this.barTrail.visible = !healing;
+        this.barHeal.visible = healing;
+        if (healing) this.setBar(this.barHeal, ratio);
+        else this.setBar(this.barTrail, this.barRatio);
+        this.bar.scale.setScalar(1 + this.healPulse * 0.35);
 
         const reloading = tank.reloading > 0;
         this.pips.forEach((pip, i) => (pip.visible = !reloading && i < tank.ammo));

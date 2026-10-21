@@ -58,11 +58,25 @@ export class Markers {
         this.ghosts = new Map();
     }
 
-    pop(x, y, z, ch, color, outlineColor) {
-        const sprite = makeSprite(ch, color, outlineColor, 0.7);
+    pop(x, y, z, ch, color, outlineColor, { size = 0.7, vx = 0, vy = 0.6, vz = 0, ttl = 0.9, delay = 0 } = {}) {
+        const sprite = makeSprite(ch, color, outlineColor, size);
         sprite.position.set(x, y, z);
+        sprite.visible = delay <= 0;
         this.scene.add(sprite);
-        this.pops.push({ sprite, life: 0 });
+        this.pops.push({ sprite, life: -delay, ttl, vx, vy, vz });
+    }
+
+    // Lluvia de glifos pequeños que suben y se dispersan (p. ej. cruces al curarse).
+    sprinkle(x, z, ch, color, outlineColor, count = 8) {
+        for (let i = 0; i < count; i++) {
+            const a = Math.random() * Math.PI * 2, r = 0.2 + Math.random() * 0.45;
+            this.pop(x + Math.sin(a) * r, 0.4 + Math.random() * 0.6, z + Math.cos(a) * r, ch, color, outlineColor, {
+                size: 0.26 + Math.random() * 0.16,
+                vx: Math.sin(a) * 0.4, vy: 1.1 + Math.random() * 0.9, vz: Math.cos(a) * 0.4,
+                ttl: 0.7 + Math.random() * 0.4,
+                delay: Math.random() * 0.25,
+            });
+        }
     }
 
     ghost(key, x, z, color, outlineColor, alpha) {
@@ -96,7 +110,9 @@ export class Markers {
         for (let i = this.pops.length - 1; i >= 0; i--) {
             const p = this.pops[i];
             p.life += dt;
-            const t = p.life / 0.9;
+            if (p.life < 0) continue;
+            p.sprite.visible = true;
+            const t = p.life / p.ttl;
             if (t >= 1) {
                 p.sprite.removeFromParent();
                 p.sprite.material.dispose();
@@ -105,7 +121,9 @@ export class Markers {
             }
             const s = t < 0.2 ? 0.4 + (t / 0.2) * 0.9 : 1.3 - Math.min(0.3, (t - 0.2) * 1.5);
             p.sprite.scale.set(p.sprite.userData.w * s, p.sprite.userData.h * s, 1);
-            p.sprite.position.y += dt * 0.6;
+            p.sprite.position.x += p.vx * dt;
+            p.sprite.position.y += p.vy * dt;
+            p.sprite.position.z += p.vz * dt;
             p.sprite.material.opacity = t > 0.7 ? 1 - (t - 0.7) / 0.3 : 1;
         }
         for (const g of this.ghosts.values()) {

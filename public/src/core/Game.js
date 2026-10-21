@@ -7,7 +7,7 @@ import { Particles } from '../render/Particles.js';
 import { Shockwaves } from '../render/Shockwaves.js';
 import { Markers } from '../render/Markers.js';
 import { PickupView } from '../render/PickupView.js';
-import { BulletSystem } from '../world/Bullets.js';
+import { BulletSystem, FIRE as FLAMES } from '../world/Bullets.js';
 import { World } from '../world/World.js';
 import { EventBus } from './EventBus.js';
 import { approach, clamp } from './math.js';
@@ -201,8 +201,6 @@ export class Game {
         const p = w.player, e = w.enemies()[0];
         this.hud.setHp('p', p.hp, p.maxHp);
         if (e) this.hud.setHp('e', e.hp, e.maxHp);
-        this.hud.setPower('p', p.alive && p.damageMult > 1);
-        this.hud.setPower('e', !!e && e.alive && e.damageMult > 1 && e.viewFade > 0.5);
         this.hud.setStealth(p.reveal > 0 || w.forceReveal);
     }
 
@@ -227,6 +225,8 @@ export class Game {
             } else {
                 this.hud.banner('¡FUEGO!', 'go');
                 this.sfx.play('go');
+                // Durante la cuenta atrás os veis: cada uno arranca sabiendo dónde está el otro.
+                this.world.updateIntel(0);
                 this.world.forceReveal = false;
                 this.input.setEnabled(true);
                 this.setState('play');
@@ -246,7 +246,14 @@ export class Game {
         const w = this.world;
         w.arena.update(dt, this.time);
         this.syncTanks(dt);
-        this.pickupView.sync(w.pickups && w.pickups.current, w.pickups && w.pickups.rules, this.time);
+        const item = w.pickups && w.pickups.current;
+        this.pickupView.sync(item, w.pickups && w.pickups.rules, this.time);
+        // El objeto de la bala de fuego también echa llamas
+        if (item && item.kind === 'power' && (this.itemFireT = (this.itemFireT || 0) - dt) <= 0) {
+            this.itemFireT = 0.05;
+            this.particles.spawn(item.x + (Math.random() - 0.5) * 0.2, 0.35, item.z + 0.15, 0, 1.4 + Math.random(), 0,
+                0.07 + Math.random() * 0.07, 0.35, FLAMES[(Math.random() * FLAMES.length) | 0], -2);
+        }
         this.particles.update(simDt);
         this.particles.sync();
         this.bullets.sync(this.time);
@@ -289,6 +296,18 @@ export class Game {
                     tank.dustT = 0.07;
                     const bx = tank.x - Math.sin(tank.yaw) * 0.4, bz = tank.z - Math.cos(tank.yaw) * 0.4;
                     this.particles.spawn(bx + (Math.random() - 0.5) * 0.5, 0.08, bz, 0, 0.6, 0, 0.14, 0.4, this.theme.dust, -0.5);
+                }
+            }
+
+            // Siguiente bala potenciada: el cañón echa fuego
+            if (tank.alive && tank.damageMult > 1 && tank.viewFade > 0.4) {
+                tank.fireT = (tank.fireT || 0) - dt;
+                if (tank.fireT <= 0) {
+                    tank.fireT = 0.018;
+                    const mx = tank.x + Math.sin(tank.aimYaw) * 0.66, mz = tank.z + Math.cos(tank.aimYaw) * 0.66;
+                    const j = () => (Math.random() - 0.5) * 0.22;
+                    this.particles.spawn(mx + j(), 0.55 + j(), mz + j(), 0, 1.2 + Math.random(), 0,
+                        0.12 + Math.random() * 0.1, 0.35, FLAMES[(Math.random() * FLAMES.length) | 0], -3);
                 }
             }
 
@@ -349,7 +368,13 @@ export class Game {
             const mine = tank === this.world.player;
             this.particles.burst(item.x, 0.55, item.z, 18, [item.def.color, item.def.accent, 0xffffff], { speed: 3, up: 4, size: 0.12, ttl: 0.6, grav: 6 });
             this.waves.spawn(item.x, item.z, item.def.color, 1.6, 0.4);
-            if (mine || tank.viewFade > 0.5) this.markers.pop(tank.x, 1.9, tank.z, item.def.label, item.def.color, this.theme.outline);
+            if (mine || tank.viewFade > 0.5) {
+                if (item.kind === 'heal') {
+                    this.markers.sprinkle(tank.x, tank.z, '+', item.def.color, this.theme.outline, 12);
+                } else {
+                    this.particles.burst(tank.x, 0.6, tank.z, 26, FLAMES, { speed: 2.5, up: 4, size: 0.16, ttl: 0.6, grav: -2 });
+                }
+            }
             if (mine) {
                 this.sfx.play(item.kind === 'heal' ? 'heal' : 'power');
                 this.renderer.flash(item.def.color, 0.25);
@@ -363,8 +388,12 @@ export class Game {
             this.sfx.play('wall', this.panOf(x));
         });
 
-        ev.on('hit', (tank, x, z, color) => {
+        ev.on('hit', (tank, x, z, color, damage) => {
             const pal = tank.def.palette, mine = tank === this.world.player;
+            if (damage > 1) {
+                this.particles.burst(x, 0.5, z, 30, FLAMES, { speed: 5, up: 4, size: 0.2, ttl: 0.6, grav: -1 });
+                this.waves.spawn(x, z, 0xff9a1f, 1.8, 0.4);
+            }
             this.particles.burst(x, 0.5, z, 14, [color, pal.body, pal.accent, 0xffffff], { speed: 4, up: 3, size: 0.13, ttl: 0.5 });
             this.rig.shake(mine ? 0.4 : 0.2);
             this.hitStop = 0.05;

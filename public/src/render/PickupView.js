@@ -3,20 +3,26 @@ import { box, toon, outline, OUTLINE } from './materials.js';
 import { easeOutBack } from '../core/math.js';
 
 // Modelo voxel flotante de cada objeto. Se construyen una vez por tipo y se reutilizan.
+// Cada constructor puede devolver piezas a animar ({ flames }).
 const BUILDERS = {
-    // Cruz médica con núcleo blanco
+    // Cruz verde de farmacia sobre una cruz blanca algo mayor
     heal(add, def) {
-        add(0.56, 0.2, 0.2, def.color, 0, 0, 0);
-        add(0.2, 0.56, 0.2, def.color, 0, 0, 0);
-        add(0.12, 0.12, 0.24, def.accent, 0, 0, 0, false);
+        add(0.64, 0.26, 0.12, def.accent, 0, 0, -0.03);
+        add(0.26, 0.64, 0.12, def.accent, 0, 0, -0.03);
+        add(0.5, 0.16, 0.1, def.color, 0, 0, 0.04, false);
+        add(0.16, 0.5, 0.1, def.color, 0, 0, 0.04, false);
     },
-    // Dos balas gordas con punta: munición potenciada
+    // Una bala gorda con llamas saliendo por detrás
     power(add, def) {
-        for (const x of [-0.13, 0.13]) {
-            add(0.16, 0.34, 0.16, def.color, x, -0.05, 0);
-            add(0.11, 0.12, 0.11, def.accent, x, 0.18, 0);
-        }
-        add(0.42, 0.06, 0.2, def.accent, 0, -0.2, 0, false);
+        add(0.26, 0.36, 0.26, def.color, 0, 0.04, 0);
+        add(0.2, 0.14, 0.2, 0xfff1a8, 0, 0.29, 0);
+        add(0.3, 0.06, 0.3, def.accent, 0, -0.1, 0, false);
+        const flames = [
+            add(0.2, 0.2, 0.2, 0xff3e1f, 0, -0.28, 0, false),
+            add(0.13, 0.16, 0.13, 0xff9a1f, -0.09, -0.4, 0.03, false),
+            add(0.13, 0.16, 0.13, 0xffe03a, 0.09, -0.42, -0.03, false),
+        ];
+        return { flames };
     },
 };
 
@@ -42,8 +48,9 @@ export class PickupView {
                 o.position.set(x, y, z);
                 item.add(o);
             }
+            return mesh;
         };
-        (BUILDERS[kind] || BUILDERS.heal)(add, def);
+        const parts = (BUILDERS[kind] || BUILDERS.heal)(add, def) || {};
         const ring = new THREE.Mesh(
             new THREE.RingGeometry(0.4, 0.56, 10, 1),
             new THREE.MeshBasicMaterial({ color: def.color, transparent: true, depthWrite: false })
@@ -59,7 +66,7 @@ export class PickupView {
         group.add(item, ring, shadow);
         group.visible = false;
         this.root.add(group);
-        m = { group, item, ring };
+        m = { group, item, ring, flames: parts.flames || [] };
         this.models.set(kind, m);
         return m;
     }
@@ -78,5 +85,6 @@ export class PickupView {
         m.item.rotation.set(-0.9, Math.sin(time * 2.2) * 0.55, 0); // inclinado hacia la cámara
         m.ring.scale.setScalar(1 + Math.sin(time * 6) * 0.1);
         m.ring.material.opacity = 0.55 + Math.sin(time * 6) * 0.25;
+        m.flames.forEach((f, i) => f.scale.setScalar(0.7 + Math.abs(Math.sin(time * 17 + i * 2.1)) * 0.6));
     }
 }
