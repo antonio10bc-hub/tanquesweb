@@ -13,7 +13,6 @@ export class PickupSpawner {
         this.weights = this.rules.kinds;
         this.kinds = Object.keys(this.weights);
         for (const k of this.kinds) if (!PICKUPS[k]) throw new Error(`[objetos] tipo desconocido: "${k}"`);
-        this.totalWeight = this.kinds.reduce((s, k) => s + this.weights[k], 0);
     }
 
     step(dt, world) {
@@ -57,10 +56,13 @@ export class PickupSpawner {
         this.events.emit('pickupSpawn', this.current);
     }
 
+    // Nunca el mismo tipo dos veces seguidas (si el arquetipo tiene más de uno).
     pickKind() {
-        let x = Math.random() * this.totalWeight;
-        for (const k of this.kinds) if ((x -= this.weights[k]) < 0) return k;
-        return this.kinds[0];
+        const prev = this.last && this.last.kind;
+        const kinds = this.kinds.length > 1 ? this.kinds.filter((k) => k !== prev) : this.kinds;
+        let x = Math.random() * kinds.reduce((s, k) => s + this.weights[k], 0);
+        for (const k of kinds) if ((x -= this.weights[k]) < 0) return k;
+        return kinds[0];
     }
 
     findSpot(world) {
