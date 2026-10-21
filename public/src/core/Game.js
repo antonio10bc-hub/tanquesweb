@@ -252,7 +252,7 @@ export class Game {
         this.world.forceReveal = true;
         for (const t of this.world.tanks) t.alive = t.hp > 0;
         const p = this.world.player;
-        this.hud.showEnd(win, win ? `TE QUEDAN ${p.hp} DE ${p.maxHp}` : '¡A LA PRÓXIMA!');
+        this.hud.showEnd(win, win ? '' : '¡A LA PRÓXIMA!');
         this.sfx.play(win ? 'win' : 'lose');
         if (win) this.particles.burst(p.x, 0.8, p.z, 90, CONFETTI, { speed: 4, up: 9, size: 0.14, ttl: 2.4, grav: 9 });
     }
