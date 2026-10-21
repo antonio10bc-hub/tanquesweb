@@ -5,6 +5,7 @@ const DEFAULTS = {
     burst: [2, 3],      // disparos por ráfaga antes de recolocarse (nunca más de los que quedan)
     range: [3, 6.5],    // distancia a la que le gusta pelear
     memory: 3,          // segundos que persigue una pista antigua antes de patrullar
+    greed: 0.85,        // probabilidad de ir a por un objeto que le sirve
 };
 
 // IA "cazadora" al estilo Archero: se recoloca, se planta, suelta una ráfaga y vuelve a moverse.
@@ -18,6 +19,8 @@ export class HunterBrain {
         this.step = 0;
         this.dodgeCd = 0;
         this.dir = { x: 0, z: 0 };
+        this.considered = 0;  // último objeto evaluado (se decide una vez por objeto)
+        this.chasing = 0;     // objeto al que va ahora mismo
     }
 
     update(tank, dt, world) {
@@ -32,6 +35,8 @@ export class HunterBrain {
                 if (Math.random() < this.p.dodge) this.startDodge(tank, threat, world);
             }
         }
+
+        this.updatePickups(tank, world);
 
         switch (this.state) {
             case 'attack':
@@ -134,6 +139,36 @@ export class HunterBrain {
         }
         tank.intent.x = tank.intent.z = 0;
         return false;
+    }
+
+    // Ir a por un objeto si le sirve, llega a tiempo y no está claramente más lejos que el rival.
+    updatePickups(tank, world) {
+        const item = world.pickups && world.pickups.current;
+        if (this.chasing && (!item || item.id !== this.chasing)) {
+            this.chasing = 0;
+            if (this.state === 'move') this.think(tank, world, false);
+        }
+        if (!item || this.state === 'dodge' || this.considered === item.id) return;
+        this.considered = item.id;
+
+        const useful = item.def.heal ? tank.hp < tank.maxHp : tank.damageMult === 1;
+        if (!useful || Math.random() > this.p.greed) return;
+        const path = world.arena.findPath(tank.x, tank.z, item.x, item.z);
+        if (!path) return;
+        const eta = path.length / tank.speed;
+        if (eta > world.pickups.rules.lifetime - item.life - 0.2) return;
+        const target = tank.pickTarget();
+        const desperate = item.def.heal && tank.hp <= tank.maxHp / 2;
+        if (target && target.visible && !desperate) {
+            const mine = Math.hypot(item.x - tank.x, item.z - tank.z);
+            const theirs = Math.hypot(item.x - target.x, item.z - target.z);
+            if (mine > theirs + 1.5) return;
+        }
+        this.path = path;
+        this.step = 0;
+        this.state = 'move';
+        this.timer = eta + 1;
+        this.chasing = item.id;
     }
 
     startDodge(tank, threat, world) {

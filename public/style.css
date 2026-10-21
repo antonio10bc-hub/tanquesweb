@@ -162,6 +162,15 @@ html, body {
 .team-p .tname { color: var(--cyan); }
 .team-e .tname { color: var(--pink); }
 
+.power {
+    display: inline-block;
+    padding: 2px 4px;
+    background: #ffc21a;
+    color: var(--ink);
+    animation: powerPulse .3s steps(2) infinite;
+}
+@keyframes powerPulse { 50% { background: #fff; } }
+
 .pips { display: flex; gap: 3px; }
 .team-e .pips { justify-content: flex-end; }
 .pip {

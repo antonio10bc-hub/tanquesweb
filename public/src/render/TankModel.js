@@ -62,6 +62,16 @@ export class TankModel {
         this.part(this.antenna, 0.04, 0.32, 0.04, mat(palette.tread), 0, 0.16, 0, false);
         this.part(this.antenna, 0.1, 0.1, 0.1, mat(palette.accent), 0, 0.34, 0);
 
+        // Aura de daño x2 (gira alrededor del tanque mientras la siguiente bala va cargada)
+        this.aura = new THREE.Group();
+        this.root.add(this.aura);
+        const auraMat = own(toon(0xffc21a, this.fx));
+        for (let i = 0; i < 4; i++) {
+            const a = (i / 4) * Math.PI * 2;
+            this.part(this.aura, 0.09, 0.09, 0.09, auraMat, Math.sin(a) * 0.66, 0.22, Math.cos(a) * 0.66);
+        }
+        this.aura.visible = false;
+
         // Sombra
         this.shadowMat = own(new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3, depthWrite: false }));
         this.shadow = new THREE.Mesh(new THREE.CircleGeometry(0.5, 8), this.shadowMat);
@@ -137,6 +147,12 @@ export class TankModel {
         this.blink -= dt;
         if (this.blink < 0) this.blink = 1.5 + Math.random() * 3;
         this.eyes.scale.y = this.blink < 0.12 || !tank.alive ? 0.15 : 1;
+
+        this.aura.visible = tank.damageMult > 1;
+        if (this.aura.visible) {
+            this.aura.rotation.y = this.t * 4 - tank.yaw;
+            this.aura.position.y = Math.sin(this.t * 5) * 0.05;
+        }
 
         this.fx.flash.value = tank.flash;
         this.fx.fade.value = fade;

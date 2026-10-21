@@ -1,0 +1,91 @@
+import { PICKUPS, PICKUP_RULES } from '../content/index.js';
+
+// Un único objeto a la vez: aparece, dura "lifetime" y salta a otro sitio.
+// Nunca aparece pegado a un tanque y, si puede, a distancia parecida de los dos bandos.
+export class PickupSpawner {
+    constructor(rules, events) {
+        this.rules = { ...PICKUP_RULES, ...rules };
+        this.events = events;
+        this.current = null;
+        this.timer = this.rules.firstDelay;
+        this.last = null;
+        this.nextId = 1;
+        this.kinds = Object.keys(PICKUPS);
+        this.totalWeight = this.kinds.reduce((s, k) => s + PICKUPS[k].weight, 0);
+    }
+
+    step(dt, world) {
+        const cur = this.current;
+        if (!cur) {
+            this.timer -= dt;
+            if (this.timer <= 0) this.spawn(world);
+            return;
+        }
+        cur.life += dt;
+        for (const t of world.tanks) {
+            if (!t.alive) continue;
+            const r = t.radius + this.rules.radius;
+            if ((t.x - cur.x) ** 2 + (t.z - cur.z) ** 2 < r * r) {
+                t.applyPickup(cur.def);
+                this.remove(this.rules.respawnDelay);
+                this.events.emit('pickup', t, cur);
+                return;
+            }
+        }
+        if (cur.life >= this.rules.lifetime) {
+            this.remove(this.rules.swapDelay);
+            this.events.emit('pickupExpired', cur);
+        }
+    }
+
+    remove(delay) {
+        this.last = this.current;
+        this.current = null;
+        this.timer = delay;
+    }
+
+    spawn(world) {
+        const spot = this.findSpot(world);
+        if (!spot) {
+            this.timer = 0.5;
+            return;
+        }
+        const kind = this.pickKind();
+        this.current = { id: this.nextId++, kind, def: PICKUPS[kind], x: spot.x, z: spot.z, life: 0 };
+        this.events.emit('pickupSpawn', this.current);
+    }
+
+    pickKind() {
+        let x = Math.random() * this.totalWeight;
+        for (const k of this.kinds) if ((x -= PICKUPS[k].weight) < 0) return k;
+        return this.kinds[0];
+    }
+
+    findSpot(world) {
+        const { arena, tanks } = world;
+        const r = this.rules;
+        const alive = tanks.filter((t) => t.alive);
+        const player = alive.find((t) => t.team === 'player');
+        const valid = [], fair = [];
+        for (let row = 0; row < arena.rows; row++) {
+            for (let c = 0; c < arena.cols; c++) {
+                if (arena.isSolid(c, row)) continue;
+                const x = c + 0.5, z = row + 0.5;
+                let near = Infinity, enemy = Infinity;
+                for (const t of alive) {
+                    const d = Math.hypot(t.x - x, t.z - z);
+                    near = Math.min(near, d);
+                    if (t.team !== 'player') enemy = Math.min(enemy, d);
+                }
+                if (near < r.minTankDist) continue;
+                if (this.last && Math.hypot(this.last.x - x, this.last.z - z) < r.minPrevDist) continue;
+                valid.push({ x, z });
+                if (!player || enemy === Infinity || Math.abs(Math.hypot(player.x - x, player.z - z) - enemy) <= r.fairness) {
+                    fair.push({ x, z });
+                }
+            }
+        }
+        const pool = fair.length ? fair : valid;
+        return pool.length ? pool[(Math.random() * pool.length) | 0] : null;
+    }
+}

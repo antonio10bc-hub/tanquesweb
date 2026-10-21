@@ -6,6 +6,7 @@ import { TankModel } from '../render/TankModel.js';
 import { Arena } from './Arena.js';
 import { Tank } from './Tank.js';
 import { generateArena } from './MapGen.js';
+import { PickupSpawner } from './Pickups.js';
 
 // Una partida en curso: arena + tanques + reglas de visibilidad.
 // No sabe nada de HUD, sonido ni cámara: comunica lo que pasa con eventos.
@@ -23,6 +24,9 @@ export class World {
         this.arena.build(this.root, theme);
         this.tanks = [];
         this.forceReveal = true;
+
+        // def.pickups: false para desactivarlos, o un objeto que sobreescribe PICKUP_RULES.
+        this.pickups = def.pickups === false ? null : new PickupSpawner(def.pickups || {}, this.events);
 
         this.player = this.spawn(def.player, 'player', 'player');
         for (const e of def.enemies) this.spawn(e, 'enemy', e.brain);
@@ -82,6 +86,7 @@ export class World {
         if (tanksActive) {
             for (const t of this.tanks) t.step(dt, this);
             this.separate();
+            if (this.pickups) this.pickups.step(dt, this);
         }
         this.bullets.update(dt, this);
     }

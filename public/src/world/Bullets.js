@@ -5,6 +5,7 @@ const FIELDS = ['x', 'z', 'vx', 'vz', 'life', 'ttl', 'size', 'dmg', 'trail'];
 const _d = new THREE.Object3D();
 const _c = new THREE.Color();
 const HEIGHT = 0.45;
+const POWER_COLOR = 0xffc21a;
 
 // Proyectiles en pool con arrays planos; se dibujan con 2 InstancedMesh (núcleo + contorno).
 export class BulletSystem {
@@ -32,7 +33,7 @@ export class BulletSystem {
         this.hull.material.color.setHex(color);
     }
 
-    spawn(owner, x, z, yaw, w) {
+    spawn(owner, x, z, yaw, w, power = 1) {
         if (this.n >= this.max) return;
         const i = this.n++;
         this.x[i] = x;
@@ -41,11 +42,11 @@ export class BulletSystem {
         this.vz[i] = Math.cos(yaw) * w.speed;
         this.life[i] = 0;
         this.ttl[i] = w.range / w.speed;
-        this.size[i] = w.size;
-        this.dmg[i] = w.damage;
+        this.size[i] = power > 1 ? w.size * 1.6 : w.size;
+        this.dmg[i] = w.damage * power;
         this.trail[i] = 0;
         this.owner[i] = owner;
-        this.color[i] = owner.def.palette.bullet;
+        this.color[i] = power > 1 ? POWER_COLOR : owner.def.palette.bullet;
     }
 
     remove(i) {

@@ -26,6 +26,7 @@ export class Tank {
         this.aimYaw = this.yaw;
         this.cooldown = this.weapon.firstShotDelay;
         this.ammo = this.weapon.magazine;
+        this.damageMult = 1; // >1 tras coger un potenciador: se gasta en el siguiente disparo
         this.reloading = 0;
         this.reveal = 0;
         this.recoil = 0;
@@ -113,8 +114,10 @@ export class Tank {
         const w = this.weapon;
         const mx = this.x + Math.sin(this.aimYaw) * w.muzzle;
         const mz = this.z + Math.cos(this.aimYaw) * w.muzzle;
+        const power = this.damageMult;
+        this.damageMult = 1;
         for (let k = 0; k < w.count; k++) {
-            world.bullets.spawn(this, mx, mz, this.aimYaw + (k - (w.count - 1) / 2) * w.spread, w);
+            world.bullets.spawn(this, mx, mz, this.aimYaw + (k - (w.count - 1) / 2) * w.spread, w, power);
         }
         this.reveal = Math.max(this.reveal, CONFIG.stealth.revealTime);
         this.recoil = 1;
@@ -124,6 +127,11 @@ export class Tank {
             this.reloading = w.reload;
             world.events.emit('reload', this);
         }
+    }
+
+    applyPickup(def) {
+        if (def.heal) this.hp = Math.min(this.maxHp, this.hp + def.heal);
+        if (def.damageMult) this.damageMult = Math.max(this.damageMult, def.damageMult);
     }
 
     damage(amount, dirX, dirZ, world) {

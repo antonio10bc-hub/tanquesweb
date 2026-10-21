@@ -7,10 +7,10 @@ export class Hud {
             play: $('btn-play'), again: $('btn-again'),
             endTitle: $('end-title'), endSub: $('end-sub'),
             stealth: $('stealth'), hint: $('hint'),
-            p: { name: $('p-name'), hp: $('p-hp') },
-            e: { name: $('e-name'), hp: $('e-hp') },
+            p: { name: $('p-name'), hp: $('p-hp'), power: $('p-power') },
+            e: { name: $('e-name'), hp: $('e-hp'), power: $('e-power') },
         };
-        this.cache = { p: { hp: -1, max: -1 }, e: { hp: -1, max: -1 }, visible: null };
+        this.cache = { p: { hp: -1, max: -1, power: null }, e: { hp: -1, max: -1, power: null }, visible: null };
         this.onPlay = null;
         this.onAgain = null;
         this.el.play.addEventListener('click', () => this.onPlay && this.onPlay());
@@ -52,6 +52,13 @@ export class Hud {
             }
         });
         c.hp = hp;
+    }
+
+    setPower(side, on) {
+        const c = this.cache[side];
+        if (c.power === on) return;
+        c.power = on;
+        this.el[side].power.classList.toggle('hidden', !on);
     }
 
     setStealth(visible) {

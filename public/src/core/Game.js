@@ -6,6 +6,7 @@ import { CameraRig } from '../render/CameraRig.js';
 import { Particles } from '../render/Particles.js';
 import { Shockwaves } from '../render/Shockwaves.js';
 import { Markers } from '../render/Markers.js';
+import { PickupView } from '../render/PickupView.js';
 import { BulletSystem } from '../world/Bullets.js';
 import { World } from '../world/World.js';
 import { EventBus } from './EventBus.js';
@@ -28,6 +29,7 @@ export class Game {
         this.particles = new Particles(this.scene);
         this.waves = new Shockwaves(this.scene);
         this.markers = new Markers(this.scene);
+        this.pickupView = new PickupView(this.scene);
         this.bullets = new BulletSystem(this.scene, this.events, this.particles);
 
         this.sun = new THREE.DirectionalLight(0xffffff, 2);
@@ -199,6 +201,8 @@ export class Game {
         const p = w.player, e = w.enemies()[0];
         this.hud.setHp('p', p.hp, p.maxHp);
         if (e) this.hud.setHp('e', e.hp, e.maxHp);
+        this.hud.setPower('p', p.alive && p.damageMult > 1);
+        this.hud.setPower('e', !!e && e.alive && e.damageMult > 1 && e.viewFade > 0.5);
         this.hud.setStealth(p.reveal > 0 || w.forceReveal);
     }
 
@@ -242,6 +246,7 @@ export class Game {
         const w = this.world;
         w.arena.update(dt, this.time);
         this.syncTanks(dt);
+        this.pickupView.sync(w.pickups && w.pickups.current, w.pickups && w.pickups.rules, this.time);
         this.particles.update(simDt);
         this.particles.sync();
         this.bullets.sync(this.time);
@@ -327,6 +332,30 @@ export class Game {
 
         ev.on('reloaded', (tank) => {
             if (tank === this.world.player) this.sfx.play('reloaded');
+        });
+
+        ev.on('pickupSpawn', (item) => {
+            this.particles.burst(item.x, 0.5, item.z, 12, [item.def.color, item.def.accent, 0xffffff], { speed: 2.5, up: 3, size: 0.1, ttl: 0.5, grav: 8 });
+            this.waves.spawn(item.x, item.z, item.def.color, 1.2, 0.35);
+            this.sfx.play('itemSpawn', this.panOf(item.x));
+        });
+
+        ev.on('pickupExpired', (item) => {
+            this.particles.burst(item.x, 0.55, item.z, 8, [item.def.color, 0xffffff], { speed: 1.5, up: 1.5, size: 0.08, ttl: 0.35, grav: 2 });
+            this.sfx.play('itemGone', this.panOf(item.x));
+        });
+
+        ev.on('pickup', (tank, item) => {
+            const mine = tank === this.world.player;
+            this.particles.burst(item.x, 0.55, item.z, 18, [item.def.color, item.def.accent, 0xffffff], { speed: 3, up: 4, size: 0.12, ttl: 0.6, grav: 6 });
+            this.waves.spawn(item.x, item.z, item.def.color, 1.6, 0.4);
+            if (mine || tank.viewFade > 0.5) this.markers.pop(tank.x, 1.9, tank.z, item.def.label, item.def.color, this.theme.outline);
+            if (mine) {
+                this.sfx.play(item.kind === 'heal' ? 'heal' : 'power');
+                this.renderer.flash(item.def.color, 0.25);
+            } else {
+                this.sfx.play('grabOther', this.panOf(item.x));
+            }
         });
 
         ev.on('bulletWall', (x, z, color) => {

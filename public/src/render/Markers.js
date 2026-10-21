@@ -4,7 +4,14 @@ import * as THREE from 'three';
 const GLYPHS = {
     '!': ['##', '##', '##', '##', '..', '##'],
     '?': ['.###.', '##.##', '...##', '..##.', '.....', '..##.'],
+    '+': ['......', '..##..', '######', '######', '..##..', '......'],
+    'x': ['......', '##..##', '.####.', '..##..', '.####.', '##..##'],
+    '2': ['####.', '...##', '..##.', '.##..', '##...', '#####'],
 };
+
+// Une varios glifos (todos de 6 filas) con una columna de separación.
+const textRows = (text) =>
+    GLYPHS['!'].map((_, r) => [...text].map((ch) => GLYPHS[ch][r]).join('.'));
 
 const hex = (c) => `#${c.toString(16).padStart(6, '0')}`;
 const texCache = new Map();
@@ -13,7 +20,7 @@ function glyph(ch, color, outlineColor) {
     const key = `${ch}|${color}|${outlineColor}`;
     let entry = texCache.get(key);
     if (entry) return entry;
-    const rows = GLYPHS[ch];
+    const rows = textRows(ch);
     const w = rows[0].length + 2, h = rows.length + 2;
     const canvas = document.createElement('canvas');
     canvas.width = w;

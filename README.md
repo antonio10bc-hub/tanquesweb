@@ -20,6 +20,9 @@ No hay paso de compilación: módulos ES nativos + Three.js desde CDN (import ma
 - **Cargador de 3 balas**: al vaciarlo recargas durante 2 s (la recarga sigue aunque te muevas).
   Bajo la barra de vida de cada tanque se ve su munición o el progreso de la recarga.
 - **Cada partida es un mapa nuevo**, generado con simetría de 180° para que ninguno tenga ventaja.
+- **Objetos**: aparece uno cada vez, dura 5 s y salta a otro sitio. Nunca aparece pegado a un tanque
+  y, si puede, a distancia parecida de los dos. **Vida** (+2, sin pasar del máximo) y
+  **Daño x2** (tu siguiente bala hace el doble). La IA también va a por ellos.
 - La IA juega con **las mismas reglas**: solo sabe dónde estás cuando te ve.
 
 ## Estructura
@@ -33,9 +36,11 @@ public/src/
     levels.js          niveles (mapa ASCII, tema, jugador, lista de enemigos + IA)
     tiles.js           leyenda de los mapas
     themes.js          paletas visuales
+    pickups.js         objetos (vida, daño x2) y reglas de aparición
   core/                bucle y estados (Game), entrada, audio sintetizado, eventos
   world/               simulación pura: World, Tank, Arena (colisión, visión, rutas), Bullets
     MapGen.js          generador de arenas simétricas con semilla
+    Pickups.js         aparición de objetos (uno a la vez, lejos de los tanques)
   ai/                  cerebros: PlayerBrain, HunterBrain y su registro (brains.js)
   render/              pipeline retro, cámara, modelo de tanque, partículas, marcadores
   ui/Hud.js            capa DOM (menús, vida, aviso de sigilo)
@@ -77,6 +82,11 @@ dos: {
     ],
 },
 ```
+
+**Un objeto nuevo**: añade una entrada en `content/pickups.js` (con `heal` y/o `damageMult`, o un
+efecto nuevo que interpretes en `Tank.applyPickup`) y su modelo en `render/PickupView.js`.
+Las reglas (duración, distancia mínima a los tanques...) están en `PICKUP_RULES`, y un nivel puede
+sobreescribirlas con `pickups: { ... }` o desactivarlas con `pickups: false`.
 
 **Mapas generados** — un nivel con `generator: { cols, rows }` genera una arena nueva en cada
 partida (simetría de 180°, a veces también espejo; piezas separadas por pasillos; se descartan
