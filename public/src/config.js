@@ -16,7 +16,7 @@ export const CONFIG = {
         follow: 6,
     },
     stealth: {
-        revealTime: 0.75,   // segundos visible tras cada disparo (> intervalo => visible mientras disparas)
+        revealTime: 1.1,    // segundos visible tras cada disparo (> intervalo => visible mientras disparas)
         revealOnHit: 0.35,  // al recibir un impacto también te ven un instante
         proximity: 1.9,     // a esta distancia siempre os veis
         playerGhost: 0.45,  // opacidad de tu tanque mientras estás oculto

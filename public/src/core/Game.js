@@ -64,7 +64,8 @@ export class Game {
     }
 
     // ---------- Flujo ----------
-    load(levelId) {
+    // seed: opcional, para repetir un mapa generado concreto (game.world.seed lo muestra).
+    load(levelId, seed) {
         if (this.world) this.world.dispose();
         this.bullets.clear();
         this.particles.clear();
@@ -82,7 +83,7 @@ export class Game {
         this.hemi.intensity = theme.light.hemiIntensity;
         this.bullets.setOutline(theme.outline);
 
-        this.world = new World(def, theme, { events: this.events, bullets: this.bullets, input: this.input });
+        this.world = new World(def, theme, { events: this.events, bullets: this.bullets, input: this.input, seed });
         this.scene.add(this.world.root);
         this.levelId = levelId;
         this.rig.setBounds(this.world.arena.cols, this.world.arena.rows);
@@ -103,8 +104,8 @@ export class Game {
         this.rig.snap();
     }
 
-    startMatch(levelId) {
-        this.load(levelId);
+    startMatch(levelId, seed) {
+        this.load(levelId, seed);
         this.setState('intro');
         this.fallen = null;
         this.timeScale = 1;
@@ -318,6 +319,14 @@ export class Game {
             const mine = tank === this.world.player;
             this.sfx.play(mine ? 'shot' : 'shotEnemy', this.panOf(x));
             if (mine) this.rig.shake(0.06);
+        });
+
+        ev.on('reload', (tank) => {
+            if (tank === this.world.player) this.sfx.play('reload');
+        });
+
+        ev.on('reloaded', (tank) => {
+            if (tank === this.world.player) this.sfx.play('reloaded');
         });
 
         ev.on('bulletWall', (x, z, color) => {

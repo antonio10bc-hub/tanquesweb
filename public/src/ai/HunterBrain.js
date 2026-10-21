@@ -2,7 +2,7 @@ import { randInt } from '../core/math.js';
 
 const DEFAULTS = {
     dodge: 0.5,         // probabilidad de esquivar una bala que viene directa
-    burst: [2, 4],      // disparos por ráfaga antes de recolocarse
+    burst: [2, 3],      // disparos por ráfaga antes de recolocarse (nunca más de los que quedan)
     range: [3, 6.5],    // distancia a la que le gusta pelear
     memory: 3,          // segundos que persigue una pista antigua antes de patrullar
 };
@@ -54,7 +54,7 @@ export class HunterBrain {
     think(tank, world, justAttacked) {
         const target = this.freshTarget(tank);
         const arena = world.arena;
-        if (target && !justAttacked && target.visible) {
+        if (target && !justAttacked && target.visible && tank.reloading === 0) {
             const d = Math.hypot(target.x - tank.x, target.z - tank.z);
             if (d <= this.p.range[1] && arena.hasLOS(tank.x, tank.z, target.x, target.z)) {
                 this.attack(tank);
@@ -67,16 +67,17 @@ export class HunterBrain {
 
     arrive(tank, world) {
         const target = this.freshTarget(tank);
-        if (target) this.attack(tank);
+        // Pararse sin balas solo serviría para quedarse quieto y visible: mejor seguir moviéndose.
+        if (target && tank.reloading === 0) this.attack(tank);
         else this.think(tank, world, false);
     }
 
     // Quedarse quieto = disparar (regla del tanque). Duración = nº de disparos de la ráfaga.
     attack(tank) {
         const w = tank.weapon;
-        const shots = randInt(this.p.burst[0], this.p.burst[1]);
+        const shots = Math.min(tank.ammo, randInt(this.p.burst[0], this.p.burst[1]));
         this.state = 'attack';
-        this.timer = w.firstShotDelay + (shots - 1) * w.interval + 0.08;
+        this.timer = Math.max(tank.cooldown, w.firstShotDelay) + (shots - 1) * w.interval + 0.08;
         tank.intent.x = tank.intent.z = 0;
     }
 

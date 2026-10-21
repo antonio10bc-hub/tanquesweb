@@ -3,10 +3,11 @@ import { box, toon, outline, OUTLINE } from './materials.js';
 import { damp, wrapAngle } from '../core/math.js';
 
 const BAR_W = 0.78;
+const PIP_GAP = 0.05;
 
 // Tanque voxel con ojitos. Solo es visual: la simulación vive en world/Tank.js.
 export class TankModel {
-    constructor(palette, outlineColor) {
+    constructor(palette, outlineColor, magazine = 3) {
         this.fx = { fade: { value: 1 }, flash: { value: 0 } };
         this.materials = [];
         this.t = Math.random() * 10;
@@ -84,6 +85,22 @@ export class TankModel {
         plane(BAR_W + 0.1, 0.22, barMat(outlineColor, 20));
         this.barTrail = plane(BAR_W, 0.12, barMat(0xffffff, 21));
         this.barFill = plane(BAR_W, 0.12, barMat(palette.body, 22));
+
+        // Munición: una casilla por bala; al recargar, una barra que se llena.
+        const ammoY = -0.2;
+        plane(BAR_W + 0.1, 0.16, barMat(outlineColor, 20)).position.y = ammoY;
+        const pipW = (BAR_W - PIP_GAP * (magazine - 1)) / magazine;
+        const full = barMat(palette.accent, 22), empty = barMat(0x3b2d6b, 21);
+        this.pips = [];
+        for (let i = 0; i < magazine; i++) {
+            const x = -BAR_W / 2 + pipW / 2 + i * (pipW + PIP_GAP);
+            plane(pipW, 0.08, empty).position.set(x, ammoY, 0);
+            const pip = plane(pipW, 0.08, full);
+            pip.position.set(x, ammoY, 0);
+            this.pips.push(pip);
+        }
+        this.reloadFill = plane(BAR_W, 0.08, barMat(0xffffff, 23));
+        this.reloadFill.position.y = ammoY;
     }
 
     part(parent, w, h, d, material, x, y, z, outlined = true) {
@@ -133,10 +150,15 @@ export class TankModel {
         const ratio = tank.hp / tank.maxHp;
         this.barRatio = damp(this.barRatio, ratio, 5, dt);
         this.bar.visible = shown && fade > 0.4;
-        this.bar.position.set(tank.x, 1.35 + this.dropY, tank.z);
+        this.bar.position.set(tank.x, 1.55 + this.dropY, tank.z);
         this.bar.quaternion.copy(camera.quaternion);
         this.setBar(this.barFill, ratio);
         this.setBar(this.barTrail, this.barRatio);
+
+        const reloading = tank.reloading > 0;
+        this.pips.forEach((pip, i) => (pip.visible = !reloading && i < tank.ammo));
+        this.reloadFill.visible = reloading;
+        if (reloading) this.setBar(this.reloadFill, tank.reloadProgress);
     }
 
     setBar(mesh, r) {

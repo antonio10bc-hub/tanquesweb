@@ -7,6 +7,7 @@ let nextId = 1;
 // Simulación de un tanque. Mismas reglas para jugador e IA:
 //  - el "cerebro" solo decide una intención de movimiento (intent)
 //  - si se mueve no dispara; quieto, dispara solo cada weapon.interval
+//  - al vaciar el cargador recarga durante weapon.reload (también moviéndose)
 //  - disparar (o recibir un impacto) le hace visible durante un rato
 export class Tank {
     constructor(def, team, x, z, brain) {
@@ -24,6 +25,8 @@ export class Tank {
         this.yaw = team === 'player' ? Math.PI : 0;
         this.aimYaw = this.yaw;
         this.cooldown = this.weapon.firstShotDelay;
+        this.ammo = this.weapon.magazine;
+        this.reloading = 0;
         this.reveal = 0;
         this.recoil = 0;
         this.flash = 0;
@@ -37,6 +40,11 @@ export class Tank {
 
     get revealed() {
         return this.reveal > 0;
+    }
+
+    // 0..1 mientras recarga; 1 con el cargador listo.
+    get reloadProgress() {
+        return this.reloading > 0 ? 1 - this.reloading / this.weapon.reload : 1;
     }
 
     know(opp) {
@@ -76,15 +84,23 @@ export class Tank {
             if (this.cooldown < w.firstShotDelay) this.cooldown = w.firstShotDelay;
         }
         this.cooldown -= dt;
+        if (this.reloading > 0) {
+            this.reloading -= dt;
+            if (this.reloading <= 0) {
+                this.reloading = 0;
+                this.ammo = w.magazine;
+                world.events.emit('reloaded', this);
+            }
+        }
 
         if (!this.moving) {
             const target = this.pickTarget();
             const desired = target ? Math.atan2(target.x - this.x, target.z - this.z) : this.aimYaw;
             this.aimYaw = turnTowards(this.aimYaw, desired, 18 * dt);
-            if (this.cooldown <= 0) {
+            if (this.cooldown <= 0 && this.reloading === 0) {
                 this.aimYaw = desired;
                 this.fire(world);
-                this.cooldown += w.interval;
+                this.cooldown = Math.max(0, this.cooldown) + w.interval;
             }
         }
 
@@ -104,6 +120,10 @@ export class Tank {
         this.recoil = 1;
         this.shots++;
         world.events.emit('shot', this, mx, mz);
+        if (--this.ammo <= 0) {
+            this.reloading = w.reload;
+            world.events.emit('reload', this);
+        }
     }
 
     damage(amount, dirX, dirZ, world) {

@@ -15,8 +15,11 @@ No hay paso de compilación: módulos ES nativos + Three.js desde CDN (import ma
 
 - **Joystick flotante** (táctil/ratón, donde toques) o **WASD / flechas**.
 - **Mientras te mueves no disparas y eres invisible** para el rival.
-- **Si te paras, disparas solo cada 0,5 s** hacia el rival (o hacia donde lo viste por última vez),
+- **Si te paras, disparas solo cada 1 s** hacia el rival (o hacia donde lo viste por última vez),
   pero **disparar te hace visible** un momento. Recibir un impacto o acercarte mucho también te delata.
+- **Cargador de 3 balas**: al vaciarlo recargas durante 2 s (la recarga sigue aunque te muevas).
+  Bajo la barra de vida de cada tanque se ve su munición o el progreso de la recarga.
+- **Cada partida es un mapa nuevo**, generado con simetría de 180° para que ninguno tenga ventaja.
 - La IA juega con **las mismas reglas**: solo sabe dónde estás cuando te ve.
 
 ## Estructura
@@ -32,6 +35,7 @@ public/src/
     themes.js          paletas visuales
   core/                bucle y estados (Game), entrada, audio sintetizado, eventos
   world/               simulación pura: World, Tank, Arena (colisión, visión, rutas), Bullets
+    MapGen.js          generador de arenas simétricas con semilla
   ai/                  cerebros: PlayerBrain, HunterBrain y su registro (brains.js)
   render/              pipeline retro, cámara, modelo de tanque, partículas, marcadores
   ui/Hud.js            capa DOM (menús, vida, aviso de sigilo)
@@ -56,7 +60,7 @@ tanque: { name: 'MOLE', hp: 10, speed: 2.4, radius: 0.4, weapon: 'escopeta',
 
 **Un arma nueva** — en `content/weapons.js`:
 ```js
-escopeta: { interval: 0.8, firstShotDelay: 0.1, speed: 9, damage: 1, range: 6,
+escopeta: { interval: 0.8, magazine: 2, reload: 1.5, firstShotDelay: 0.1, speed: 9, damage: 1, range: 6,
             count: 3, spread: 0.25, size: 0.2, muzzle: 0.62 },
 ```
 
@@ -73,6 +77,12 @@ dos: {
     ],
 },
 ```
+
+**Mapas generados** — un nivel con `generator: { cols, rows }` genera una arena nueva en cada
+partida (simetría de 180°, a veces también espejo; piezas separadas por pasillos; se descartan
+los mapas sin conexión total, con densidad rara o con línea de tiro directa entre salidas).
+Parámetros en `world/MapGen.js` (`pieces`, `density`, `lowBlockChance`, `mirrorChance`...).
+Para repetir un mapa: `game.world.seed` muestra la semilla y `game.startMatch('base', semilla)` lo recrea.
 
 **Una IA nueva** — crea una clase con `update(tank, dt, world)` que rellene `tank.intent`
 y regístrala en `ai/brains.js`.

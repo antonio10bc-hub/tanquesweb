@@ -5,6 +5,7 @@ import { createBrain } from '../ai/brains.js';
 import { TankModel } from '../render/TankModel.js';
 import { Arena } from './Arena.js';
 import { Tank } from './Tank.js';
+import { generateArena } from './MapGen.js';
 
 // Una partida en curso: arena + tanques + reglas de visibilidad.
 // No sabe nada de HUD, sonido ni cámara: comunica lo que pasa con eventos.
@@ -16,7 +17,9 @@ export class World {
         this.events = ctx.events;
         this.bullets = ctx.bullets;
         this.root = new THREE.Group();
-        this.arena = new Arena(def.map);
+        const generated = def.generator ? generateArena(def.generator, ctx.seed) : null;
+        this.seed = generated ? generated.seed : null;
+        this.arena = new Arena(generated ? generated.map : def.map);
         this.arena.build(this.root, theme);
         this.tanks = [];
         this.forceReveal = true;
@@ -29,7 +32,7 @@ export class World {
         const def = getDef(TANKS, spec.tank, 'tanque');
         const at = this.arena.takeSpawn(spec.spawn);
         const tank = new Tank(def, team, at.x, at.z, createBrain(brainId, spec.params, this.ctx));
-        tank.model = new TankModel(def.palette, this.theme.outline);
+        tank.model = new TankModel(def.palette, this.theme.outline, tank.weapon.magazine);
         tank.model.addTo(this.root);
         for (const other of this.tanks) {
             if (other.team === team) continue;
