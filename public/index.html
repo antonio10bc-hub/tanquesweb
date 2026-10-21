@@ -2,72 +2,61 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tanques Voxel.io</title>
-    <style>
-        body { margin: 0; padding: 0; background-color: #2c3e50; font-family: 'Verdana', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; color: #333; overflow: hidden; touch-action: none; }
-        #menu-screen { background-color: #abf7b1; padding: 40px; border-radius: 15px; box-shadow: 0 10px 0 #8de393; text-align: center; width: 300px; position: absolute; z-index: 100; }
-        h1 { color: #5dade2; text-shadow: 2px 2px 0 #2980b9; margin-bottom: 30px; font-size: 28px; text-transform: uppercase; }
-        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; color: white; }
-        #btn-create { background-color: #5dade2; box-shadow: 0 5px 0 #2980b9; }
-        #btn-join { background-color: #f1948a; box-shadow: 0 5px 0 #c0392b; }
-        input { width: 85%; padding: 15px; margin-bottom: 10px; border-radius: 8px; border: 2px solid #bdc3c7; font-size: 16px; text-align: center; text-transform: uppercase; outline: none; }
-        #lobby-screen { display: none; }
-        .room-code-display { background: white; padding: 20px; font-size: 24px; font-weight: bold; letter-spacing: 5px; border-radius: 8px; border: 2px dashed #bdc3c7; margin: 20px 0; color: #555; }
-        .status-text { font-size: 14px; color: #7f8c8d; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#1b0b33">
+    <title>Tanques DS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script type="importmap">
+        { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+    </script>
 </head>
 <body>
-    <div id="menu-screen">
-        <div id="start-screen">
-            <h1>Tanques.io</h1>
-            <button id="btn-create" class="btn">CREAR SALA</button>
-            <p style="margin: 10px 0; font-weight: bold; color:#7f8c8d;">- O -</p>
-            <input type="text" id="code-input" placeholder="CÓDIGO" maxlength="4">
-            <button id="btn-join" class="btn">UNIRSE</button>
+    <canvas id="view"></canvas>
+
+    <div id="hud" class="hud hidden">
+        <div class="top">
+            <div class="team team-p">
+                <span class="tname" id="p-name">TÚ</span>
+                <div class="pips" id="p-hp"></div>
+            </div>
+            <div class="team team-e">
+                <span class="tname" id="e-name">RIVAL</span>
+                <div class="pips" id="e-hp"></div>
+            </div>
         </div>
-        <div id="lobby-screen">
-            <h2>¡SALA CREADA!</h2>
-            <p>Comparte código:</p>
-            <div class="room-code-display" id="display-code">????</div>
-            <p class="status-text">Esperando Jugador 2...</p>
-        </div>
+        <div id="stealth" class="stealth">OCULTO</div>
+        <div id="hint" class="hint">ARRASTRA PARA MOVER<br>SUELTA PARA DISPARAR</div>
     </div>
-    <div id="game-container"></div>
-    
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.0/dist/phaser.min.js"></script>
-    <script>
-        const socket = io();
-        window.initialGameData = {}; 
-        const menuScreen = document.getElementById('menu-screen');
-        const startScreen = document.getElementById('start-screen');
-        const lobbyScreen = document.getElementById('lobby-screen');
-        const displayCode = document.getElementById('display-code');
-        const codeInput = document.getElementById('code-input');
 
-        document.getElementById('btn-create').addEventListener('click', () => socket.emit('createGame'));
-        document.getElementById('btn-join').addEventListener('click', () => {
-            const code = codeInput.value.toUpperCase();
-            if(code.length > 0) socket.emit('joinGame', code);
-            else alert("Escribe un código");
-        });
+    <div id="banner" class="banner"></div>
 
-        socket.on('gameCode', (code) => {
-            startScreen.style.display = 'none';
-            lobbyScreen.style.display = 'block';
-            displayCode.innerText = code;
-        });
-        socket.on('errorMsg', (msg) => alert(msg));
-        socket.on('mapData', (data) => window.initialGameData.map = data);
-        socket.on('currentPlayers', (data) => window.initialGameData.players = data);
-        socket.on('currentWalls', (data) => window.initialGameData.walls = data);
-        socket.on('gameStart', () => {
-            menuScreen.style.display = 'none';
-            iniciarJuego();
-        });
-    </script>
-    <script src="game.js"></script>
+    <div id="joy" class="joy hidden">
+        <div class="joy-base"></div>
+        <div class="joy-thumb"></div>
+    </div>
+
+    <div id="menu" class="screen">
+        <h1 class="logo">
+            <span>T</span><span>A</span><span>N</span><span>Q</span><span>U</span><span>E</span><span>S</span>
+        </h1>
+        <p class="tag">¡DUELO VOXEL!</p>
+        <button id="btn-play" class="btn" disabled>CARGANDO...</button>
+        <p class="help">
+            MUÉVETE Y ERES INVISIBLE<br>
+            PARA Y DISPARAS SOLO<br>
+            <em>PERO DISPARAR TE DELATA</em>
+        </p>
+    </div>
+
+    <div id="end" class="screen hidden">
+        <h2 id="end-title" class="end-title">¡VICTORIA!</h2>
+        <p id="end-sub" class="tag"></p>
+        <button id="btn-again" class="btn">OTRA VEZ</button>
+    </div>
+
+    <script type="module" src="src/main.js"></script>
 </body>
 </html>

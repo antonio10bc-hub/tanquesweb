@@ -1,0 +1,117 @@
+import * as THREE from 'three';
+import { CONFIG } from '../config.js';
+import { TANKS, getDef } from '../content/index.js';
+import { createBrain } from '../ai/brains.js';
+import { TankModel } from '../render/TankModel.js';
+import { Arena } from './Arena.js';
+import { Tank } from './Tank.js';
+
+// Una partida en curso: arena + tanques + reglas de visibilidad.
+// No sabe nada de HUD, sonido ni cámara: comunica lo que pasa con eventos.
+export class World {
+    constructor(def, theme, ctx) {
+        this.def = def;
+        this.theme = theme;
+        this.ctx = ctx;
+        this.events = ctx.events;
+        this.bullets = ctx.bullets;
+        this.root = new THREE.Group();
+        this.arena = new Arena(def.map);
+        this.arena.build(this.root, theme);
+        this.tanks = [];
+        this.forceReveal = true;
+
+        this.player = this.spawn(def.player, 'player', 'player');
+        for (const e of def.enemies) this.spawn(e, 'enemy', e.brain);
+    }
+
+    spawn(spec, team, brainId) {
+        const def = getDef(TANKS, spec.tank, 'tanque');
+        const at = this.arena.takeSpawn(spec.spawn);
+        const tank = new Tank(def, team, at.x, at.z, createBrain(brainId, spec.params, this.ctx));
+        tank.model = new TankModel(def.palette, this.theme.outline);
+        tank.model.addTo(this.root);
+        for (const other of this.tanks) {
+            if (other.team === team) continue;
+            other.know(tank);
+            tank.know(other);
+        }
+        this.tanks.push(tank);
+        return tank;
+    }
+
+    enemies() {
+        return this.tanks.filter((t) => t.team !== 'player');
+    }
+
+    aliveEnemies() {
+        let n = 0;
+        for (const t of this.tanks) if (t.team !== 'player' && t.alive) n++;
+        return n;
+    }
+
+    canSee(observer, target) {
+        if (this.forceReveal || target.reveal > 0) return true;
+        const dx = target.x - observer.x, dz = target.z - observer.z, p = CONFIG.stealth.proximity;
+        return dx * dx + dz * dz < p * p;
+    }
+
+    updateIntel(dt) {
+        for (const a of this.tanks) {
+            if (!a.alive) continue;
+            for (const info of a.intel.values()) {
+                const b = info.opp;
+                if (b.alive && this.canSee(a, b)) {
+                    info.x = b.x;
+                    info.z = b.z;
+                    info.visible = true;
+                    info.age = 0;
+                } else {
+                    info.visible = false;
+                    info.age += dt;
+                }
+            }
+        }
+    }
+
+    step(dt, tanksActive = true) {
+        this.updateIntel(dt);
+        if (tanksActive) {
+            for (const t of this.tanks) t.step(dt, this);
+            this.separate();
+        }
+        this.bullets.update(dt, this);
+    }
+
+    separate() {
+        const list = this.tanks;
+        for (let i = 0; i < list.length; i++) {
+            const a = list[i];
+            if (!a.alive) continue;
+            for (let j = i + 1; j < list.length; j++) {
+                const b = list[j];
+                if (!b.alive) continue;
+                const dx = b.x - a.x, dz = b.z - a.z, min = a.radius + b.radius;
+                const d2 = dx * dx + dz * dz;
+                if (d2 >= min * min || d2 < 1e-8) continue;
+                const d = Math.sqrt(d2), push = (min - d) / (2 * d);
+                a.x -= dx * push; a.z -= dz * push;
+                b.x += dx * push; b.z += dz * push;
+                this.arena.resolveCircle(a, a.radius);
+                this.arena.resolveCircle(b, b.radius);
+            }
+        }
+    }
+
+    hitTank(tank, owner, damage, dirX, dirZ, x, z, color) {
+        tank.damage(damage, dirX, dirZ, this);
+        this.events.emit('hit', tank, x, z, color);
+        if (!tank.alive) this.events.emit('death', tank, owner);
+    }
+
+    dispose() {
+        for (const t of this.tanks) t.model.dispose();
+        this.arena.dispose();
+        this.root.removeFromParent();
+    }
+}
