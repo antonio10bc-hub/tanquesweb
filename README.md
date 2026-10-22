@@ -36,13 +36,22 @@ cargado para que lo guarde, así que no hay lista de archivos que mantener a man
     quema la hierba y hace 4 de daño (también a quien la lanza).
 - **Hierba alta**: dentro solo te ven casi pegados y disparar te delata un instante. Se mueve al pasar.
 - **Muros rompibles**: aguantan 3 balas.
-- **Dos modos**: **Partida rápida** (duelo contra un rival) y **Supervivencia** (cada oleada trae un
-  enemigo más, hasta 8, de soldados, exploradores y brutos, todos con 2 de vida; recuperas 2 de vida
-  al superar cada oleada y se guarda tu récord).
+- **Tres modos**: **Partida rápida** (duelo contra un rival), **Campaña** y **Supervivencia** (cada
+  oleada trae un enemigo más, hasta 8, de soldados, exploradores y brutos, todos con 2 de vida;
+  recuperas 2 de vida al superar cada oleada y se guarda tu récord).
+- **Campaña**: un mapa voxel vertical que se recorre de abajo arriba, un mundo por temática (pradera,
+  playa, desierto, caramelo, nieve, ciudad, volcán, espacio), cada uno sobre su propio mar y unidos
+  por un camino de piedras. En cada mundo espera un **jefe**: un tanque gigante tematizado con su
+  ataque especial, que anuncia antes de lanzarlo (embestida, ola gigante que se esquiva detrás de un
+  muro, tormenta de arena con remolinos, lluvia de caramelos, carámbanos, drones, lluvia de lava,
+  láser que cortan los muros). A mitad de vida pasa a la **fase 2**: ruge, se enfada, va más rápido
+  y su ataque se vuelve más fuerte. Se desbloquean en orden; al ganar a los 8 se apartan las nubes
+  de lo alto del mapa y aparece el **mundo arcoíris** con el jefe secreto, PRISMA, que usa los
+  ataques de todos.
 - **Monedas y skins**: ganar una partida rápida da una moneda de oro (en supervivencia, una cada 3
   oleadas). En **Mi Tanque** se compran y equipan: 8 gorros voxel y el **tanque dorado** (aura,
   pilar de luz, chispas y balas de oro).
-- **Logros**: 14, con aviso al conseguirlos y pantalla propia con barras de progreso.
+- **Logros**: 17, con aviso al conseguirlos y pantalla propia con barras de progreso.
 - **Arquetipos de escenario**: cada partida elige uno (Arena clásica, Emboscada, Demolición, Fortaleza,
   Carreras, Fantasmas) que decide cuánto muro, qué materiales, cuánta hierba y qué objetos salen,
   y lo viste con uno de sus temas visuales (nieve, desierto, caramelo, volcán, playa, pradera,
@@ -70,15 +79,17 @@ public/src/
     pickups.js         objetos (vida, fuego, escudo, turbo, invisible, rebote, radar, bomba) y reglas
     skins.js           gorros y tanque dorado (precio, construcción voxel)
     achievements.js    logros
+    campaign.js        campaña: mundos, jefes (tanque, piezas, ataque, dificultad) y su arena
   core/                bucle y estados (Game), entrada, audio y música sintetizados, repetición,
                        ajustes guardados, vibración, eventos
   world/               simulación pura: World, Tank, Arena (colisión, visión, rutas), Bullets
+    Hazards.js         peligros de los jefes: impactos con aviso, charcos, olas y láseres
     MapGen.js          generador de arenas simétricas con semilla
     Pickups.js         aparición de objetos (uno a la vez, lejos de los tanques)
-  ai/                  cerebros: PlayerBrain, HunterBrain y su registro (brains.js)
-  render/              pipeline retro, cámara, modelo de tanque, partículas, marcadores
+  ai/                  cerebros: PlayerBrain, HunterBrain, BossBrain (+ bossAttacks.js) y su registro
+  render/              pipeline retro, cámara, modelo de tanque, partículas, marcadores, HazardView
   ui/                  capa DOM: Hud (menús, vida, avisos), Glossary (objetos), Garage (Mi Tanque),
-                       Trophies (logros)
+                       Trophies (logros), CampaignMap (el mapa de la campaña, en 3D)
 ```
 
 Principios:
@@ -129,6 +140,10 @@ y `pickups.kinds` con los objetos que salen y su peso.
 es una hazaña, su comprobación en `core/Achievements.js`.
 
 **Un tema nuevo**: copia uno de `content/themes.js` y cambia colores, `ambient` (clima) y `music`.
+
+**Un jefe nuevo**: una entrada en `WORLDS` de `content/campaign.js` (tanque con `deco`, `attack` y
+su tema). Si el ataque es nuevo, añádelo en `ai/bossAttacks.js` usando los peligros de
+`world/Hazards.js` (o uno nuevo, con su dibujo en `render/HazardView.js`).
 
 **Un objeto nuevo**: añade una entrada en `content/pickups.js` (con `heal` y/o `damageMult`, o un
 efecto nuevo que interpretes en `Tank.applyPickup`) y su modelo en `render/PickupView.js`.

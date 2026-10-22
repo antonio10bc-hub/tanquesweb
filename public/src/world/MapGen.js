@@ -31,6 +31,7 @@ const DEFAULTS = {
     bushSize: [2, 5],       // tiles por mancha
     mirrorChance: 0.5,      // probabilidad de añadir espejo izquierda/derecha
     spawnClear: 2,          // filas libres delante de cada salida
+    gap: 1,                 // anchura mínima de los pasillos (2 en las arenas de jefe: el boss es grande)
 };
 
 // PRNG con semilla (mulberry32): la misma semilla da el mismo mapa.
@@ -68,7 +69,7 @@ function tryGenerate(p, rng) {
 
     // Zonas reservadas: las salidas y unas filas delante de ellas.
     const reserved = (c, r) =>
-        Math.abs(c - mid) <= 2 && (r <= p.spawnClear || r >= rows - 1 - p.spawnClear);
+        Math.abs(c - mid) <= 1 + p.gap && (r <= p.spawnClear || r >= rows - 1 - p.spawnClear);
 
     const copies = (c, r) => {
         const out = [[c, r], [cols - 1 - c, rows - 1 - r]];
@@ -86,12 +87,13 @@ function tryGenerate(p, rng) {
             let ok = true;
             for (const [x, z] of cells) {
                 for (const [c, r] of copies(ox + x, oz + z)) {
-                    if (c < 2 || r < 2 || c > cols - 3 || r > rows - 3 || reserved(c, r)) { ok = false; break; }
+                    const g = p.gap;
+                    if (c < 1 + g || r < 1 + g || c > cols - 2 - g || r > rows - 2 - g || reserved(c, r)) { ok = false; break; }
                     set.set(r * cols + c, [c, r]);
                 }
                 if (!ok) break;
             }
-            if (!ok || !hasMargin(grid, set, cols, rows)) continue;
+            if (!ok || !hasMargin(grid, set, cols, rows, p.gap)) continue;
             const ch = pickWeighted(p.materials, rng);
             for (const [c, r] of set.values()) grid[r][c] = ch;
             break;
@@ -155,11 +157,11 @@ function orient(cells, rng) {
 }
 
 // Las copias de una pieza pueden tocarse entre sí (forman una figura simétrica),
-// pero deben quedar a 1 tile de cualquier otro obstáculo: siempre hay pasillo alrededor.
-function hasMargin(grid, set, cols, rows) {
+// pero deben quedar a "gap" tiles de cualquier otro obstáculo: siempre hay pasillo alrededor.
+function hasMargin(grid, set, cols, rows, gap = 1) {
     for (const [c, r] of set.values()) {
         if (grid[r][c] !== '.') return false;
-        for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+        for (let dr = -gap; dr <= gap; dr++) for (let dc = -gap; dc <= gap; dc++) {
             const nc = c + dc, nr = r + dr;
             if (set.has(nr * cols + nc)) continue;
             if (nr <= 0 || nc <= 0 || nr >= rows - 1 || nc >= cols - 1) continue; // el borde exterior sí puede rozar

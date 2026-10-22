@@ -29,6 +29,11 @@ hud.onPlay = () => {
     sfx.play('ui');
     game.startMatch(game.levelId, undefined, game.themeId);
 };
+document.getElementById('btn-campaign').addEventListener('click', () => {
+    sfx.unlock();
+    sfx.play('ui');
+    game.showCampaign();
+});
 document.getElementById('btn-survival').addEventListener('click', () => {
     sfx.unlock();
     sfx.play('ui');
@@ -43,7 +48,9 @@ hud.onAgain = () => {
 hud.onMenu = () => {
     sfx.play('ui');
     game.music.stop();
-    game.showMenu();
+    // Desde un jefe de la campaña se vuelve al mapa
+    if (game.mode === 'campaign') game.showCampaign();
+    else game.showMenu();
 };
 
 const achievements = new Achievements(game);

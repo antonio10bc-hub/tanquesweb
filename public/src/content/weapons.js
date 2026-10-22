@@ -18,4 +18,32 @@ export const WEAPONS = {
         size: 0.24,
         muzzle: 0.62,
     },
+    // Cañón de los jefes: balas más gordas, cargador de 4 y algo más de alcance
+    bossCannon: {
+        interval: 0.85,
+        magazine: 4,
+        reload: 2.4,
+        firstShotDelay: 0.15,
+        speed: 9,
+        damage: 1,
+        range: 13,
+        count: 1,
+        spread: 0.14,
+        size: 0.34,
+        muzzle: 1.15,
+    },
+    // Drones de la ROBOPATRULLA: disparan poco, molestan mucho
+    droneGun: {
+        interval: 1.4,
+        magazine: 2,
+        reload: 2.8,
+        firstShotDelay: 0.25,
+        speed: 9,
+        damage: 1,
+        range: 10,
+        count: 1,
+        spread: 0.14,
+        size: 0.2,
+        muzzle: 0.58,
+    },
 };

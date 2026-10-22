@@ -7,6 +7,7 @@ import { Arena } from './Arena.js';
 import { Tank } from './Tank.js';
 import { generateArena } from './MapGen.js';
 import { PickupSpawner } from './Pickups.js';
+import { Hazards } from './Hazards.js';
 
 // Una partida en curso: arena + tanques + reglas de visibilidad.
 // No sabe nada de HUD, sonido ni cámara: comunica lo que pasa con eventos.
@@ -24,6 +25,7 @@ export class World {
         this.arena.build(this.root, theme);
         this.tanks = [];
         this.nukes = []; // bombas en el aire
+        this.hazards = new Hazards(this); // ataques especiales de los jefes
         this.nextNukeId = 1;
         this.forceReveal = true;
 
@@ -44,7 +46,8 @@ export class World {
         if (spec.speed) def = { ...def, speed: spec.speed };
         at = at || this.arena.takeSpawn(spec.spawn);
         const tank = new Tank(def, team, at.x, at.z, createBrain(brainId, spec.params, this.ctx));
-        tank.model = new TankModel(def.palette, this.theme.outline, tank.weapon.magazine, skin);
+        const opts = def.boss ? { scale: def.scale, deco: def.deco, rainbow: def.rainbow, noBar: true } : {};
+        tank.model = new TankModel(def.palette, this.theme.outline, tank.weapon.magazine, skin, opts);
         tank.model.addTo(this.root);
         for (const other of this.tanks) {
             if (other.team === team) continue;
@@ -88,7 +91,8 @@ export class World {
         const dx = target.x - observer.x, dz = target.z - observer.z, d2 = dx * dx + dz * dz;
         if (target.cloak > 0) return d2 < s.cloakProximity ** 2;
         if (target.reveal > 0) return true;
-        const p = target.inBush ? s.bushProximity : s.proximity;
+        // Los tanques grandes (jefes) se ven desde más lejos
+        const p = (target.inBush ? s.bushProximity : s.proximity) + Math.max(0, target.radius - 0.36);
         return d2 < p * p;
     }
 
@@ -115,6 +119,8 @@ export class World {
         if (tanksActive) {
             for (const t of this.tanks) t.step(dt, this);
             this.separate();
+            this.rams();
+            this.hazards.step(dt);
             if (this.pickups) this.pickups.step(dt, this);
         }
         this.bullets.update(dt, this);
@@ -180,7 +186,27 @@ export class World {
         }
     }
 
-    // cause: 'bullet' | 'bounce' | 'nuke' (para los logros)
+    // Embestida: un jefe a la carga golpea una vez a cada rival con el que choca.
+    rams() {
+        for (const a of this.tanks) {
+            if (!a.alive || a.chargeT <= 0) continue;
+            a.rammed ||= new Set();
+            for (const b of this.tanks) {
+                if (!b.alive || b.team === a.team || a.rammed.has(b)) continue;
+                const dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz);
+                if (d > a.radius + b.radius + 0.12) continue;
+                a.rammed.add(b);
+                const ux = d > 0.01 ? dx / d : 0, uz = d > 0.01 ? dz / d : 1;
+                this.hitTank(b, a, 1, ux, uz, b.x, b.z, a.def.palette.accent, 'ram');
+                // El golpe lo aparta del camino
+                b.x += ux * 0.5;
+                b.z += uz * 0.5;
+                this.arena.resolveCircle(b, b.radius);
+            }
+        }
+    }
+
+    // cause: 'bullet' | 'bounce' | 'nuke' | 'ram' | 'hazard' (para los logros)
     hitTank(tank, owner, damage, dirX, dirZ, x, z, color, cause = 'bullet') {
         const dealt = tank.damage(damage, dirX, dirZ, this);
         if (!dealt) {

@@ -7,6 +7,7 @@ const fresh = () => ({
     owned: ['none'],     // skins compradas
     skin: 'none',        // skin equipada
     achievements: {},    // id -> fecha de desbloqueo
+    campaign: { beaten: [] }, // mundos de la campaña con el jefe derrotado
     stats: {
         wins: 0,
         streak: 0,          // victorias seguidas
@@ -14,6 +15,7 @@ const fresh = () => ({
         coinsEarned: 0,
         pickupKinds: [],    // tipos de objeto recogidos alguna vez
         bestWave: 0,        // récord de supervivencia
+        bosses: 0,          // jefes normales de la campaña derrotados (sin contar el secreto)
     },
 });
 
@@ -26,7 +28,11 @@ export const Profile = {
             const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
             if (saved) {
                 const base = fresh();
-                this.data = { ...base, ...saved, stats: { ...base.stats, ...(saved.stats || {}) } };
+                this.data = {
+                    ...base, ...saved,
+                    stats: { ...base.stats, ...(saved.stats || {}) },
+                    campaign: { ...base.campaign, ...(saved.campaign || {}) },
+                };
             }
         } catch {
             /* sin almacenamiento */
@@ -74,6 +80,18 @@ export const Profile = {
     equip(id) {
         if (!this.owns(id)) return false;
         this.data.skin = id;
+        this.save();
+        return true;
+    },
+
+    beaten(worldId) {
+        return this.data.campaign.beaten.includes(worldId);
+    },
+
+    // Jefe derrotado. Devuelve true si es la primera vez.
+    beat(worldId) {
+        if (this.beaten(worldId)) return false;
+        this.data.campaign.beaten.push(worldId);
         this.save();
         return true;
     },

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CONFIG } from '../config.js';
-import { LEVELS, THEMES, SURVIVAL, GOLD_SPARKS, getDef } from '../content/index.js';
+import { LEVELS, THEMES, SURVIVAL, GOLD_SPARKS, WORLD_BY_ID, getDef } from '../content/index.js';
 import { RetroRenderer } from '../render/RetroRenderer.js';
 import { CameraRig } from '../render/CameraRig.js';
 import { Particles } from '../render/Particles.js';
@@ -8,6 +8,9 @@ import { Shockwaves } from '../render/Shockwaves.js';
 import { Markers } from '../render/Markers.js';
 import { PickupView } from '../render/PickupView.js';
 import { NukeView } from '../render/NukeView.js';
+import { HazardView } from '../render/HazardView.js';
+import { weatherParticle } from '../render/weather.js';
+import { CampaignMap } from '../ui/CampaignMap.js';
 import { BulletSystem, FIRE as FLAMES } from '../world/Bullets.js';
 import { World } from '../world/World.js';
 import { EventBus } from './EventBus.js';
@@ -43,6 +46,7 @@ export class Game {
         this.markers = new Markers(this.scene);
         this.pickupView = new PickupView(this.scene);
         this.nukeView = new NukeView(this.scene);
+        this.hazardView = new HazardView(this.scene, this.particles);
         this.bullets = new BulletSystem(this.scene, this.events, this.particles);
         this.recorder = new ReplayRecorder(3);
 
@@ -61,7 +65,8 @@ export class Game {
         this.countdown = 0;
         this.result = false;
         this.paused = false;
-        this.mode = 'quick';   // 'quick' (partida rápida) | 'survival'
+        this.mode = 'quick';   // 'quick' (partida rápida) | 'survival' | 'campaign'
+        this.worldId = null;   // campaña: mundo cuyo jefe se está jugando
         this.endToken = 0;     // invalida la ceremonia de la moneda si empieza otra partida
         this.dropping = [];    // enemigos de oleada cayendo del cielo
 
@@ -77,6 +82,7 @@ export class Game {
         this.renderer.resize();
         this.bindEvents();
         this.bindUi();
+        this.campaign = new CampaignMap(this);
 
         this.last = performance.now();
         this.frame = this.frame.bind(this);
@@ -90,7 +96,8 @@ export class Game {
         hud.onQuit = () => {
             this.resume(true);
             this.music.stop();
-            this.showMenu();
+            if (this.mode === 'campaign') this.showCampaign();
+            else this.showMenu();
         };
         hud.settingsSource = Settings;
         hud.syncToggles(Settings);
@@ -105,7 +112,7 @@ export class Game {
         this.input.onMove = () => hud.showHint(false);
 
         window.addEventListener('keydown', (e) => {
-            if ((e.code === 'Enter' || e.code === 'Space') && (this.state === 'menu' || this.state === 'end')) {
+            if ((e.code === 'Enter' || e.code === 'Space') && (this.state === 'menu' || this.state === 'end') && !document.activeElement?.closest?.('button')) {
                 e.preventDefault();
                 this.sfx.unlock();
                 if (this.state === 'menu') this.startMatch(this.levelId, undefined, this.themeId);
@@ -131,7 +138,7 @@ export class Game {
 
     // ---------- Flujo ----------
     randomLevel() {
-        const all = Object.keys(LEVELS).filter((id) => !LEVELS[id].survival);
+        const all = Object.keys(LEVELS).filter((id) => !LEVELS[id].survival && !LEVELS[id].campaign);
         const ids = all.filter((id) => id !== this.levelId);
         return pick(ids.length ? ids : all);
     }
@@ -144,6 +151,7 @@ export class Game {
         this.waves.clear();
         this.markers.clear();
         this.nukeView.clear();
+        this.hazardView.clear();
 
         const def = getDef(LEVELS, levelId, 'nivel');
         this.themeId = themeId || pick(def.themes || [def.theme]);
@@ -157,6 +165,7 @@ export class Game {
         this.hemi.groundColor.setHex(theme.light.ground);
         this.hemi.intensity = theme.light.hemiIntensity;
         this.bullets.setOutline(theme.outline);
+        this.hazardView.setOutline(theme.outline);
 
         this.world = new World(def, theme, { events: this.events, bullets: this.bullets, input: this.input, seed, skin: Profile.data.skin });
         this.scene.add(this.world.root);
@@ -169,6 +178,8 @@ export class Game {
     }
 
     showMenu(levelId) {
+        this.campaign.show(false);
+        if (this.state === 'campaign') this.music.stop(0.3);
         this.load(levelId);
         this.setState('menu');
         this.world.forceReveal = true;
@@ -176,6 +187,7 @@ export class Game {
         this.hud.screen('menu');
         this.hud.showReplay(false);
         this.hud.ready();
+        this.hud.showBoss(null);
         this.rig.zoomTarget = 1.15;
         this.rig.focus(this.world.arena.cols / 2, this.world.arena.rows / 2);
         this.rig.snap();
@@ -184,7 +196,32 @@ export class Game {
     // "Otra vez": repite el modo de la última partida.
     again() {
         if (this.mode === 'survival') this.startSurvival();
+        else if (this.mode === 'campaign') this.startBoss(this.worldId);
         else this.startMatch();
+    }
+
+    // Campaña: el mapa de mundos. justBeaten anima el desbloqueo del siguiente.
+    showCampaign() {
+        this.endToken++;
+        this.paused = false;
+        this.music.stop(0.2);
+        this.bullets.clear();
+        this.particles.clear();
+        this.hazardView.clear();
+        this.setState('campaign');
+        this.input.setEnabled(false);
+        this.hud.screen('campaign');
+        this.hud.showBoss(null);
+        this.hud.showReplay(false);
+        this.campaign.open(this.justBeaten);
+        this.justBeaten = null;
+        if (Settings.music) this.music.start({ root: 60, scale: 'major', tempo: 104, lead: 'triangle' }, 7);
+    }
+
+    // Campaña: el combate contra el jefe de un mundo.
+    startBoss(worldId) {
+        this.worldId = worldId;
+        this.startMatch(`boss_${worldId}`);
     }
 
     startSurvival(seed, themeId) {
@@ -194,7 +231,10 @@ export class Game {
     startMatch(levelId, seed, themeId) {
         this.endToken++;
         this.load(levelId, seed, themeId);
-        this.mode = this.def.survival ? 'survival' : 'quick';
+        this.mode = this.def.survival ? 'survival' : this.def.campaign ? 'campaign' : 'quick';
+        this.boss = this.mode === 'campaign' ? this.world.enemies()[0] : null;
+        this.hud.showBoss(this.boss ? this.boss.def.name : null);
+        this.hud.endButtons('OTRA VEZ', this.mode === 'campaign' ? 'VER EL MAPA' : 'MENÚ PRINCIPAL');
         this.wave = 1;
         this.waveSize = this.world.enemies().length;
         this.waveClear = false;
@@ -213,7 +253,8 @@ export class Game {
         this.hud.screen('play');
         this.hud.showReplay(false);
         this.hud.showHint(true);
-        this.hud.stage(this.def.name, `${this.theme.name} · ${this.def.tagline}`);
+        if (this.boss) this.hud.stage(this.def.name, `JEFE DE ${WORLD_BY_ID[this.worldId].name} · ${this.def.tagline}`);
+        else this.hud.stage(this.def.name, `${this.theme.name} · ${this.def.tagline}`);
         this.rig.zoomTarget = 1.6;
         this.rig.yawTarget = 0.7;
         this.rig.focus(this.world.player.x, this.world.player.z);
@@ -264,6 +305,7 @@ export class Game {
 
     // Tras la cámara lenta, la repetición del golpe final (si hay grabación).
     startReplay() {
+        this.world.hazards.clear();
         if (this.recorder.duration < 0.5) return this.showEnd();
         this.setState('replay');
         this.timeScale = 1;
@@ -297,11 +339,23 @@ export class Game {
         this.hud.showHint(false);
         this.bullets.clear();
         this.world.nukes.length = 0;
+        this.world.hazards.clear();
         this.world.forceReveal = true;
         for (const t of this.world.tanks) t.alive = t.hp > 0;
         const p = this.world.player;
         const st = Profile.data.stats;
-        if (this.mode === 'survival') {
+        if (this.mode === 'campaign') {
+            const w = WORLD_BY_ID[this.worldId];
+            if (win) {
+                const first = Profile.beat(w.id);
+                this.justBeaten = first ? w.id : null;
+                st.bosses = Profile.data.campaign.beaten.filter((id) => !WORLD_BY_ID[id].secret).length;
+                Profile.save();
+                this.hud.showEnd(true, w.secret ? '¡HAS COMPLETADO LA CAMPAÑA!' : `${w.tank.name} HA CAÍDO`, '¡JEFE DERROTADO!');
+            } else {
+                this.hud.showEnd(false, '¡INTÉNTALO OTRA VEZ!');
+            }
+        } else if (this.mode === 'survival') {
             const reached = this.wave - (this.waveClear ? 0 : 1);
             const sub = this.newRecord ? '¡NUEVO RÉCORD!' : `RÉCORD: ${st.bestWave} OLEADAS`;
             const coins = this.runCoins ? ` · +${this.runCoins} MONEDA${this.runCoins > 1 ? 'S' : ''}` : '';
@@ -326,7 +380,7 @@ export class Game {
                 this.hud.showEnd(false, '¡A LA PRÓXIMA!');
             }
         }
-        this.events.emit('matchEnd', { win, mode: this.mode, wave: this.wave });
+        this.events.emit('matchEnd', { win, mode: this.mode, wave: this.wave, world: this.worldId });
         this.sfx.play(win ? 'win' : 'lose');
         if (win) this.particles.burst(p.x, 0.8, p.z, 90, CONFETTI, { speed: 4, up: 9, size: 0.14, ttl: 2.4, grav: 9 });
     }
@@ -342,6 +396,11 @@ export class Game {
             return;
         }
         this.time += dt;
+        if (this.state === 'campaign') {
+            this.input.update();
+            this.campaign.frame(dt);
+            return;
+        }
         let simDt = dt * this.timeScale;
         if (this.hitStop > 0) {
             this.hitStop -= dt;
@@ -376,6 +435,7 @@ export class Game {
                 this.updateDrops(dt);
                 if (!w.player.alive) this.endMatch(false);
                 else if (this.mode === 'survival') this.updateSurvival(dt);
+                else if (this.mode === 'campaign') { if (!this.boss.alive) this.endMatch(true); }
                 else if (w.aliveEnemies() === 0) this.endMatch(true);
                 break;
             case 'outro':
@@ -394,13 +454,14 @@ export class Game {
         this.hud.setHp('p', p.hp, p.maxHp);
         // Supervivencia: el panel del rival cuenta los enemigos que quedan en la oleada
         if (this.mode === 'survival') this.hud.setHp('e', w.aliveEnemies(), this.waveSize);
+        else if (this.boss) this.hud.bossHp(this.boss.hp / this.boss.maxHp, this.boss.angry, dt);
         else if (e) this.hud.setHp('e', e.hp, e.maxHp);
         let stealth = 'hidden';
         if (w.forceReveal || p.exposed) stealth = 'visible';
         else if (p.cloak > 0) stealth = 'cloak';
         else if (p.inBush) stealth = 'bush';
         this.hud.setStealth(stealth);
-        this.music.intensity = this.state === 'play' ? (p.hp <= 2 ? 1 : p.hp <= 3 ? 0.5 : 0) : 0;
+        this.music.intensity = this.state === 'play' ? (p.hp <= 2 || (this.boss && this.boss.angry) ? 1 : p.hp <= 3 ? 0.5 : 0) : 0;
     }
 
     // ---------- Supervivencia ----------
@@ -515,6 +576,7 @@ export class Game {
         const item = this.state === 'replay' ? null : w.pickups && w.pickups.current;
         this.pickupView.sync(item, w.pickups && w.pickups.rules, this.time);
         this.nukeView.sync(w.nukes, this.time);
+        this.hazardView.sync(w.hazards.list, this.time, dt, w.arena);
         // El objeto de la bala de fuego también echa llamas
         if (item && item.kind === 'power' && (this.itemFireT = (this.itemFireT || 0) - dt) <= 0) {
             this.itemFireT = 0.05;
@@ -543,25 +605,7 @@ export class Game {
             this.weatherAcc--;
             const x = this.rig.x + (Math.random() * 2 - 1) * (hw + 1);
             const z = this.rig.z + (Math.random() * 2 - 1) * (hd + 1);
-            const color = amb.colors[(Math.random() * amb.colors.length) | 0];
-            if (amb.kind === 'snow') {
-                this.particles.spawn(x, 5 + Math.random() * 2, z, 0.3 + Math.random() * 0.3, -1.4 - Math.random(), 0.1, 0.07 + Math.random() * 0.05, 4.5, color, 0);
-            } else if (amb.kind === 'leaves') {
-                this.particles.spawn(x, 5 + Math.random() * 2, z, 0.8 + Math.random() * 0.6, -1 - Math.random() * 0.5, 0.2, 0.1 + Math.random() * 0.05, 5, color, 0);
-            } else if (amb.kind === 'sparkle') {
-                this.particles.spawn(x, 0.05, z, 0, 0.4, 0, 0.06, 0.8, color, 0);
-            } else if (amb.kind === 'rain') {
-                this.particles.spawn(x, 6 + Math.random() * 2, z, -0.4, -10, 0.3, 0.05, 0.75, color, 0);
-            } else if (amb.kind === 'dust') {
-                this.particles.spawn(x - 3, 0.15 + Math.random(), z, 2.5 + Math.random() * 1.5, 0.1, 0.4, 0.05 + Math.random() * 0.04, 1.8, color, 0);
-            } else if (amb.kind === 'embers') {
-                this.particles.spawn(x, 0.05, z, (Math.random() - 0.5) * 0.4, 1 + Math.random() * 1.2, (Math.random() - 0.5) * 0.4, 0.05 + Math.random() * 0.05, 1.8, color, -0.3);
-            } else if (amb.kind === 'petals') {
-                this.particles.spawn(x, 4 + Math.random() * 2, z, 0.6 + Math.random() * 0.4, -0.6 - Math.random() * 0.3, 0.2, 0.07, 6, color, 0);
-            } else if (amb.kind === 'stars') {
-                // Por debajo del suelo: solo se ven sobre el "mar" del espacio, alrededor del asteroide
-                this.particles.spawn(x, -0.7, z, 0, 0, 0, 0.07 + Math.random() * 0.07, 1 + Math.random() * 1.5, color, 0);
-            }
+            weatherParticle(this.particles, amb.kind, x, z, amb.colors[(Math.random() * amb.colors.length) | 0]);
         }
     }
 
@@ -605,6 +649,12 @@ export class Game {
                 }
             }
             const shown = tank.viewFade > 0.4;
+            // Jefe enfadado (fase 2): echa humo por la cabeza
+            if (tank.angry && shown && Math.random() < dt * 14) {
+                const sc = tank.model.scale;
+                this.particles.spawn(tank.x + (Math.random() - 0.5) * 0.4 * sc, 1.05 * sc, tank.z + (Math.random() - 0.5) * 0.4 * sc,
+                    (Math.random() - 0.5) * 0.6, 1.6, (Math.random() - 0.5) * 0.6, 0.12 + Math.random() * 0.1, 0.7, Math.random() < 0.5 ? 0xffffff : 0xff6a6a, -1);
+            }
 
             // La hierba se mueve al pasar: la tuya siempre, la del rival solo si está cerca.
             if (playing && tank.inBush && tank.moving && (tank === player || Math.hypot(tank.x - player.x, tank.z - player.z) < 4)) {
@@ -786,11 +836,95 @@ export class Game {
         ev.on('nukeBoom', (n) => this.nukeFx(n));
 
         ev.on('death', (tank) => {
+            if (this.boss && tank.team !== 'player' && tank !== this.boss && this.fallen === this.boss) return;
             this.fallen = tank;
             this.hitStop = 0.12;
             this.deathFx(tank);
             vibrate(mine(tank) ? 'dead' : 'kill');
+            if (tank === this.boss) this.bossDeath(tank);
         });
+
+        this.bindBossEvents();
+    }
+
+    // ---------- Jefes ----------
+    bindBossEvents() {
+        const ev = this.events;
+        const SOUND = { charge: 'charge', wave: 'wave', storm: 'storm', ring: 'candy', icicles: 'whoosh', meteors: 'whoosh', summon: 'siren', laser: 'laser' };
+
+        ev.on('bossCast', (tank, a) => {
+            this.hud.callout(a.name);
+            this.sfx.play('warn');
+            vibrate('pickup');
+            const sc = tank.model.scale;
+            this.waves.spawn(tank.x, tank.z, 0xffffff, 1.4 * sc, a.cast);
+            this.particles.burst(tank.x, 0.4, tank.z, 16, [tank.def.palette.accent, 0xffffff], { speed: 2.5, up: 3, size: 0.12, ttl: 0.5, grav: 6 });
+        });
+
+        ev.on('bossAttack', (tank, a) => {
+            this.sfx.play(SOUND[a.id] || 'warn', this.panOf(tank.x));
+            this.rig.shake(0.3);
+            if (a.id === 'storm') {
+                this.particles.burst(tank.x, 0.6, tank.z, 60, [0xfff0c4, 0xf4d08a, 0xe9b46a], { speed: 5, up: 3, size: 0.2, ttl: 1.2, grav: 0 });
+                this.renderer.flash(0xf4d08a, 0.4);
+            }
+            if (a.id === 'summon') this.renderer.flash(0x2a6aff, 0.3);
+        });
+
+        ev.on('bossPhase', (tank) => {
+            const sc = tank.model.scale;
+            this.hud.banner('¡FASE 2!');
+            this.sfx.play('roar', this.panOf(tank.x));
+            this.rig.shake(1);
+            this.hitStop = 0.15;
+            this.renderer.flash(0xff2a2a, 0.55);
+            vibrate('nuke');
+            this.waves.spawn(tank.x, tank.z, 0xff2a2a, 3 * sc, 0.8);
+            this.waves.spawn(tank.x, tank.z, 0xffffff, 2 * sc, 0.5);
+            this.particles.burst(tank.x, 0.9 * sc, tank.z, 40, [0xff2a2a, 0xffffff, 0xff9a1f], { speed: 5, up: 6, size: 0.18, ttl: 0.9, grav: 10 });
+        });
+
+        ev.on('hazardBoom', (h) => {
+            const cols = h.style === 'meteor' ? FIRE.concat([0x3a2a30]) : [0xffffff, 0x9fefff, 0x6fd0ff];
+            this.particles.burst(h.x, 0.4, h.z, 26, cols, { speed: 4, up: 5, size: 0.16, ttl: 0.7, grav: 14 });
+            this.waves.spawn(h.x, h.z, h.color, h.r + 0.5, 0.4);
+            this.rig.shake(0.3);
+            this.sfx.play('crash', this.panOf(h.x));
+        });
+
+        ev.on('bossBump', (tank) => {
+            this.rig.shake(0.7);
+            this.sfx.play('drop', this.panOf(tank.x));
+            this.particles.burst(tank.x, 0.3, tank.z, 24, [this.theme.dust, 0xffffff], { speed: 4, up: 3, size: 0.18, ttl: 0.6, grav: 8 });
+        });
+
+        // ROBOPATRULLA: sus drones caen del cielo cerca de él
+        ev.on('summon', (boss, n, max) => {
+            const w = this.world;
+            const alive = w.tanks.filter((t) => t.alive && t.def.name === 'DRON').length;
+            for (let i = 0; i < Math.min(n, max - alive); i++) {
+                const at = w.arena.randomFloorNear(boss.x, boss.z, 1.6, 4) || w.farSpot(3);
+                const tank = w.spawn({ tank: 'drone', params: { dodge: 0.15 } }, 'enemy', 'hunter', at);
+                tank.model.dropY = 9;
+                tank.frozen = true;
+                tank.reveal = 1.5;
+                this.dropping.push({ tank, t: -i * 0.25 });
+            }
+        });
+    }
+
+    // El jefe cae: explosión enorme y sus drones se apagan con él.
+    bossDeath(boss) {
+        const sc = boss.model.scale;
+        this.particles.burst(boss.x, 0.8, boss.z, 80, FIRE.concat(CONFETTI), { speed: 7, up: 9, size: 0.26, ttl: 1.6, grav: 12 });
+        this.waves.spawn(boss.x, boss.z, 0xffffff, 4 * sc, 0.8);
+        this.renderer.flash(0xffffff, 1);
+        for (const t of this.world.tanks) {
+            if (t === boss || t.team === 'player' || !t.alive) continue;
+            t.hp = 0;
+            t.alive = false;
+            this.deathFx(t, false);
+        }
     }
 
     // La gran explosión: destello, hongo de fuego, ondas del tamaño del radio y quemadura.

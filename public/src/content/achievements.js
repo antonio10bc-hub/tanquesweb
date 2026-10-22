@@ -15,4 +15,7 @@ export const ACHIEVEMENTS = [
     { id: 'rich', name: 'HUCHA', desc: 'Consigue 5 monedas de oro.', progress: (s) => [s.coinsEarned, 5] },
     { id: 'fashion', name: 'A LA MODA', desc: 'Ponte un gorro en Mi Tanque.' },
     { id: 'golden', name: 'TODO ORO', desc: 'Equipa el tanque dorado.' },
+    { id: 'boss1', name: 'CAZAJEFES', desc: 'Derrota a tu primer jefe de la campaña.' },
+    { id: 'bosses', name: 'LEYENDA', desc: 'Derrota a los 8 jefes de la campaña.', progress: (s) => [s.bosses, 8] },
+    { id: 'prisma', name: 'MÁS ALLÁ DEL ARCOÍRIS', desc: 'Derrota al jefe secreto.' },
 ];

@@ -27,10 +27,14 @@ export class Achievements {
             Profile.data.stats.pickupKinds.push(item.kind);
             this.check();
         });
-        ev.on('matchEnd', ({ win, mode }) => {
+        ev.on('matchEnd', ({ win, mode, world }) => {
             if (mode === 'quick' && win) {
                 this.unlock('first_win');
                 if (!this.match.damaged) this.unlock('untouched');
+            }
+            if (mode === 'campaign' && win) {
+                this.unlock('boss1');
+                if (world === 'secret') this.unlock('prisma');
             }
             if (win && player().hp === 1) this.unlock('clutch');
             this.check();

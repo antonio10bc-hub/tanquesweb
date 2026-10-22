@@ -36,6 +36,11 @@ export class Tank {
         this.cloak = 0;
         this.radar = 0;
         this.inBush = false;
+        this.slowT = 0;      // pisando hielo o caramelo: va más lento mientras dure
+        this.slowMult = 1;
+        this.chargeT = 0;    // embestida de un jefe: corre mucho más durante este tiempo
+        this.chargeMult = 1;
+        this.angry = false;  // jefe en fase 2
         this.reloading = 0;
         this.reveal = 0;
         this.recoil = 0;
@@ -91,7 +96,8 @@ export class Tank {
 
         const w = this.weapon;
         if (this.moving) {
-            const speed = this.speed * (this.turbo > 0 ? this.speedMult : 1);
+            const speed = this.speed * (this.turbo > 0 ? this.speedMult : 1) *
+                (this.slowT > 0 ? this.slowMult : 1) * (this.chargeT > 0 ? this.chargeMult : 1);
             this.x += ix * speed * dt;
             this.z += iz * speed * dt;
             world.arena.resolveCircle(this, this.radius);
@@ -125,6 +131,8 @@ export class Tank {
         this.turbo = Math.max(0, this.turbo - dt);
         this.cloak = Math.max(0, this.cloak - dt);
         this.radar = Math.max(0, this.radar - dt);
+        this.slowT = Math.max(0, this.slowT - dt);
+        this.chargeT = Math.max(0, this.chargeT - dt);
         this.recoil = Math.max(0, this.recoil - dt * 5);
         this.flash = Math.max(0, this.flash - dt * 6);
     }

@@ -115,6 +115,20 @@ export class Sfx {
             case 'nuke': this.noise(1.8, 1, 700, pan); this.tone('sine', 110, 22, 1.6, 0.9, pan); this.noise(0.4, 0.8, 4000, pan); break;
             case 'coin': this.tone('square', 988, 988, 0.07, 0.14); this.tone('square', 1319, 1319, 0.2, 0.14, 0, 0.07); break;
             case 'achievement': this.seq('square', [784, 988, 1175, 1568], 0.07, 0.13, 0.14); this.seq('triangle', [392, 494, 587, 784], 0.07, 0.12, 0.14); break;
+            // Jefes
+            case 'warn': this.tone('square', 880, 880, 0.08, 0.14); this.tone('square', 660, 660, 0.08, 0.14, 0, 0.12); this.tone('square', 880, 880, 0.08, 0.14, 0, 0.24); break;
+            case 'roar': this.tone('sawtooth', 160, 50, 0.9, 0.35); this.tone('square', 110, 40, 0.9, 0.25, 0, 0.05); this.noise(0.8, 0.5, 900); break;
+            case 'charge': this.tone('sawtooth', 90, 260, 0.5, 0.25, pan); this.noise(0.5, 0.35, 1200, pan); break;
+            case 'wave': this.noise(1.6, 0.55, 2400); this.tone('sine', 220, 90, 1.4, 0.2); break;
+            case 'storm': this.noise(1.4, 0.45, 3200); this.tone('triangle', 300, 900, 0.9, 0.08); break;
+            case 'laser': this.tone('sawtooth', 1400, 300, 0.25, 0.16, pan); this.tone('square', 220, 220, 1.2, 0.08, pan, 0.2); break;
+            case 'siren': for (let i = 0; i < 3; i++) { this.tone('square', 700, 1100, 0.2, 0.1, 0, i * 0.4); this.tone('square', 1100, 700, 0.2, 0.1, 0, i * 0.4 + 0.2); } break;
+            case 'whoosh': this.tone('triangle', 1600, 200, 0.5, 0.12, pan); this.noise(0.4, 0.2, 5000, pan); break;
+            case 'crash': this.noise(0.5, 0.7, 1600, pan); this.tone('square', 180, 50, 0.3, 0.3, pan); break;
+            case 'candy': this.seq('square', [1047, 1319, 1568, 2093], 0.04, 0.1, 0.06); break;
+            case 'unlock': this.seq('square', [523, 659, 784, 1047, 1319], 0.08, 0.13, 0.14); this.seq('triangle', [262, 330, 392, 523, 659], 0.08, 0.12, 0.14); break;
+            case 'secret': this.seq('square', [523, 659, 784, 988, 1175, 1319, 1568, 2093], 0.09, 0.12, 0.18); this.seq('triangle', [262, 330, 392, 494, 587, 659, 784, 1047], 0.09, 0.12, 0.18); break;
+            case 'step': this.tone('square', 330, 200, 0.04, 0.06); break;
             case 'tick': this.tone('square', 440, 440, 0.12, 0.14); break;
             case 'go': this.seq('square', [880, 1175, 1760], 0.07, 0.14, 0.2); break;
             case 'ui': this.tone('square', 660, 1320, 0.09, 0.14); break;

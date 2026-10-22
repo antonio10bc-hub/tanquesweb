@@ -8,7 +8,9 @@ const PIP_GAP = 0.05;
 // Tanque voxel con ojitos. Solo es visual: la simulación vive en world/Tank.js.
 export class TankModel {
     // skin: entrada de content/skins.js (gorro y/o tanque dorado), opcional.
-    constructor(palette, outlineColor, magazine = 3, skin = null) {
+    // opts (jefes de la campaña): scale, deco (piezas temáticas), rainbow (cuerpo que cambia
+    // de color) y noBar (su vida va en la barra grande del HUD, no flotando).
+    constructor(palette, outlineColor, magazine = 3, skin = null, opts = {}) {
         this.skin = skin;
         if (skin && skin.palette) palette = { ...palette, ...skin.palette };
         this.fx = { fade: { value: 1 }, flash: { value: 0 } };
@@ -33,14 +35,16 @@ export class TankModel {
             for (const z of [-0.28, 0, 0.28]) this.part(this.body, 0.05, 0.12, 0.12, mat(palette.accent), sx * 1.42, 0.12, z, false);
         }
         // Casco
-        this.part(this.body, 0.5, 0.22, 0.72, mat(palette.body), 0, 0.31, 0);
+        const bodyMat = mat(palette.body);
+        this.bodyMat = bodyMat;
+        this.part(this.body, 0.5, 0.22, 0.72, bodyMat, 0, 0.31, 0);
         this.part(this.body, 0.54, 0.07, 0.18, mat(palette.accent), 0, 0.42, 0.24);
 
         // Torreta (gira hacia el objetivo)
         this.turret = new THREE.Group();
         this.turret.position.y = 0.42;
         this.body.add(this.turret);
-        this.part(this.turret, 0.44, 0.25, 0.42, mat(palette.body), 0, 0.12, -0.03);
+        this.part(this.turret, 0.44, 0.25, 0.42, bodyMat, 0, 0.12, -0.03);
         this.part(this.turret, 0.48, 0.07, 0.46, mat(palette.accent), 0, 0.27, -0.03);
 
         this.barrel = new THREE.Group();
@@ -58,6 +62,11 @@ export class TankModel {
             this.part(this.eyes, 0.11, 0.12, 0.03, white, sx, 0, 0, false);
             this.part(this.eyes, 0.05, 0.07, 0.02, pupil, sx + 0.015, -0.01, 0.02, false);
         }
+        // Cejas de enfado (fase 2 de los jefes)
+        this.brows = new THREE.Group();
+        this.brows.visible = false;
+        this.eyes.add(this.brows);
+        for (const sx of [-1, 1]) this.part(this.brows, 0.15, 0.04, 0.03, pupil, sx * 0.12, 0.085, 0.025, false).rotation.z = sx * 0.5;
 
         // Antena
         this.antenna = new THREE.Group();
@@ -76,6 +85,19 @@ export class TankModel {
             this.hatAnim = extra && extra.animate;
             this.antenna.visible = false;
         }
+
+        // Jefes: piezas temáticas sobre el casco y la torreta (sustituyen a la antena)
+        this.decoAnim = null;
+        if (opts.deco) {
+            const targets = { body: this.body, turret: this.turret };
+            const extra = opts.deco((target, w, h, d, color, x, y, z, outlined = true) => this.part(targets[target], w, h, d, mat(color), x, y, z, outlined));
+            this.decoAnim = extra && extra.animate;
+            this.antenna.visible = false;
+        }
+        this.rainbow = !!opts.rainbow;
+        this.noBar = !!opts.noBar;
+        this.scale = opts.scale || 1;
+        this.root.scale.setScalar(this.scale);
 
         // Tanque dorado: aura de cubitos en órbita y un halo en el suelo
         if (skin && skin.gold) {
@@ -203,6 +225,9 @@ export class TankModel {
         }
 
         if (this.hatAnim) this.hatAnim(this.t, moving);
+        if (this.decoAnim) this.decoAnim(this.t, moving);
+        if (this.rainbow) this.bodyMat.color.setHSL((this.t * 0.18) % 1, 0.85, 0.68);
+        this.brows.visible = !!tank.angry;
         let sheen = 0;
         if (this.aura) {
             this.aura.rotation.y = this.t * 2.2 - tank.yaw;
@@ -222,7 +247,7 @@ export class TankModel {
         this.root.visible = shown;
         this.shadow.visible = shown;
         this.shadow.position.set(tank.x, 0.012, tank.z);
-        this.shadow.scale.setScalar(1 / (1 + this.dropY * 0.25));
+        this.shadow.scale.setScalar(this.scale / (1 + this.dropY * 0.25));
         this.shadowMat.opacity = 0.3 * Math.min(1, fade * 1.5);
 
         const ratio = tank.hp / tank.maxHp;
@@ -230,7 +255,7 @@ export class TankModel {
         this.lastRatio = ratio;
         this.healPulse = Math.max(0, (this.healPulse || 0) - dt * 2.5);
         this.barRatio = damp(this.barRatio, ratio, this.barRatio < ratio ? 3 : 5, dt);
-        this.bar.visible = shown && fade > 0.4;
+        this.bar.visible = shown && fade > 0.4 && !this.noBar;
         this.bar.position.set(tank.x, 1.55 + this.dropY, tank.z);
         this.bar.quaternion.copy(camera.quaternion);
         // Daño: la barra cae al momento y un tramo blanco se vacía detrás.

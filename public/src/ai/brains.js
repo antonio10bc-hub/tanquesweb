@@ -1,5 +1,6 @@
 import { PlayerBrain } from './PlayerBrain.js';
 import { HunterBrain } from './HunterBrain.js';
+import { BossBrain } from './BossBrain.js';
 
 // Registro de cerebros. Un cerebro solo rellena tank.intent ({x, z}) cada paso;
 // las reglas (disparar al parar, visibilidad...) son iguales para todos.
@@ -7,6 +8,7 @@ import { HunterBrain } from './HunterBrain.js';
 export const BRAINS = {
     player: (params, ctx) => new PlayerBrain(ctx.input),
     hunter: (params) => new HunterBrain(params),
+    boss: (params) => new BossBrain(params),
 };
 
 export function createBrain(id, params, ctx) {

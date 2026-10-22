@@ -310,12 +310,18 @@ html, body {
 .menu-top { display: flex; flex-direction: column; align-items: center; gap: 18px; margin: auto 0; }
 .menu-row { display: flex; gap: 12px; }
 .play-col { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-.play-col .btn { width: min(300px, 82vw); }
+.play-col .btn { width: min(300px, 82vw); font-size: clamp(13px, 4.4vw, 18px); padding: 15px 14px; }
 .btn-alt {
     background: var(--pink);
     color: #fff;
     text-shadow: 2px 2px 0 var(--ink);
     box-shadow: 0 7px 0 var(--ink), inset 0 -6px 0 #c4245f, inset 0 4px 0 #ff8fbd;
+    animation: none;
+}
+.btn-camp {
+    background: var(--cyan);
+    color: var(--ink);
+    box-shadow: 0 7px 0 var(--ink), inset 0 -6px 0 #12a8a0, inset 0 4px 0 #a8fff8;
     animation: none;
 }
 .trophy-btn { display: flex; align-items: center; gap: 8px; }
@@ -700,6 +706,105 @@ html, body {
 @keyframes recBlink { 50% { opacity: .35; } }
 .replay-tag::before { content: '● '; color: #ff3e3e; }
 @keyframes barIn { from { height: 0; } }
+
+/* ---------- CAMPAÑA (interfaz sobre el mapa) ---------- */
+.campaign { position: fixed; inset: 0; z-index: 20; pointer-events: none; }
+.campaign > * { pointer-events: auto; }
+.corner-left { right: auto; left: 14px; }
+.camp-region {
+    position: absolute;
+    right: 14px;
+    top: max(14px, env(safe-area-inset-top));
+    transform: rotate(-2deg);
+    pointer-events: none;
+    font-size: 9px;
+    padding: 8px 10px;
+    color: var(--ink);
+    background: var(--yellow);
+    border: 3px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    white-space: nowrap;
+}
+.camp-card {
+    position: absolute;
+    left: 50%;
+    bottom: calc(max(14px, env(safe-area-inset-bottom)) + 4px);
+    transform: translateX(-50%);
+    width: min(360px, calc(100vw - 24px));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 12px 18px;
+    background: var(--ink);
+    border: 4px solid #fff;
+    box-shadow: 0 6px 0 rgba(27, 11, 51, .45);
+    text-align: center;
+}
+.camp-head { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.camp-world { font-size: 9px; color: var(--ink); background: var(--cyan); padding: 4px 6px; }
+.camp-status { font-size: 9px; color: var(--ink); background: var(--yellow); padding: 4px 6px; }
+.camp-boss { font-size: 20px; color: var(--yellow); text-shadow: 0 3px 0 var(--orange), 0 6px 0 #000; }
+.camp-tell { font-size: 8px; line-height: 1.7; color: #cfc8ea; min-height: 2.2em; }
+.camp-card .btn { font-size: 15px; padding: 13px 22px; }
+.camp-card.locked .camp-boss { color: #8e86a8; text-shadow: 0 3px 0 #000; }
+.camp-card.locked .btn { background: #8e86a8; box-shadow: 0 7px 0 var(--ink); animation: none; opacity: 1; cursor: default; }
+.camp-card.secret .camp-world { background: var(--pink); color: #fff; }
+.camp-card.secret:not(.locked) { border-color: var(--pink); }
+
+/* ---------- JEFES: BARRA DE VIDA Y AVISO DE ATAQUE ---------- */
+.bossbar {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--safe-top) + 58px);
+    transform: translateX(-50%);
+    width: min(330px, calc(100vw - 24px));
+    text-align: center;
+}
+.bb-name { font-size: 9px; margin-bottom: 5px; color: #fff; text-shadow: 2px 2px 0 var(--ink); }
+.bb-track {
+    position: relative;
+    height: 16px;
+    background: #3b2d6b;
+    border: 3px solid var(--ink);
+    box-shadow: 0 4px 0 rgba(27, 11, 51, .45), inset 0 3px 0 rgba(0, 0, 0, .35);
+}
+.bb-fill, .bb-trail { position: absolute; left: 0; top: 0; bottom: 0; }
+.bb-trail { background: #fff; }
+.bb-fill { background: var(--pink); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .25), inset 0 3px 0 rgba(255, 255, 255, .45); }
+.bb-mark { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 3px; margin-left: -1px; background: var(--ink); }
+.bossbar.angry .bb-fill { background: #ff2a2a; animation: bbAngry .4s steps(1) infinite; }
+.bossbar.angry .bb-name { color: #ff6a6a; }
+@keyframes bbAngry { 50% { background: #ff9a1f; } }
+.hud.boss-mode .stealth { top: calc(var(--safe-top) + 104px); }
+.hud.boss-mode .team-e { visibility: hidden; }
+
+.callout {
+    position: fixed;
+    left: 50%;
+    top: 24%;
+    z-index: 15;
+    transform: translateX(-50%);
+    padding: 9px 12px;
+    font-size: 13px;
+    color: #fff;
+    white-space: nowrap;
+    background: var(--pink);
+    border: 3px solid var(--ink);
+    box-shadow: 0 5px 0 var(--ink);
+    text-shadow: 2px 2px 0 var(--ink);
+    pointer-events: none;
+    opacity: 0;
+}
+.callout.show { animation: calloutPop 1.7s steps(1) forwards; }
+@keyframes calloutPop {
+    0% { opacity: 1; transform: translateX(-50%) scale(1.5); }
+    8% { transform: translateX(-50%) scale(1.15); }
+    16%, 85% { opacity: 1; transform: translateX(-50%) scale(1); }
+    20%, 30%, 40% { background: var(--yellow); color: var(--ink); text-shadow: none; }
+    25%, 35% { background: var(--pink); color: #fff; text-shadow: 2px 2px 0 var(--ink); }
+    100% { opacity: 0; }
+}
 
 /* ---------- BANNER ---------- */
 .banner {

@@ -8,6 +8,7 @@
 //  clouds                       color de las nubes (null: sin nubes)
 //  ambient                      clima: 'snow' | 'rain' | 'dust' | 'embers' | 'petals' | 'stars' | 'sparkle' | null
 //  music                        raíz MIDI, escala, tempo y timbre del secuenciador
+//  rainbow                      opcional: suelo y muros cambian de color sin parar (mundo secreto)
 export const THEMES = {
     snow: {
         name: 'NIEVE',
@@ -129,5 +130,22 @@ export const THEMES = {
         light: { sun: 0xe6e0ff, sky: 0xb0a0ff, ground: 0x2a1a6a, sunIntensity: 2.1, hemiIntensity: 1.3 },
         ambient: { kind: 'stars', colors: [0xffffff, 0xc8d4ff, 0xffe680], rate: 35 },
         music: { root: 50, scale: 'dorian', tempo: 104, lead: 'triangle' },
+    },
+    // Mundo secreto de la campaña: una pista de arcoíris flotando en el cielo de noche
+    rainbow: {
+        name: 'ARCOÍRIS',
+        sea: 0x1a0640, foam: 0xff8fd8, island: 0x7b5cff, outline: 0x12052e,
+        floor: [0xffffff, 0xf2eaff], floorJitter: 0,
+        dust: 0xffffff, scorch: 0x3a1a6b, clouds: 0xffd6f4,
+        walls: {
+            wall: { top: 0xffffff, side: 0xd8d0ff, height: 1.0 },
+            block: { top: 0xffffff, side: 0xd8d0ff, height: 0.6 },
+            crate: { top: 0xfff2fb, side: 0xff8fd8, height: 0.8 },
+        },
+        bush: [0xff6fb5, 0x6ff6ff, 0xffe03a, 0xb46bff, 0x7dff4a],
+        light: { sun: 0xffffff, sky: 0xf0e0ff, ground: 0x7b5cff, sunIntensity: 2.2, hemiIntensity: 1.3 },
+        ambient: { kind: 'sparkle', colors: [0xff3e8e, 0xffe03a, 0x23e0d6, 0x7b5cff, 0x7dff4a, 0xffffff], rate: 24 },
+        music: { root: 62, scale: 'major', tempo: 150, lead: 'square' },
+        rainbow: true,
     },
 };

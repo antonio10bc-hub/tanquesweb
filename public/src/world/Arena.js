@@ -258,6 +258,8 @@ export class Arena {
             floor.setColorAt(i, _c);
         });
         this.addAnimated(root, floor, floorTiles.map(({ c, r }) => ({ x: c + 0.5, y: -0.15, z: r + 0.5 })), cx, cz);
+        // Mundo arcoíris: el color de cada casilla se anima en update()
+        this.rainbow = theme.rainbow ? [{ mesh: floor, tiles: floorTiles, light: 0.8, sat: 0.6 }] : null;
 
         // Muros agrupados por estilo: una InstancedMesh + su contorno por estilo
         const byStyle = new Map();
@@ -278,6 +280,10 @@ export class Arena {
             const pos = tiles.map(({ c, r }) => ({ x: c + 0.5, y: h / 2, z: r + 0.5 }));
             const hullPos = tiles.map(({ c, r }) => this.hullFor(c, r, h, breakable));
             if (breakable) for (let k = 0; k < tiles.length; k++) mesh.setColorAt(k, _c.setRGB(1, 1, 1));
+            else if (this.rainbow) {
+                for (let k = 0; k < tiles.length; k++) mesh.setColorAt(k, _c.setRGB(1, 1, 1));
+                this.rainbow.push({ mesh, tiles, light: 0.62, sat: 0.85 });
+            }
             const meshAnim = this.addAnimated(root, mesh, pos, cx, cz, 0.25);
             const hullAnim = this.addAnimated(root, hull, hullPos, cx, cz, 0.25);
             tiles.forEach(({ c, r }, index) => {
@@ -434,6 +440,13 @@ export class Arena {
             if (p.kick) {
                 p.kick = Math.max(0, p.kick - dt * 6);
                 if (!intro) this.layout(ref.mesh, this.introT);
+            }
+        }
+        if (this.rainbow) {
+            // Arcoíris que avanza en diagonal por el suelo y los muros
+            for (const { mesh: m, tiles, light, sat } of this.rainbow) {
+                tiles.forEach(({ c, r }, i) => m.setColorAt(i, _c.setHSL((((c + r) * 0.055 - time * 0.12) % 1 + 1) % 1, sat, light)));
+                m.instanceColor.needsUpdate = true;
             }
         }
         const { mesh, pts } = this.foam;

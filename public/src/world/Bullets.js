@@ -36,7 +36,7 @@ export class BulletSystem {
         this.hull.material.color.setHex(color);
     }
 
-    spawn(owner, x, z, yaw, w, power = 1, bounce = 0) {
+    spawn(owner, x, z, yaw, w, power = 1, bounce = 0, color = null) {
         if (this.n >= this.max) return;
         const i = this.n++;
         this.x[i] = x;
@@ -52,7 +52,7 @@ export class BulletSystem {
         this.dmg[i] = w.damage * power;
         this.trail[i] = 0;
         this.owner[i] = owner;
-        this.color[i] = power > 1 ? POWER_COLOR : bounce > 0 ? BOUNCE_COLOR : owner.def.palette.bullet;
+        this.color[i] = color ?? (power > 1 ? POWER_COLOR : bounce > 0 ? BOUNCE_COLOR : owner.def.palette.bullet);
         if (bounce > 0) this.ttl[i] *= 1.6;
     }
 

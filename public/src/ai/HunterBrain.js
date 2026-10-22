@@ -174,9 +174,15 @@ export class HunterBrain {
         this.chasing = item.id;
     }
 
-    // Si cae una bomba encima, sal del círculo por el lado contrario al centro.
+    // Si cae una bomba encima (o algo de un jefe rival: una sombra que avisa, un charco, un
+    // remolino), sal del círculo por el lado contrario al centro.
     fleeNukes(tank, world) {
-        for (const n of world.nukes) {
+        const danger = world.nukes.map((n) => ({ x1: n.x1, z1: n.z1, radius: n.radius }));
+        for (const h of world.hazards.list) {
+            if (h.owner.team === tank.team) continue;
+            if (h.kind === 'strike' || (h.kind === 'zone' && (h.dmg || h.slow))) danger.push({ x1: h.x, z1: h.z, radius: h.r + 0.2 });
+        }
+        for (const n of danger) {
             const dx = tank.x - n.x1, dz = tank.z - n.z1, d = Math.hypot(dx, dz);
             if (d > n.radius + 0.6) continue;
             let ux = d > 0.05 ? dx / d : 1, uz = d > 0.05 ? dz / d : 0;

@@ -41,6 +41,7 @@ export class Hud {
         this.el.play.disabled = false;
         this.el.play.textContent = 'PARTIDA RÁPIDA';
         document.getElementById('btn-survival').disabled = false;
+        document.getElementById('btn-campaign').disabled = false;
     }
 
     // Ceremonia al ganar: la moneda aparece con un +1, vuela al contador (que muestra la cifra
@@ -202,7 +203,8 @@ export class Hud {
         if (name !== 'end') document.getElementById('coin-counter').classList.add('hidden');
         this.el.menu.classList.toggle('hidden', name !== 'menu');
         this.el.end.classList.toggle('hidden', name !== 'end');
-        this.el.hud.classList.toggle('hidden', name === 'menu');
+        this.el.hud.classList.toggle('hidden', name === 'menu' || name === 'campaign');
+        document.getElementById('campaign').classList.toggle('hidden', name !== 'campaign');
         this.el.pauseBtn.classList.toggle('hidden', name !== 'play');
     }
 
@@ -285,6 +287,44 @@ export class Hud {
         void b.offsetWidth; // reinicia la animación CSS
         b.textContent = text;
         b.className = `banner show ${kind}`;
+    }
+
+    // ---------- Jefes ----------
+    showBoss(name) {
+        const bar = document.getElementById('bossbar');
+        bar.classList.toggle('hidden', !name);
+        bar.classList.remove('angry');
+        this.el.hud.classList.toggle('boss-mode', !!name);
+        if (!name) return;
+        document.getElementById('bb-name').textContent = name;
+        this.bossRatio = this.bossTrail = 1;
+        this.bossHp(1, false, 0);
+    }
+
+    // Vida del jefe: la barra baja al momento y un tramo blanco se vacía detrás.
+    bossHp(ratio, angry, dt) {
+        this.bossTrail = ratio < this.bossTrail ? Math.max(ratio, this.bossTrail - dt * 0.6) : ratio;
+        const key = `${ratio.toFixed(3)}|${this.bossTrail.toFixed(3)}|${angry}`;
+        if (key === this.bossKey) return;
+        this.bossKey = key;
+        document.getElementById('bb-fill').style.width = `${ratio * 100}%`;
+        document.getElementById('bb-trail').style.width = `${this.bossTrail * 100}%`;
+        document.getElementById('bossbar').classList.toggle('angry', angry);
+    }
+
+    // Aviso del ataque especial que viene ("¡OLA GIGANTE!")
+    callout(text) {
+        const c = document.getElementById('callout');
+        c.className = 'callout';
+        void c.offsetWidth;
+        c.textContent = text;
+        c.className = 'callout show';
+    }
+
+    // Textos de los botones del final (la campaña vuelve al mapa en vez de al menú)
+    endButtons(again, menu) {
+        this.el.again.textContent = again;
+        this.el.endMenu.textContent = menu;
     }
 
     // title: opcional (supervivencia muestra las oleadas en lugar de VICTORIA/DERROTA)
