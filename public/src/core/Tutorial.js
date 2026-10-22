@@ -8,8 +8,8 @@ import { vibrate } from './Haptics.js';
 //   1 moverse · 2 disparar al pararse (y que eso te delata / recarga) · 3 esconderse
 //   4 coger un objeto · 5 el muñeco despierta: primer combate de verdad
 const GOAL = { x: 9.5, z: 3.5 };   // marca a la que hay que llegar
-// El objeto sale en el arbusto contrario al que te hayas metido
-const ITEM_LEFT = { x: 2.5, z: 4.5 }, ITEM_RIGHT = { x: 10.5, z: 4.5 };
+// El objeto sale junto al arbusto contrario al que te hayas metido (fuera, para que se vea bien)
+const ITEM_LEFT = { x: 3.5, z: 4.5 }, ITEM_RIGHT = { x: 9.5, z: 4.5 };
 
 
 const STEPS = [
