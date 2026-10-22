@@ -36,9 +36,9 @@ cargado para que lo guarde, así que no hay lista de archivos que mantener a man
     quema la hierba y hace 4 de daño (también a quien la lanza).
 - **Hierba alta**: dentro solo te ven casi pegados y disparar te delata un instante. Se mueve al pasar.
 - **Muros rompibles**: aguantan 3 balas.
-- **Dos modos**: **Partida rápida** (duelo contra un rival) y **Supervivencia** (oleadas cada vez
-  mayores de soldados, exploradores y brutos; recuperas 2 de vida al superar cada oleada y se guarda
-  tu récord).
+- **Dos modos**: **Partida rápida** (duelo contra un rival) y **Supervivencia** (cada oleada trae un
+  enemigo más, hasta 8, de soldados, exploradores y brutos, todos con 2 de vida; recuperas 2 de vida
+  al superar cada oleada y se guarda tu récord).
 - **Monedas y skins**: ganar una partida rápida da una moneda de oro (en supervivencia, una cada 3
   oleadas). En **Mi Tanque** se compran y equipan: 8 gorros voxel y el **tanque dorado** (aura,
   pilar de luz, chispas y balas de oro).

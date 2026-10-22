@@ -90,23 +90,27 @@ LEVELS.supervivencia = {
     pickups: { kinds: { heal: 3, power: 2, shield: 2, turbo: 1, cloak: 1, bounce: 1, radar: 1, nuke: 1 }, lifetime: 6 },
     map: FALLBACK_MAP,
     player: { tank: 'hero', spawn: 'P' },
-    enemies: [{ tank: 'grunt', spawn: 'E', brain: 'hunter', params: { dodge: 0.25 } }],
+    enemies: [{ tank: 'grunt', spawn: 'E', brain: 'hunter', hp: 2, params: { dodge: 0.25 } }],
 };
 
 // Oleadas: cuántos enemigos y de qué tipo. La 1 es la del arquetipo (un soldado).
+// Todos los enemigos de supervivencia tienen 2 de vida: la gracia es destruir a muchos,
+// no un duelo largo. Cada oleada trae uno más, hasta el tope.
 export const SURVIVAL = {
     heal: 2,          // vida que recuperas al superar una oleada
     coinEvery: 3,     // una moneda de oro cada 3 oleadas superadas
     pause: 2.4,       // segundos de respiro entre oleadas
     minSpawnDist: 6,  // los nuevos enemigos aparecen lejos de ti
+    enemyHp: 2,       // vida de cada enemigo, sea del tipo que sea
+    maxEnemies: 8,    // tope de enemigos por oleada (más no caben con sentido en la arena)
     wave(n) {
-        const count = Math.min(1 + Math.floor(n / 2), 5);
+        const count = Math.min(n, this.maxEnemies);
         const out = [];
         for (let i = 0; i < count; i++) {
             let tank = 'grunt';
             if (n >= 3 && i % 3 === 1) tank = 'scout';
             if (n >= 5 && i % 3 === 2) tank = 'brute';
-            out.push({ tank, brain: 'hunter', params: { dodge: Math.min(0.2 + n * 0.05, 0.7) } });
+            out.push({ tank, brain: 'hunter', hp: this.enemyHp, params: { dodge: Math.min(0.2 + n * 0.05, 0.7) } });
         }
         return out;
     },
