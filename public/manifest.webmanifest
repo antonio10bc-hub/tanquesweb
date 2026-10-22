@@ -1,6 +1,6 @@
 {
-  "name": "Tanques Invisibles",
-  "short_name": "Tanques",
+  "name": "Tank-less",
+  "short_name": "Tank-less",
   "description": "Duelo de tanques con sigilo: muévete y eres invisible, para y disparas solo, pero disparar te delata.",
   "start_url": "./",
   "scope": "./",

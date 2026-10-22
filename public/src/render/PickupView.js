@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { box, toon, outline, OUTLINE } from './materials.js';
 import { easeOutBack } from '../core/math.js';
+import { buildBomb } from './NukeView.js';
 
 // Modelo voxel flotante de cada objeto. Se construyen una vez por tipo y se reutilizan.
 // Cada constructor puede devolver piezas a animar ({ flames }).
@@ -55,6 +56,10 @@ const BUILDERS = {
         add(0.28, 0.5, 0.28, def.color, 0, 0, 0, false);
         add(0.28, 0.28, 0.5, def.color, 0, 0, 0, false);
         add(0.1, 0.1, 0.1, def.accent, -0.1, 0.12, 0.22, false);
+    },
+    // Bomba nuclear: cuerpo negro con franja y aletas amarillas
+    nuke(add, def) {
+        buildBomb(add, def);
     },
     // Pantalla de radar con mira y un "blip"
     radar(add, def) {

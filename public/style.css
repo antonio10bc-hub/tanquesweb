@@ -64,7 +64,7 @@ html, body {
 
 .logo {
     margin: 0;
-    font-size: clamp(30px, 11vw, 76px);
+    font-size: clamp(26px, 9.2vw, 72px);
     letter-spacing: 2px;
     line-height: 1;
 }
@@ -84,23 +84,16 @@ html, body {
 .logo .ch:nth-child(7n+6) { color: var(--purple); animation-delay: .5s; }
 .logo .ch:nth-child(7n+7) { color: var(--yellow); animation-delay: .6s; }
 
-/* "INVISIBLES": más pequeño, pálido y con letras que se desvanecen por turnos */
-.logo .ghost { margin-top: 14px; font-size: .58em; letter-spacing: 1px; }
-.logo .ghost .ch {
+/* "-LESS": pálido y con letras que se desvanecen por turnos (los tanques sin ver) */
+.logo .ch.ghost {
     color: #e2dcff;
     animation: hop 1.6s steps(6) infinite, vanish 2.4s steps(4) infinite;
 }
-.logo .ghost .ch:nth-child(n) { color: #e2dcff; }
-.logo .ghost .ch:nth-child(1) { animation-delay: 0s, 0s; }
-.logo .ghost .ch:nth-child(2) { animation-delay: .1s, .15s; }
-.logo .ghost .ch:nth-child(3) { animation-delay: .2s, .3s; }
-.logo .ghost .ch:nth-child(4) { animation-delay: .3s, .45s; }
-.logo .ghost .ch:nth-child(5) { animation-delay: .4s, .6s; }
-.logo .ghost .ch:nth-child(6) { animation-delay: .5s, .75s; }
-.logo .ghost .ch:nth-child(7) { animation-delay: .6s, .9s; }
-.logo .ghost .ch:nth-child(8) { animation-delay: .7s, 1.05s; }
-.logo .ghost .ch:nth-child(9) { animation-delay: .8s, 1.2s; }
-.logo .ghost .ch:nth-child(10) { animation-delay: .9s, 1.35s; }
+.logo .ch.ghost:nth-child(5) { animation-delay: .4s, 0s; }
+.logo .ch.ghost:nth-child(6) { animation-delay: .5s, .2s; }
+.logo .ch.ghost:nth-child(7) { animation-delay: .6s, .4s; }
+.logo .ch.ghost:nth-child(8) { animation-delay: .7s, .6s; }
+.logo .ch.ghost:nth-child(9) { animation-delay: .8s, .8s; }
 @keyframes vanish {
     0%, 70%, 100% { opacity: 1; }
     80%, 90% { opacity: .2; }
@@ -282,7 +275,7 @@ html, body {
     image-rendering: pixelated;
 }
 
-.glossary { z-index: 25; gap: 14px; background-color: rgba(27, 11, 51, .55); }
+.glossary { z-index: 25; gap: 14px; background-color: rgba(27, 11, 51, .92); }
 .glossary-list {
     width: min(460px, 100%);
     max-height: 62vh;

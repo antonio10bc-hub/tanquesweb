@@ -7,6 +7,7 @@ import { Particles } from '../render/Particles.js';
 import { Shockwaves } from '../render/Shockwaves.js';
 import { Markers } from '../render/Markers.js';
 import { PickupView } from '../render/PickupView.js';
+import { NukeView } from '../render/NukeView.js';
 import { BulletSystem, FIRE as FLAMES } from '../world/Bullets.js';
 import { World } from '../world/World.js';
 import { EventBus } from './EventBus.js';
@@ -20,6 +21,7 @@ const CONFETTI = [0xffe03a, 0x23e0d6, 0xff3e8e, 0xb6ff5c, 0x7b5cff, 0xffffff];
 const FIRE = [0xffe03a, 0xff9a1f, 0xffffff, 0xff3e3e];
 const SPARKS = [0xff4fd8, 0xffffff, 0xffb3f0];
 const TURBO = [0x00e5ff, 0xffffff, 0x8af6ff];
+const NUKE = [0xffe600, 0x1b0b33, 0xffffff];
 const REPLAY = { length: 2.2, speed: 0.45 };
 
 // Orquesta todo: bucle, estados de partida, cámara, efectos, música y HUD.
@@ -39,6 +41,7 @@ export class Game {
         this.waves = new Shockwaves(this.scene);
         this.markers = new Markers(this.scene);
         this.pickupView = new PickupView(this.scene);
+        this.nukeView = new NukeView(this.scene);
         this.bullets = new BulletSystem(this.scene, this.events, this.particles);
         this.recorder = new ReplayRecorder(3);
 
@@ -126,6 +129,7 @@ export class Game {
         this.particles.clear();
         this.waves.clear();
         this.markers.clear();
+        this.nukeView.clear();
 
         const def = getDef(LEVELS, levelId, 'nivel');
         this.themeId = themeId || pick(def.themes || [def.theme]);
@@ -234,11 +238,15 @@ export class Game {
         this.replayLen = Math.min(REPLAY.length, this.recorder.duration);
         this.replayFrom = this.recorder.duration - this.replayLen;
         this.replayAlive = this.world.tanks.map(() => true);
+        this.replayNukes = new Map();
     }
 
     updateReplay() {
         const t = Math.min(this.stateTime * REPLAY.speed, this.replayLen);
         this.recorder.apply(this.replayFrom + t, this.world, this.bullets);
+        const live = new Set(this.world.nukes.map((n) => n.id));
+        for (const [id, n] of this.replayNukes) if (!live.has(id)) { this.nukeFx(n, false); this.replayNukes.delete(id); }
+        for (const n of this.world.nukes) this.replayNukes.set(n.id, n);
         this.world.tanks.forEach((tank, i) => {
             if (this.replayAlive[i] && !tank.alive) this.deathFx(tank, false);
             this.replayAlive[i] = tank.alive;
@@ -254,6 +262,7 @@ export class Game {
         this.hud.showReplay(false);
         this.hud.showHint(false);
         this.bullets.clear();
+        this.world.nukes.length = 0;
         this.world.forceReveal = true;
         for (const t of this.world.tanks) t.alive = t.hp > 0;
         const p = this.world.player;
@@ -374,6 +383,7 @@ export class Game {
         this.syncTanks(dt);
         const item = this.state === 'replay' ? null : w.pickups && w.pickups.current;
         this.pickupView.sync(item, w.pickups && w.pickups.rules, this.time);
+        this.nukeView.sync(w.nukes, this.time);
         // El objeto de la bala de fuego también echa llamas
         if (item && item.kind === 'power' && (this.itemFireT = (this.itemFireT || 0) - dt) <= 0) {
             this.itemFireT = 0.05;
@@ -461,7 +471,7 @@ export class Game {
             }
 
             // Siguiente bala cargada: fuego o chispas rosas en la boca del cañón
-            const loaded = tank.damageMult > 1 ? FLAMES : tank.bounceNext > 0 ? SPARKS : null;
+            const loaded = tank.nukeNext ? NUKE : tank.damageMult > 1 ? FLAMES : tank.bounceNext > 0 ? SPARKS : null;
             if (loaded && shown) {
                 tank.fireT = (tank.fireT || 0) - dt;
                 if (tank.fireT <= 0) {
@@ -556,7 +566,7 @@ export class Game {
             this.waves.spawn(item.x, item.z, d.color, 1.6, 0.4);
             if (me || tank.viewFade > 0.5) this.pickupFx(tank, item);
             if (me) {
-                const SOUNDS = { heal: 'heal', power: 'power', shield: 'shieldGet', turbo: 'turbo', cloak: 'cloak', bounce: 'bounceGet', radar: 'radar' };
+                const SOUNDS = { heal: 'heal', power: 'power', shield: 'shieldGet', turbo: 'turbo', cloak: 'cloak', bounce: 'bounceGet', radar: 'radar', nuke: 'nukeGet' };
                 this.sfx.play(SOUNDS[item.kind] || 'heal');
                 this.renderer.flash(d.color, 0.25);
                 vibrate('pickup');
@@ -612,12 +622,45 @@ export class Game {
             this.sfx.play(me ? 'hurt' : 'hit', this.panOf(x));
         });
 
+        ev.on('nukeLaunch', (n) => {
+            this.particles.burst(n.x0, 0.5, n.z0, 16, [0xffffff, 0xffe600, 0x9a9a9a], { speed: 2, up: 3, size: 0.16, ttl: 0.6, grav: -1 });
+            this.rig.shake(0.25);
+            this.sfx.play('nukeLaunch', this.panOf(n.x0));
+        });
+
+        ev.on('nukeBoom', (n) => this.nukeFx(n));
+
         ev.on('death', (tank) => {
             this.fallen = tank;
             this.hitStop = 0.12;
             this.deathFx(tank);
             vibrate(mine(tank) ? 'dead' : 'kill');
         });
+    }
+
+    // La gran explosión: destello, hongo de fuego, ondas del tamaño del radio y quemadura.
+    nukeFx(n, scorch = true) {
+        const { x1: x, z1: z, radius: R } = n;
+        this.particles.burst(x, 0.3, z, 90, FIRE, { speed: R * 2.4, up: 3, size: 0.26, ttl: 0.9, grav: 2 });
+        this.particles.burst(x, 0.5, z, 60, [0xffe600, 0xff9a1f, 0xffffff], { speed: 1.2, up: 9, size: 0.34, ttl: 1.2, grav: -2 });
+        this.particles.burst(x, 3.5, z, 40, [0x5a4a6a, 0x8a7a9a, 0xff9a1f], { speed: 2.2, up: 1.5, size: 0.4, ttl: 1.6, grav: -0.5 });
+        this.waves.spawn(x, z, 0xffffff, R + 0.4, 0.45);
+        this.waves.spawn(x, z, 0xffe600, R, 0.7);
+        this.waves.spawn(x, z, 0xff3e1f, R * 1.4, 1);
+        this.rig.shake(1);
+        this.renderer.flash(0xffffff, 0.95);
+        this.hitStop = Math.max(this.hitStop, 0.08);
+        this.sfx.play('nuke', this.panOf(x));
+        vibrate('nuke');
+        if (!scorch) return;
+        const mark = new THREE.Mesh(
+            new THREE.CircleGeometry(R * 0.9, 14),
+            new THREE.MeshBasicMaterial({ color: this.theme.scorch, transparent: true, opacity: 0.45, depthWrite: false })
+        );
+        mark.position.set(x, 0.013, z);
+        mark.rotation.set(-Math.PI / 2, 0, Math.random() * Math.PI);
+        this.world.root.add(mark);
+        this.world.arena.trash.push(mark.material, mark.geometry);
     }
 
     // Efecto visual al coger cada tipo de objeto.
@@ -645,6 +688,9 @@ export class Game {
                 break;
             case 'radar':
                 this.waves.spawn(x, z, d.color, 9, 0.9);
+                break;
+            case 'nuke':
+                this.particles.burst(x, 0.6, z, 24, NUKE, { speed: 2.5, up: 4, size: 0.12, ttl: 0.6, grav: 6 });
                 break;
         }
     }

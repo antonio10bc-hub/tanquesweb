@@ -90,6 +90,9 @@ export class Sfx {
             case 'bounceGet': this.seq('square', [523, 784, 659, 1047], 0.05, 0.12, 0.08); break;
             case 'radar': this.tone('sine', 1320, 1320, 0.08, 0.15); this.tone('sine', 1320, 1320, 0.08, 0.1, 0, 0.25); break;
             case 'pause': this.tone('square', 660, 440, 0.08, 0.12); break;
+            case 'nukeGet': this.seq('square', [196, 262, 330, 392, 523], 0.06, 0.14, 0.12); break;
+            case 'nukeLaunch': this.tone('square', 220, 90, 0.25, 0.25, pan); this.tone('sine', 1400, 300, 1.35, 0.12, pan, 0.05); break;
+            case 'nuke': this.noise(1.8, 1, 700, pan); this.tone('sine', 110, 22, 1.6, 0.9, pan); this.noise(0.4, 0.8, 4000, pan); break;
             case 'tick': this.tone('square', 440, 440, 0.12, 0.14); break;
             case 'go': this.seq('square', [880, 1175, 1760], 0.07, 0.14, 0.2); break;
             case 'ui': this.tone('square', 660, 1320, 0.09, 0.14); break;

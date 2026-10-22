@@ -29,6 +29,7 @@ export class Tank {
         this.ammo = this.weapon.magazine;
         this.damageMult = 1; // >1 tras coger un potenciador: se gasta en el siguiente disparo
         this.bounceNext = 0; // rebotes de la siguiente bala
+        this.nukeNext = null; // { radius, damage, flight } si el siguiente disparo es la bomba
         this.shield = 0;     // impactos que absorbe
         this.turbo = 0;      // segundos restantes de cada efecto temporal
         this.speedMult = 1;
@@ -132,11 +133,20 @@ export class Tank {
         const w = this.weapon;
         const mx = this.x + Math.sin(this.aimYaw) * w.muzzle;
         const mz = this.z + Math.cos(this.aimYaw) * w.muzzle;
-        const power = this.damageMult, bounce = this.bounceNext;
-        this.damageMult = 1;
-        this.bounceNext = 0;
-        for (let k = 0; k < w.count; k++) {
-            world.bullets.spawn(this, mx, mz, this.aimYaw + (k - (w.count - 1) / 2) * w.spread, w, power, bounce);
+        if (this.nukeNext) {
+            // La bomba va a la última posición conocida del rival (o unos tiles al frente)
+            const t = this.pickTarget();
+            const tx = t ? t.x : this.x + Math.sin(this.aimYaw) * 5;
+            const tz = t ? t.z : this.z + Math.cos(this.aimYaw) * 5;
+            world.launchNuke(this, mx, mz, tx, tz, this.nukeNext);
+            this.nukeNext = null;
+        } else {
+            const power = this.damageMult, bounce = this.bounceNext;
+            this.damageMult = 1;
+            this.bounceNext = 0;
+            for (let k = 0; k < w.count; k++) {
+                world.bullets.spawn(this, mx, mz, this.aimYaw + (k - (w.count - 1) / 2) * w.spread, w, power, bounce);
+            }
         }
         const s = CONFIG.stealth;
         this.reveal = Math.max(this.reveal, this.inBush ? s.bushRevealTime : s.revealTime);
@@ -157,6 +167,7 @@ export class Tank {
         if (def.cloak) this.cloak = def.cloak;
         if (def.bounce) this.bounceNext = Math.max(this.bounceNext, def.bounce);
         if (def.radar) this.radar = def.radar;
+        if (def.nuke) this.nukeNext = def.nuke;
     }
 
     // Devuelve el daño realmente recibido (0 si lo para el escudo).

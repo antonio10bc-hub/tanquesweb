@@ -52,14 +52,14 @@ export const LEVELS = {
         tagline: 'TODO SE ROMPE',
         themes: ['city', 'snow'],
         generator: { pieces: [6, 9], density: [0.16, 0.32], materials: { '#': 1, D: 5 }, bushes: [0, 1] },
-        pickups: { kinds: { power: 3, bounce: 2, heal: 1 } },
+        pickups: { kinds: { power: 3, bounce: 2, heal: 1, nuke: 1 } },
     },
     fortaleza: {
         name: 'FORTALEZA',
         tagline: 'MUROS Y ESCUDOS',
         themes: ['mountain', 'snow', 'city'],
         generator: { pieces: [6, 9], density: [0.18, 0.32], materials: { '#': 4, B: 1, D: 2 }, bushes: [0, 2] },
-        pickups: { kinds: { shield: 2, bounce: 2, heal: 1 } },
+        pickups: { kinds: { shield: 2, bounce: 2, heal: 1, nuke: 1 } },
     },
     carreras: {
         name: 'CARRERAS',

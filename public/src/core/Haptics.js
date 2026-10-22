@@ -8,6 +8,7 @@ const PATTERNS = {
     kill: [40, 40, 90],
     dead: [220],
     crate: [12],
+    nuke: [120, 60, 220],
 };
 
 export function vibrate(name) {

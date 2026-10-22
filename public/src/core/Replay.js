@@ -30,6 +30,7 @@ export class ReplayRecorder {
                 for (const f of TANK_FIELDS) s[f] = t[f];
                 return s;
             }),
+            nukes: world.nukes.map((n) => ({ ...n })),
             bullets: {
                 n: bullets.n,
                 x: bullets.x.slice(0, bullets.n),
@@ -59,6 +60,7 @@ export class ReplayRecorder {
             tank.alive = s.alive;
             tank.moving = s.moving;
         });
+        world.nukes = f.nukes.map((n) => ({ ...n }));
         const b = f.bullets;
         bullets.n = b.n;
         bullets.x.set(b.x);

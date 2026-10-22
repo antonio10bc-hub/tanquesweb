@@ -92,6 +92,21 @@ export class Arena {
         return 'broken';
     }
 
+    // La hierba de este tile desaparece (la quema una explosión). Devuelve si había.
+    burnBush(c, r) {
+        if (c < 0 || r < 0 || c >= this.cols || r >= this.rows) return false;
+        const i = r * this.cols + c;
+        if (!this.bush[i]) return false;
+        this.bush[i] = 0;
+        if (this.bushView) {
+            for (const entry of this.bushView) {
+                for (const p of entry.positions) if (p.tile === i) p.gone = true;
+                this.layout(entry, this.introT);
+            }
+        }
+        return true;
+    }
+
     // La hierba se agita cuando algo la atraviesa.
     rustle(x, z) {
         const c = Math.floor(x), r = Math.floor(z);

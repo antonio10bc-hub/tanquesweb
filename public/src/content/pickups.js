@@ -53,6 +53,13 @@ export const PICKUPS = {
         useful: (t) => t.radar <= 0,
         desc: (d) => `Durante ${String(d.radar).replace('.', ',')} segundos ves al rival esté donde esté, aunque se esconda.`,
     },
+    nuke: {
+        name: 'BOMBA NUCLEAR',
+        nuke: { radius: 3, damage: 4, flight: 1.4 }, // radio en tiles, daño a tanques, segundos en el aire
+        color: 0xffe600, accent: 0x1b0b33,
+        useful: (t) => !t.nukeNext,
+        desc: (d) => `Tu siguiente disparo lanza una bomba por encima de los muros a la última posición donde viste al rival. Arrasa ${d.nuke.radius} casillas a la redonda: rompe muros, quema la hierba y hace ${d.nuke.damage} de daño. ¡Cuidado, a ti también!`,
+    },
 };
 
 // Reglas de aparición: siempre hay como mucho un objeto en la arena.

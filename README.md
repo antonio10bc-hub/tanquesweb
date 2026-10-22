@@ -1,4 +1,4 @@
-# Tanques Invisibles
+# Tank-less
 
 Duelo de tanques voxel para un jugador con estética retro 3D estilo Nintendo DS:
 render a baja resolución escalado sin suavizado, color de 5 bits con trama (dither),
@@ -30,6 +30,9 @@ cargado para que lo guarde, así que no hay lista de archivos que mantener a man
   - **Vida**: cura 2. **Bala de fuego**: la siguiente bala hace el doble. **Escudo**: para un impacto.
   - **Turbo**: más velocidad 4 s. **Invisible**: 3,5 s sin que te vean ni disparando.
   - **Rebote**: la siguiente bala rebota 2 veces. **Radar**: ves al rival 2,5 s esté donde esté.
+  - **Bomba nuclear**: el siguiente disparo lanza una bomba por encima de los muros a la última
+    posición donde viste al rival; un círculo rojo avisa de dónde cae. Arrasa 3 casillas a la
+    redonda: rompe muros, quema la hierba y hace 4 de daño (también a quien la lanza).
 - **Hierba alta**: dentro solo te ven casi pegados y disparar te delata un instante. Se mueve al pasar.
 - **Muros rompibles**: aguantan 3 balas.
 - **Arquetipos de escenario**: cada partida elige uno (Arena clásica, Emboscada, Demolición, Fortaleza,

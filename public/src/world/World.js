@@ -23,6 +23,8 @@ export class World {
         this.arena = new Arena(generated ? generated.map : def.map);
         this.arena.build(this.root, theme);
         this.tanks = [];
+        this.nukes = []; // bombas en el aire
+        this.nextNukeId = 1;
         this.forceReveal = true;
 
         // def.pickups: false para desactivarlos, o un objeto que sobreescribe PICKUP_RULES.
@@ -97,6 +99,46 @@ export class World {
             if (this.pickups) this.pickups.step(dt, this);
         }
         this.bullets.update(dt, this);
+        this.updateNukes(dt);
+    }
+
+    launchNuke(owner, x0, z0, x1, z1, spec) {
+        const a = this.arena;
+        x1 = Math.min(a.cols - 0.5, Math.max(0.5, x1));
+        z1 = Math.min(a.rows - 0.5, Math.max(0.5, z1));
+        const nuke = { id: this.nextNukeId++, owner, x0, z0, x1, z1, t: 0, ...spec };
+        this.nukes.push(nuke);
+        this.events.emit('nukeLaunch', nuke);
+    }
+
+    updateNukes(dt) {
+        for (let i = this.nukes.length - 1; i >= 0; i--) {
+            const n = this.nukes[i];
+            n.t += dt;
+            if (n.t < n.flight) continue;
+            this.nukes.splice(i, 1);
+            this.detonate(n);
+        }
+    }
+
+    // Arrasa el radio: muros rompibles, hierba y daño a cualquier tanque (también al que la lanzó).
+    detonate(n) {
+        const a = this.arena, R = n.radius;
+        this.events.emit('nukeBoom', n);
+        for (let r = Math.floor(n.z1 - R); r <= Math.floor(n.z1 + R); r++) {
+            for (let c = Math.floor(n.x1 - R); c <= Math.floor(n.x1 + R); c++) {
+                if (Math.hypot(c + 0.5 - n.x1, r + 0.5 - n.z1) > R) continue;
+                const res = a.damageTile(c, r, 99);
+                if (res) this.events.emit('tileHit', c, r, res, 0xffe600);
+                a.burnBush(c, r);
+            }
+        }
+        for (const t of this.tanks) {
+            if (!t.alive) continue;
+            const dx = t.x - n.x1, dz = t.z - n.z1, d = Math.hypot(dx, dz);
+            if (d > R + t.radius * 0.5) continue;
+            this.hitTank(t, n.owner, n.damage, d > 0.01 ? dx / d : 0, d > 0.01 ? dz / d : 1, t.x, t.z, 0xffe600);
+        }
     }
 
     separate() {

@@ -38,6 +38,7 @@ export class HunterBrain {
         }
 
         this.updatePickups(tank, world);
+        this.fleeNukes(tank, world);
 
         switch (this.state) {
             case 'attack':
@@ -171,6 +172,23 @@ export class HunterBrain {
         this.state = 'move';
         this.timer = eta + 1;
         this.chasing = item.id;
+    }
+
+    // Si cae una bomba encima, sal del círculo por el lado contrario al centro.
+    fleeNukes(tank, world) {
+        for (const n of world.nukes) {
+            const dx = tank.x - n.x1, dz = tank.z - n.z1, d = Math.hypot(dx, dz);
+            if (d > n.radius + 0.6) continue;
+            let ux = d > 0.05 ? dx / d : 1, uz = d > 0.05 ? dz / d : 0;
+            // Si por ahí hay muro, prueba en perpendicular
+            if (world.arena.solidAt(tank.x + ux * 0.8, tank.z + uz * 0.8)) [ux, uz] = [-uz, ux];
+            if (world.arena.solidAt(tank.x + ux * 0.8, tank.z + uz * 0.8)) [ux, uz] = [-ux, -uz];
+            this.dir.x = ux;
+            this.dir.z = uz;
+            this.state = 'dodge';
+            this.timer = Math.max(this.timer, 0.25);
+            return;
+        }
     }
 
     startDodge(tank, threat, world) {
