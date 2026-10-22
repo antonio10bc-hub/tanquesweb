@@ -47,6 +47,7 @@ export class Arena {
         this.animated = [];
         this.introT = 0;
         this.crates = new Map(); // índice de tile -> { mesh, hull, index, maxHp }
+        this.walls = new Map();  // índice de tile -> { mesh, hull, index, c, r, h, breakable, style } (todos los muros)
         this.bushView = null;
     }
 
@@ -90,6 +91,33 @@ export class Arena {
             this.layout(ref.hull, this.introT);
         }
         return 'broken';
+    }
+
+    isBorder(c, r) {
+        return c <= 0 || r <= 0 || c >= this.cols - 1 || r >= this.rows - 1;
+    }
+
+    // Borra cualquier muro del interior (la bomba nuclear): también los que no se rompen a
+    // balazos. El borde de la arena aguanta siempre. Devuelve el estilo del muro o null.
+    obliterate(c, r) {
+        if (this.isBorder(c, r) || !this.isSolid(c, r)) return null;
+        const i = r * this.cols + c;
+        const ref = this.walls.get(i);
+        this.solid[i] = 0;
+        this.hp[i] = 0;
+        if (!ref) return 'wall';
+        ref.mesh.positions[ref.index].gone = true;
+        ref.hull.positions[ref.index].gone = true;
+        const touched = new Set([ref.mesh, ref.hull]);
+        // Los muros vecinos recuperan el contorno por el lado que ha quedado al aire
+        for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+            const n = this.walls.get((r + dr) * this.cols + (c + dc));
+            if (!n || n.breakable || !this.isSolid(n.c, n.r)) continue;
+            Object.assign(n.hull.positions[n.index], this.hullFor(n.c, n.r, n.h, false));
+            touched.add(n.hull);
+        }
+        for (const entry of touched) this.layout(entry, this.introT);
+        return ref.style;
     }
 
     // La hierba de este tile desaparece (la quema una explosión). Devuelve si había.
@@ -218,11 +246,11 @@ export class Arena {
         islandHull.position.copy(island.position);
         root.add(island, islandHull);
 
-        // Suelo a cuadros (también bajo los muros rompibles, que dejan suelo al caer)
+        // Suelo a cuadros en todo el interior: también bajo los muros, que pueden caer
+        // (los rompibles a balazos, cualquiera con la bomba nuclear)
         const floorTiles = [];
         for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-            const i = r * cols + c;
-            if (!this.solid[i] || this.hp[i]) floorTiles.push({ c, r });
+            if (!this.isBorder(c, r)) floorTiles.push({ c, r });
         }
         const floor = new THREE.InstancedMesh(box(1, 0.3, 1), own(toon(0xffffff)), floorTiles.length);
         floorTiles.forEach(({ c, r }, i) => {
@@ -248,24 +276,14 @@ export class Arena {
             const hull = new THREE.InstancedMesh(box(1, 1, 1), own(outline(theme.outline)), tiles.length);
             const breakable = style === 'crate';
             const pos = tiles.map(({ c, r }) => ({ x: c + 0.5, y: h / 2, z: r + 0.5 }));
-            // El contorno solo sobresale por los lados sin vecino sólido fijo: así los muros
-            // contiguos se leen como un único bloque. Los rompibles van siempre contorneados,
-            // para que al caer uno sus vecinos no se queden sin borde.
-            const fixed = (c, r) => this.isSolid(c, r) && !this.hp[r * cols + c];
-            const hullPos = tiles.map(({ c, r }) => {
-                const ext = (dc, dr) => (!breakable && fixed(c + dc, r + dr) ? -0.01 : OUTLINE);
-                const l = ext(-1, 0), rt = ext(1, 0), t = ext(0, -1), b = ext(0, 1);
-                return {
-                    x: c + 0.5 + (rt - l) / 2, y: h / 2, z: r + 0.5 + (b - t) / 2,
-                    sx: 1 + l + rt, sy: h + OUTLINE * 2, sz: 1 + t + b,
-                };
-            });
+            const hullPos = tiles.map(({ c, r }) => this.hullFor(c, r, h, breakable));
             if (breakable) for (let k = 0; k < tiles.length; k++) mesh.setColorAt(k, _c.setRGB(1, 1, 1));
             const meshAnim = this.addAnimated(root, mesh, pos, cx, cz, 0.25);
             const hullAnim = this.addAnimated(root, hull, hullPos, cx, cz, 0.25);
-            if (breakable) tiles.forEach(({ c, r }, index) => {
+            tiles.forEach(({ c, r }, index) => {
                 const i = r * cols + c;
-                this.crates.set(i, { mesh: meshAnim, hull: hullAnim, index, maxHp: this.hp[i] });
+                this.walls.set(i, { mesh: meshAnim, hull: hullAnim, index, c, r, h, breakable, style });
+                if (breakable) this.crates.set(i, { mesh: meshAnim, hull: hullAnim, index, maxHp: this.hp[i] });
             });
         }
 
@@ -273,6 +291,19 @@ export class Arena {
 
         this.buildFoam(root, theme, own);
         this.buildClouds(root, theme, own);
+    }
+
+    // Contorno de un muro: solo sobresale por los lados sin vecino sólido fijo, así los muros
+    // contiguos se leen como un único bloque. Los rompibles van siempre contorneados, para que
+    // al caer uno sus vecinos no se queden sin borde.
+    hullFor(c, r, h, breakable) {
+        const fixed = (cc, rr) => this.isSolid(cc, rr) && !this.hp[rr * this.cols + cc];
+        const ext = (dc, dr) => (!breakable && fixed(c + dc, r + dr) ? -0.01 : OUTLINE);
+        const l = ext(-1, 0), rt = ext(1, 0), t = ext(0, -1), b = ext(0, 1);
+        return {
+            x: c + 0.5 + (rt - l) / 2, y: h / 2, z: r + 0.5 + (b - t) / 2,
+            sx: 1 + l + rt, sy: h + OUTLINE * 2, sz: 1 + t + b,
+        };
     }
 
     addAnimated(root, mesh, positions, cx, cz, extraDelay = 0) {

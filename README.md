@@ -32,7 +32,8 @@ cargado para que lo guarde, así que no hay lista de archivos que mantener a man
   - **Rebote**: la siguiente bala rebota 2 veces. **Radar**: ves al rival 2,5 s esté donde esté.
   - **Bomba nuclear**: el siguiente disparo lanza una bomba por encima de los muros a la última
     posición donde viste al rival; un círculo rojo avisa de dónde cae. Arrasa 3 casillas a la
-    redonda: rompe muros, quema la hierba y hace 4 de daño (también a quien la lanza).
+    redonda: rompe todos los muros del interior (también los que aguantan las balas; el borde no),
+    quema la hierba y hace 4 de daño (también a quien la lanza).
 - **Hierba alta**: dentro solo te ven casi pegados y disparar te delata un instante. Se mueve al pasar.
 - **Muros rompibles**: aguantan 3 balas.
 - **Arquetipos de escenario**: cada partida elige uno (Arena clásica, Emboscada, Demolición, Fortaleza,

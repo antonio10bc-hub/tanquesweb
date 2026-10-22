@@ -79,7 +79,7 @@ export class BulletSystem {
             if (arena.solidAt(nx, nz)) {
                 const c = Math.floor(nx), r = Math.floor(nz);
                 const res = arena.damageTile(c, r, this.dmg[i]);
-                if (res) this.events.emit('tileHit', c, r, res, this.color[i]);
+                if (res) this.events.emit('tileHit', c, r, res, this.color[i], 'crate');
                 if (this.bounce[i] > 0 && res !== 'broken') {
                     // Rebote: invierte la componente que ha chocado
                     const hitX = arena.solidAt(nx, z), hitZ = arena.solidAt(x, nz);

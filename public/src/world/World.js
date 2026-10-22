@@ -121,15 +121,15 @@ export class World {
         }
     }
 
-    // Arrasa el radio: muros rompibles, hierba y daño a cualquier tanque (también al que la lanzó).
+    // Arrasa el radio: cualquier muro del interior, hierba y daño a cualquier tanque (también al que la lanzó).
     detonate(n) {
         const a = this.arena, R = n.radius;
         this.events.emit('nukeBoom', n);
         for (let r = Math.floor(n.z1 - R); r <= Math.floor(n.z1 + R); r++) {
             for (let c = Math.floor(n.x1 - R); c <= Math.floor(n.x1 + R); c++) {
                 if (Math.hypot(c + 0.5 - n.x1, r + 0.5 - n.z1) > R) continue;
-                const res = a.damageTile(c, r, 99);
-                if (res) this.events.emit('tileHit', c, r, res, 0xffe600);
+                const style = a.obliterate(c, r);
+                if (style) this.events.emit('tileHit', c, r, 'broken', 0xffe600, style);
                 a.burnBush(c, r);
             }
         }

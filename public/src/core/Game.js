@@ -585,8 +585,8 @@ export class Game {
             this.sfx.play('boing', this.panOf(x));
         });
 
-        ev.on('tileHit', (c, r, res) => {
-            const st = this.theme.walls.crate, x = c + 0.5, z = r + 0.5;
+        ev.on('tileHit', (c, r, res, color, style = 'crate') => {
+            const st = this.theme.walls[style] || this.theme.walls.crate, x = c + 0.5, z = r + 0.5;
             if (res === 'broken') {
                 this.particles.burst(x, 0.5, z, 34, [st.top, st.side, 0xffffff], { speed: 4, up: 5, size: 0.2, ttl: 1, grav: 14 });
                 this.waves.spawn(x, z, st.top, 1.8, 0.4);
