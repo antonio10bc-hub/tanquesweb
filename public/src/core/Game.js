@@ -267,9 +267,12 @@ export class Game {
         this.startMusic();
     }
 
+    // Los jefes tienen su propio tema (y otro para la fase 2); el resto, la música del escenario.
     startMusic() {
         this.music.intensity = 0;
-        this.music.start(this.theme.music, (this.world.seed || 1) ^ this.levelId.length);
+        const w = this.boss && WORLD_BY_ID[this.worldId];
+        const cfg = w ? (this.boss.angry ? w.music2 : w.music) : this.theme.music;
+        this.music.start(cfg, (this.world.seed || 1) ^ this.levelId.length);
     }
 
     setState(s) {
@@ -468,7 +471,7 @@ export class Game {
         else if (p.cloak > 0) stealth = 'cloak';
         else if (p.inBush) stealth = 'bush';
         this.hud.setStealth(stealth);
-        this.music.intensity = this.state === 'play' ? (p.hp <= 2 || (this.boss && this.boss.angry) ? 1 : p.hp <= 3 ? 0.5 : 0) : 0;
+        this.music.intensity = this.state === 'play' ? (p.hp <= 2 ? 1 : p.hp <= 3 ? 0.5 : 0) : 0;
     }
 
     // ---------- Supervivencia ----------
@@ -931,6 +934,7 @@ export class Game {
         this.world.forceReveal = true;
         this.renderer.flash(0xffffff, 0.6);
         this.hitStop = 0.12;
+        this.music.stop(0.25); // silencio para el rugido; el tema de la fase 2 entra con el cartel
         this.sfx.play('warn');
         vibrate('hurt');
     }
@@ -969,6 +973,7 @@ export class Game {
             b.angry = true;
             b.flash = 1;
             this.hud.banner('¡FASE 2!');
+            this.startMusic();
             this.sfx.play('boom', this.panOf(b.x));
             this.rig.shake(1);
             this.renderer.flash(0xff2a2a, 0.7);

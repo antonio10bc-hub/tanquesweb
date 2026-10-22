@@ -2,19 +2,42 @@
 // de 4 compases. Cada tema elige raíz, escala, tempo y timbre; la melodía se genera con una
 // semilla, así que cada escenario suena distinto pero siempre igual dentro de una partida.
 // "intensity" (0..1) acelera y añade capas cuando la cosa se pone fea.
+//
+// Opcional, para temas con personalidad propia (los jefes de la campaña):
+//   prog      progresión de 4 compases (grados de la escala)
+//   bass      patrón de 16 pasos: '1' raíz, '3' tercera, '5' quinta, '8' octava, '.' silencio
+//   bassType  timbre del bajo
+//   drums     { k, s, h }: bombo, caja y charles en 16 pasos ('x' golpe, 'o' charles abierto)
+//   arp       'chord' (por defecto), 'up' (arpegio rápido), 'stab' (acordes a contratiempo), 'none'
+//   motif     melodía escrita a mano: un carácter por paso ('.' silencio, '0'-'9' grado, 'a' -1, 'b' -2)
+//   harmony   segunda voz de la melodía, una tercera por debajo
+//   swing     retraso de las semicorcheas impares (0..0.35)
+//   octave    octava de la melodía (1 por defecto)
 const SCALES = {
     major: [0, 2, 4, 5, 7, 9, 11],
     minor: [0, 2, 3, 5, 7, 8, 10],
     dorian: [0, 2, 3, 5, 7, 9, 10],
     phrygian: [0, 1, 3, 5, 7, 8, 10],
+    mixolydian: [0, 2, 4, 5, 7, 9, 10],
+    lydian: [0, 2, 4, 6, 7, 9, 11],
+    harmonic: [0, 2, 3, 5, 7, 8, 11],     // menor armónica
+    hijaz: [0, 1, 4, 5, 7, 8, 10],        // frigio dominante: suena a desierto
+    wholetone: [0, 2, 4, 6, 8, 10],       // tonos enteros: suena a ciencia ficción
 };
 const PROGRESSIONS = {
     major: [0, 5, 3, 4],
     minor: [0, 5, 2, 6],
     dorian: [0, 3, 0, 6],
     phrygian: [0, 1, 0, 6],
+    mixolydian: [0, 6, 3, 0],
+    lydian: [0, 1, 0, 4],
+    harmonic: [0, 3, 5, 4],
+    hijaz: [0, 1, 0, 6],
+    wholetone: [0, 1, 2, 1],
 };
-const BASS = [1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0];
+const DEFAULT_BASS = '1..1..1.1..1..1.';
+const DEFAULT_DRUMS = { k: 'x.......x.......', s: '....x.......x...', h: '.x.x.x.x.x.x.x.x' };
+const MOTIF = { '.': null, a: -1, b: -2 };
 const midiToHz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 
 export class Music {
@@ -31,8 +54,10 @@ export class Music {
         if (!ctx || !this.enabled) return;
         this.cfg = { root: 57, scale: 'minor', tempo: 120, lead: 'square', ...cfg };
         this.scale = SCALES[this.cfg.scale] || SCALES.minor;
-        this.prog = PROGRESSIONS[this.cfg.scale] || PROGRESSIONS.minor;
-        this.melody = makeMelody(seed);
+        this.prog = this.cfg.prog || PROGRESSIONS[this.cfg.scale] || PROGRESSIONS.minor;
+        this.melody = this.cfg.motif ? [...this.cfg.motif].map((c) => (c in MOTIF ? MOTIF[c] : +c)) : makeMelody(seed);
+        this.bassLine = this.cfg.bass || DEFAULT_BASS;
+        this.drums = { ...DEFAULT_DRUMS, ...this.cfg.drums };
         this.bus = ctx.createGain();
         this.bus.gain.setValueAtTime(0, ctx.currentTime);
         this.bus.gain.linearRampToValueAtTime(0.42, ctx.currentTime + 0.6);
@@ -65,7 +90,8 @@ export class Music {
         }
         const sixteenth = 60 / (this.cfg.tempo * (1 + 0.14 * this.intensity)) / 4;
         while (this.next < ctx.currentTime + 0.12) {
-            this.schedule(this.step, this.next, sixteenth);
+            const swing = this.step % 2 ? (this.cfg.swing || 0) * sixteenth : 0;
+            this.schedule(this.step, this.next + swing, sixteenth);
             this.next += sixteenth;
             this.step++;
         }
@@ -83,14 +109,37 @@ export class Music {
         const chord = [deg, deg + 2, deg + 4];
         const hot = this.intensity > 0.5;
 
-        if (BASS[s]) this.voice('triangle', this.note(deg, -1), t, len * 2.2, 0.28);
-        if (s % 2 === 0 || hot) this.voice('square', this.note(chord[(s >> (hot ? 0 : 1)) % 3], 1), t, len * 0.9, hot ? 0.05 : 0.04);
-        const m = this.melody[(step % 64)];
-        if (m !== null) this.voice(this.cfg.lead, this.note(deg + m, 1), t, len * 1.8, 0.07);
+        const c = this.cfg;
 
-        if (s % 8 === 0) this.kick(t);
-        if (s % 8 === 4) this.hiss(t, 0.12, 0.16, 1800);
-        if (s % 2 === 1) this.hiss(t, 0.03, hot ? 0.06 : 0.035, 7000);
+        // Bajo
+        const b = this.bassLine[s];
+        if (b && b !== '.') {
+            const type = c.bassType || 'triangle';
+            const vol = type === 'triangle' ? 0.28 : type === 'sine' ? 0.3 : 0.1;
+            const midi = b === '8' ? this.note(deg, -1) + 12 : this.note(deg + (b === '3' ? 2 : b === '5' ? 4 : 0), -1);
+            this.voice(type, midi, t, len * (type === 'triangle' ? 2.2 : 1.4), vol);
+        }
+
+        // Acompañamiento
+        const arp = c.arp || 'chord';
+        if (arp === 'chord' && (s % 2 === 0 || hot)) this.voice('square', this.note(chord[(s >> (hot ? 0 : 1)) % 3], 1), t, len * 0.9, hot ? 0.05 : 0.04);
+        else if (arp === 'up') this.voice('square', this.note(chord[s % 3] + (s % 6 >= 3 ? 7 : 0), 1), t, len * 0.7, 0.035);
+        else if (arp === 'stab' && (s % 4 === 2 || (hot && s % 4 === 3))) for (const d of chord) this.voice('square', this.note(d, 1), t, len * 1.2, 0.03);
+
+        // Melodía (y su segunda voz)
+        const m = this.melody[step % this.melody.length];
+        if (m !== null) {
+            const oct = c.octave ?? 1;
+            this.voice(c.lead, this.note(deg + m, oct), t, len * 1.8, 0.07);
+            if (c.harmony) this.voice(c.harmonyLead || 'triangle', this.note(deg + m - 2, oct), t, len * 1.8, 0.05);
+        }
+
+        // Batería
+        const d = this.drums;
+        if (d.k[s] === 'x') this.kick(t);
+        if (d.s[s] === 'x') this.hiss(t, 0.12, 0.16, 1800);
+        if (d.h[s] === 'x') this.hiss(t, 0.03, hot ? 0.06 : 0.035, 7000);
+        else if (d.h[s] === 'o') this.hiss(t, 0.12, 0.05, 6000);
     }
 
     voice(type, midi, t, dur, vol) {

@@ -54,6 +54,22 @@ const SKILL = [
     { dodge: 0.38, burst: [2, 4], every: 1 },
 ];
 
+const DRUMS = {
+    boomchick: { k: 'x.......x.......', s: '....x.......x...', h: '..x...x...x...x.' },
+    rock: { k: 'x.......x.x.....', s: '....x.......x...', h: 'x.x.x.x.x.x.x.x.' },
+    calypso: { k: 'x.......x.......', s: '...x..x....x..x.', h: 'xxxxxxxxxxxxxxxx' },
+    surf: { k: 'x..x....x..x....', s: '....x.......x...', h: 'x.x.x.x.x.x.x.x.' },
+    tribal: { k: 'x..x..x.x.x..x..', s: '........x.......', h: '....x.......x...' },
+    light: { k: 'x.......x.......', s: '....x.......x...', h: 'x.x.x.x.x.x.x.x.' },
+    sleigh: { k: 'x.......x.......', s: '....x.......x...', h: 'xxxxxxxxxxxxxxxx' },
+    four: { k: 'x...x...x...x...', s: '....x.......x...', h: '..o...o...o...o.' },
+    metal: { k: 'xxxxxxxxxxxxxxxx', s: '....x.......x...', h: 'x.x.x.x.x.x.x.x.' },
+    halftime: { k: 'x.....x.........', s: '........x.......', h: 'x.x.x.x.x.x.x.x.' },
+    epic: { k: 'x.x...x.x.x...x.', s: '....x.......x.xx', h: 'x.x.x.x.x.x.x.x.' },
+};
+
+// Música de cada jefe (core/Music.js): su tema y otro más intenso para la fase 2, que entra
+// con el cartel de ¡FASE 2!.
 export const WORLDS = [
     {
         id: 'w1', theme: 'meadow', name: 'PRADERA',
@@ -71,6 +87,9 @@ export const WORLDS = [
         attack: { id: 'charge', name: '¡EMBESTIDA!', cast: 0.9, cooldown: 6.5, speed: 3.2, time: 1.3, repeat2: 2 },
         intro: 'EL TRACTOR MÁS BRUTO DEL CAMPO',
         tell: 'SE LANZA A TODA VELOCIDAD CONTRA TI',
+        // Hoedown de granja: bajo oom-pah, ritmo de galope y melodía saltarina
+        music: { root: 60, scale: 'major', tempo: 148, lead: 'square', bass: '1...5...1...5...', drums: DRUMS.boomchick, swing: 0.18, motif: '0.2.4.4.5.4.2.0.4.4.2.0.1.2.0...' },
+        music2: { root: 62, scale: 'mixolydian', tempo: 172, lead: 'sawtooth', bass: '1.5.1.5.1.5.8.5.', drums: DRUMS.rock, swing: 0.12, harmony: true, motif: '4.4.5.6.7.6.5.4.2.4.5.4.2.1.0...' },
     },
     {
         id: 'w2', theme: 'beach', name: 'PLAYA',
@@ -91,6 +110,9 @@ export const WORLDS = [
         attack: { id: 'wave', name: '¡OLA GIGANTE!', cast: 1.1, cooldown: 8, speed: 5.5 },
         intro: 'EL REY DE LA ARENA',
         tell: 'LLAMA A UNA OLA: ESCÓNDETE DETRÁS DE UN MURO',
+        // Calipso de playa con bajo de tresillo y "steel drum"; en la fase 2, surf rock
+        music: { root: 60, scale: 'mixolydian', tempo: 138, lead: 'triangle', octave: 2, bass: '1..1..1.5..5..5.', drums: DRUMS.calypso, arp: 'stab', motif: '4..4..2.4..5..4.2..2..0.2..4....' },
+        music2: { root: 57, scale: 'minor', tempo: 166, lead: 'sawtooth', bass: '1.1.1.1.5.5.8.8.', drums: DRUMS.surf, arp: 'up', motif: '0.0.2.3.4...3.2.0.0.2.3.2.0.a...' },
     },
     {
         id: 'w3', theme: 'desert', name: 'DESIERTO',
@@ -110,6 +132,9 @@ export const WORLDS = [
         attack: { id: 'storm', name: '¡TORMENTA DE ARENA!', cast: 1.0, cooldown: 8, count: 2, count2: 3, life: 5.5, speed: 2.1 },
         intro: 'NADIE LO VE VENIR',
         tell: 'DESAPARECE EN UNA TORMENTA Y SUELTA REMOLINOS',
+        // Encantador de serpientes: escala de desierto, tambores tribales y bajo en bordón
+        music: { root: 57, scale: 'hijaz', tempo: 120, lead: 'sawtooth', bass: '1.1.1.1.1.1.1.1.', bassType: 'sine', drums: DRUMS.tribal, arp: 'none', prog: [0, 0, 1, 0], motif: '0.1.2.1.0...4.3.2.1.2.1.0.a.0...' },
+        music2: { root: 59, scale: 'hijaz', tempo: 150, lead: 'square', bass: '1.11.11.1.11.11.', bassType: 'sawtooth', drums: DRUMS.rock, arp: 'up', prog: [0, 1, 0, 6], harmony: true, motif: '4.5.4.2.1.2.1.0.4.5.6.5.4.2.1.0.' },
     },
     {
         id: 'w4', theme: 'candy', name: 'CARAMELO',
@@ -131,6 +156,9 @@ export const WORLDS = [
         attack: { id: 'ring', name: '¡LLUVIA DE CARAMELOS!', cast: 0.8, cooldown: 6, count: 14, rings2: 3 },
         intro: 'DULCE POR FUERA, MALO POR DENTRO',
         tell: 'DISPARA CARAMELOS EN TODAS DIRECCIONES',
+        // Cajita de música de caramelo con arpegios brillantes; en la fase 2, subidón de azúcar
+        music: { root: 64, scale: 'major', tempo: 134, lead: 'square', octave: 2, bass: '1...3...5...3...', drums: DRUMS.light, arp: 'up', motif: '4.6.7.6.4.2.4...5.7.9.7.5.4.2...' },
+        music2: { root: 66, scale: 'lydian', tempo: 168, lead: 'square', octave: 2, bass: '1.1.3.3.5.5.3.3.', bassType: 'square', drums: DRUMS.four, arp: 'up', harmony: true, motif: '7.6.4.6.7.9.7.6.4.2.4.6.4.2.0...' },
     },
     {
         id: 'w5', theme: 'snow', name: 'NIEVE',
@@ -150,6 +178,9 @@ export const WORLDS = [
         attack: { id: 'icicles', name: '¡CARÁMBANOS!', cast: 0.6, cooldown: 6.5, count: 4, count2: 6, delay: 1.3, radius: 0.8 },
         intro: 'FRÍO, FRÍO, FRÍO',
         tell: 'HACE CAER CARÁMBANOS: MIRA LAS SOMBRAS DEL SUELO',
+        // Nana helada de cascabeles; en la fase 2, ventisca
+        music: { root: 62, scale: 'minor', tempo: 116, lead: 'triangle', octave: 2, bass: '1.......5.......', drums: DRUMS.sleigh, arp: 'stab', motif: '4...2...3...1...2.3.4.3.2...0...' },
+        music2: { root: 62, scale: 'harmonic', tempo: 150, lead: 'square', bass: '1.1.5.5.1.1.5.5.', bassType: 'sawtooth', drums: DRUMS.rock, arp: 'up', harmony: true, motif: '4.3.2.1.2.3.4...6.5.4.3.2.1.0...' },
     },
     {
         id: 'w6', theme: 'city', name: 'CIUDAD',
@@ -174,6 +205,9 @@ export const WORLDS = [
         attack: { id: 'summon', name: '¡REFUERZOS!', cast: 1.0, cooldown: 11, count: 1, count2: 2, max: 2, radar: 2.5 },
         intro: 'LA LEY DE LA CIUDAD DE NOCHE',
         tell: 'LLAMA A SUS DRONES Y TE ENCUENTRA CON LOS FOCOS',
+        // Persecución de neón: bajo pulsante a octavas, bombo a negras y melodía de sirena
+        music: { root: 52, scale: 'minor', tempo: 132, lead: 'sawtooth', bass: '1.8.1.8.1.8.1.8.', bassType: 'sawtooth', drums: DRUMS.four, arp: 'stab', motif: '4.4.6.4.4.4.6.4.7.7.6.4.2.2.0...' },
+        music2: { root: 54, scale: 'phrygian', tempo: 160, lead: 'square', bass: '18181818181818..', bassType: 'sawtooth', drums: DRUMS.epic, arp: 'up', harmony: true, motif: '6.4.6.4.6.4.7.6.4.2.4.2.1.0.1...' },
     },
     {
         id: 'w7', theme: 'volcano', name: 'VOLCÁN',
@@ -194,6 +228,9 @@ export const WORLDS = [
         attack: { id: 'meteors', name: '¡LLUVIA DE LAVA!', cast: 0.7, cooldown: 7.5, count: 3, count2: 5, delay: 1.3, radius: 0.95, lava: 3.5 },
         intro: 'SU CORAZÓN ES PURA LAVA',
         tell: 'LANZA ROCAS DE LAVA QUE DEJAN CHARCOS ARDIENDO',
+        // Metal de lava: bajo al galope, doble bombo y riff grave
+        music: { root: 45, scale: 'phrygian', tempo: 146, lead: 'sawtooth', octave: 2, bass: '1.111.111.111.11', bassType: 'sawtooth', drums: DRUMS.metal, arp: 'none', motif: '0.0.0.1.0.0.3.2.0.0.0.1.4.3.2.1.' },
+        music2: { root: 47, scale: 'harmonic', tempo: 172, lead: 'sawtooth', octave: 2, bass: '1111111111111111', bassType: 'sawtooth', drums: DRUMS.metal, arp: 'stab', harmony: true, motif: '0.1.2.3.4.3.2.1.0.6.5.4.3.2.1.0.' },
     },
     {
         id: 'w8', theme: 'space', name: 'ESPACIO',
@@ -220,6 +257,9 @@ export const WORLDS = [
         attack: { id: 'laser', name: '¡RAYO LÁSER!', cast: 0.5, cooldown: 7.5, warn: 0.9, time: 3.2, turn: 1.0, turn2: 1.35 },
         intro: 'VIENE DE MUY, MUY LEJOS',
         tell: 'BARRE LA ARENA CON UN LÁSER: LOS MUROS LO PARAN',
+        // Ciencia ficción: arpegios cósmicos, medio tiempo y melodía extraña de tonos enteros
+        music: { root: 50, scale: 'dorian', tempo: 110, lead: 'square', bass: '1.......1...5...', bassType: 'sine', drums: DRUMS.halftime, arp: 'up', motif: '7.4.2.4.7.4.2.4.6.4.1.4.6.4.1.4.' },
+        music2: { root: 50, scale: 'wholetone', tempo: 142, lead: 'sawtooth', bass: '1.1.1.1.3.3.3.3.', bassType: 'sawtooth', drums: DRUMS.rock, arp: 'up', harmony: true, motif: '5.4.3.2.1.2.3.4.5...3...1...0...' },
     },
     {
         id: 'secret', theme: 'rainbow', name: 'ARCOÍRIS', secret: true,
@@ -236,6 +276,9 @@ export const WORLDS = [
         attack: { id: 'mix', name: '¡PODER PRISMÁTICO!', cast: 0.8, cooldown: 6, cooldown2: 4.2 },
         intro: 'EL JEFE FINAL SECRETO',
         tell: 'USA LOS ATAQUES DE TODOS LOS JEFES',
+        // Jefe final: épico, con melodía a dos voces; en la fase 2, todo a la vez
+        music: { root: 57, scale: 'harmonic', tempo: 152, lead: 'square', bass: '1.111.111.111.11', bassType: 'sawtooth', drums: DRUMS.epic, arp: 'up', harmony: true, motif: '0.2.4.7.6.4.2.4.5.4.2.0.1.2.4...' },
+        music2: { root: 60, scale: 'lydian', tempo: 178, lead: 'square', octave: 2, bass: '1818181818181818', bassType: 'sawtooth', drums: DRUMS.metal, arp: 'up', harmony: true, motif: '7.6.4.6.7.9.11..9.7.6.4.2.4.6...' },
     },
 ];
 
