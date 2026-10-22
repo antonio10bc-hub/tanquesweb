@@ -29,7 +29,7 @@ cargado para que lo guarde, así que no hay lista de archivos que mantener a man
   y, si puede, a distancia parecida de los dos. La IA también va a por ellos.
   - **Vida**: cura 2. **Bala de fuego**: la siguiente bala hace el doble. **Escudo**: para un impacto.
   - **Turbo**: más velocidad 4 s. **Invisible**: 3,5 s sin que te vean ni disparando.
-  - **Rebote**: la siguiente bala rebota 2 veces. **Radar**: ves al rival 2,5 s esté donde esté.
+  - **Rebote**: la siguiente bala rebota 5 veces. **Radar**: ves al rival 2,5 s esté donde esté.
   - **Bomba nuclear**: el siguiente disparo lanza una bomba por encima de los muros a la última
     posición donde viste al rival; un círculo rojo avisa de dónde cae. Arrasa 3 casillas a la
     redonda: rompe todos los muros del interior (también los que aguantan las balas; el borde no),

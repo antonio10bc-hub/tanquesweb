@@ -53,7 +53,7 @@ export class BulletSystem {
         this.trail[i] = 0;
         this.owner[i] = owner;
         this.color[i] = color ?? (power > 1 ? POWER_COLOR : bounce > 0 ? BOUNCE_COLOR : owner.def.palette.bullet);
-        if (bounce > 0) this.ttl[i] *= 1.6;
+        if (bounce > 0) this.ttl[i] *= 1 + bounce * 0.4; // más alcance cuantos más rebotes, para poder usarlos todos
     }
 
     remove(i) {

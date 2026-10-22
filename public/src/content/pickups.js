@@ -41,7 +41,7 @@ export const PICKUPS = {
     },
     bounce: {
         name: 'REBOTE',
-        bounce: 2,            // tu siguiente bala rebota en las paredes este número de veces
+        bounce: 5,            // tu siguiente bala rebota en las paredes este número de veces
         color: 0xff4fd8, accent: 0xffffff,
         useful: (t) => t.bounceNext === 0,
         desc: (d) => `Tu siguiente bala rebota ${d.bounce} veces en las paredes. Ideal para disparar desde detrás de un muro.`,
