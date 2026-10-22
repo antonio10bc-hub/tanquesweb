@@ -68,7 +68,6 @@ const STEPS = [
             tu.game.hud.tutorialTip('', false);
             const sp = tu.world.pickups, at = tu.bushSide === 'left' ? ITEM_RIGHT : ITEM_LEFT;
             sp.current = { id: 999, kind: 'power', def: PICKUPS.power, x: at.x, z: at.z, life: 0 };
-            tu.point(at);
             tu.game.events.emit('pickupSpawn', sp.current);
             tu.got = false;
         },
@@ -116,7 +115,7 @@ export class Tutorial {
         this.point(null);
     }
 
-    // Flecha grande que bota encima de donde hay que ir (null: la quita)
+    // Flecha grande que bota encima de donde hay que ir, solo en el primer paso (null: la quita)
     point(at) {
         if (!this.arrow) {
             const g = new THREE.Group(), yellow = toon(0xffe03a), hull = outline(0x1b0b33);
