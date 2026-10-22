@@ -1,6 +1,8 @@
 // Capa DOM: menús, marcador de vida, aviso de sigilo y carteles.
+import { drawCoin, COIN_SPIN, installPixelSprites } from './PixelArt.js';
 export class Hud {
     constructor() {
+        installPixelSprites();
         const $ = (id) => document.getElementById(id);
         this.el = {
             hud: $('hud'), menu: $('menu'), end: $('end'), banner: $('banner'),
@@ -45,25 +47,39 @@ export class Hud {
     // anterior) y suma. Tocar la pantalla la salta. Devuelve una promesa que se cumple al terminar.
     coinReward(from, to, { onFly, onLand } = {}) {
         const reward = document.getElementById('reward');
-        const coin = reward.querySelector('.reward-coin');
+        const wrap = reward.querySelector('.reward-coin');
+        const coin = reward.querySelector('.big-coin');
         const counter = document.getElementById('coin-counter');
         const num = document.getElementById('hud-coins');
+        const ctx = coin.getContext('2d');
         num.textContent = from;
         this.achHold = true; // los logros esperan a que termine la ceremonia
         counter.classList.remove('hidden', 'bump');
         reward.classList.remove('hidden', 'fly');
-        coin.style.animation = 'none';
-        void coin.offsetWidth;
-        coin.style.animation = '';
+        wrap.style.transform = '';
+        coin.style.width = coin.style.height = '';
+        for (const el of [coin, ...reward.querySelectorAll('.spark, .reward-plus')]) {
+            el.style.animation = 'none';
+            void el.offsetWidth;
+            el.style.animation = '';
+        }
+        // La moneda gira por fotogramas, como un sprite
+        let frame = 0;
+        drawCoin(ctx, COIN_SPIN[0]);
+        const spin = setInterval(() => drawCoin(ctx, COIN_SPIN[++frame % COIN_SPIN.length]), 90);
         return new Promise((resolve) => {
             const timers = [];
-            let finished = false;
+            let finished = false, landed = false;
             const land = () => {
+                if (landed) return;
+                landed = true;
+                clearInterval(spin);
                 num.textContent = to;
                 counter.classList.remove('bump');
                 void counter.offsetWidth;
                 counter.classList.add('bump');
                 reward.classList.add('hidden');
+                this.landSparks(counter.getBoundingClientRect());
                 if (onLand) onLand();
             };
             const finish = () => {
@@ -77,26 +93,55 @@ export class Hud {
                 setTimeout(() => !this.achBusy && this.nextAchievement(), 500);
             };
             reward.onpointerdown = () => {
-                if (!reward.classList.contains('hidden')) land();
+                land();
                 finish();
             };
             timers.push(setTimeout(() => {
-                // Vuelo en curva hasta el contador, encogiendo
-                const a = coin.getBoundingClientRect(), b = counter.getBoundingClientRect();
-                const dx = b.left + 22 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2);
+                // Vuelo a saltos hasta el contador: la moneda encoge en múltiplos enteros
+                // de su tamaño (6x, 5x... 1x) para que los píxeles sigan siendo nítidos.
+                const a = wrap.getBoundingClientRect(), b = counter.querySelector('.coin').getBoundingClientRect();
+                const ax = a.left + a.width / 2, ay = a.top + a.height / 2;
+                const dx = b.left + b.width / 2 - ax, dy = b.top + b.height / 2 - ay;
+                const cx = dx * 0.15 - 50, cy = 70; // control de la curva: primero baja un poco
                 reward.classList.add('fly');
                 if (onFly) onFly();
-                const anim = coin.animate([
-                    { transform: 'translate(0, 0) scale(1)' },
-                    { transform: `translate(${dx * 0.35}px, ${dy * 0.15 + 40}px) scale(.75)`, offset: 0.35 },
-                    { transform: `translate(${dx}px, ${dy}px) scale(.16)` },
-                ], { duration: 750, easing: 'cubic-bezier(.45, 0, .7, 1)', fill: 'forwards' });
-                anim.onfinish = () => {
-                    land();
-                    timers.push(setTimeout(finish, 750));
+                const STEPS = 9;
+                let k = 0, px = 0, py = 0;
+                const hop = () => {
+                    k++;
+                    const t = k / STEPS, u = 1 - t;
+                    const x = 2 * u * t * cx + t * t * dx, y = 2 * u * t * cy + t * t * dy;
+                    if (k > 1) this.trail(ax + px, ay + py);
+                    px = x; py = y;
+                    const scale = Math.max(1, Math.round(6 - 5 * t));
+                    wrap.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+                    coin.style.width = coin.style.height = `${16 * scale}px`;
+                    if (k < STEPS) timers.push(setTimeout(hop, 80));
+                    else timers.push(setTimeout(() => { land(); timers.push(setTimeout(finish, 750)); }, 80));
                 };
+                hop();
             }, 1150));
         });
+    }
+
+    trail(x, y) {
+        const el = Object.assign(document.createElement('div'), { className: 'coin-trail' });
+        el.style.left = `${x}px`;
+        el.style.top = `${y}px`;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 400);
+    }
+
+    // Destellos pixelados alrededor del contador cuando la moneda llega
+    landSparks(r) {
+        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        for (const [ox, oy] of [[-r.width / 2 - 8, -10], [r.width / 2 + 8, -8], [-r.width / 2 + 4, r.height / 2 + 6], [r.width / 2 - 2, r.height / 2 + 8]]) {
+            const el = Object.assign(document.createElement('i'), { className: 'spark land-spark' });
+            el.style.left = `${cx + ox}px`;
+            el.style.top = `${cy + oy}px`;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 500);
+        }
     }
 
     setCoins(n) {
@@ -115,7 +160,7 @@ export class Hud {
     }
 
     nextAchievement() {
-        const a = this.achQueue.shift();
+        const a = this.achQueue && this.achQueue.shift();
         const el = document.getElementById('ach');
         if (!a) {
             this.achBusy = false;

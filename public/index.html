@@ -110,7 +110,7 @@
 
     <!-- Logro completado: baja desde arriba del todo, se queda un momento y vuelve a subir -->
     <div id="ach" class="ach">
-        <div class="ach-icon"><span class="trophy"></span></div>
+        <div class="ach-icon"><i class="ach-trophy"></i><i class="spark"></i></div>
         <div class="ach-text">
             <div class="ach-head">¡LOGRO COMPLETADO!</div>
             <div id="ach-name" class="ach-name"></div>
@@ -121,8 +121,13 @@
     <!-- Recompensa al ganar: moneda que aparece, vuela al contador y suma -->
     <div id="reward" class="reward hidden">
         <div class="reward-coin">
-            <div class="rays"></div>
-            <span class="big-coin"></span>
+            <i class="spark" style="--x:-74px;--y:-50px"></i>
+            <i class="spark" style="--x:66px;--y:-70px;animation-delay:.15s"></i>
+            <i class="spark" style="--x:-86px;--y:34px;animation-delay:.3s"></i>
+            <i class="spark" style="--x:78px;--y:44px;animation-delay:.1s"></i>
+            <i class="spark" style="--x:-14px;--y:-96px;animation-delay:.25s"></i>
+            <i class="spark" style="--x:6px;--y:86px;animation-delay:.4s"></i>
+            <canvas class="big-coin" width="16" height="16"></canvas>
             <span class="reward-plus">+1</span>
         </div>
     </div>
