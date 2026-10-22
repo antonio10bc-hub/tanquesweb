@@ -9,9 +9,12 @@
 //  ambient                      clima: 'snow' | 'rain' | 'dust' | 'embers' | 'petals' | 'stars' | 'sparkle' | null
 //  music                        raíz MIDI, escala, tempo y timbre del secuenciador
 //  rainbow                      opcional: suelo y muros cambian de color sin parar (mundo secreto)
+//  specials                     casillas especiales del mapa: ice (manchas de hielo),
+//                               teleports (parejas) y barrels (barriles explosivos)
 export const THEMES = {
     snow: {
         name: 'NIEVE',
+        specials: { ice: [2, 3] },
         sea: 0x4aa8ff, foam: 0xffffff, island: 0x7f9cff, outline: 0x1b1f4a,
         floor: [0xdde9ff, 0xc8dbfa], floorJitter: 0.03,
         dust: 0xffffff, scorch: 0x6a7aa8, clouds: 0xffffff,
@@ -27,6 +30,7 @@ export const THEMES = {
     },
     desert: {
         name: 'DESIERTO',
+        specials: { barrels: [2, 3] },
         sea: 0xe9a95a, foam: 0xffe6b0, island: 0xc7703a, outline: 0x3a1a14,
         floor: [0xf9d98e, 0xf0c977], floorJitter: 0.04,
         dust: 0xfff0c4, scorch: 0x7a4a2a, clouds: 0xfff6e6,
@@ -42,6 +46,7 @@ export const THEMES = {
     },
     candy: {
         name: 'CARAMELO',
+        specials: { teleports: 1 },
         sea: 0x1fb6ff, foam: 0xeafcff, island: 0xb04bff, outline: 0x1b0b33,
         floor: [0x8af06a, 0x6fdc5a], floorJitter: 0.035,
         dust: 0xf4ffd8, scorch: 0x2c1a45, clouds: 0xffffff,
@@ -57,6 +62,7 @@ export const THEMES = {
     },
     volcano: {
         name: 'VOLCÁN',
+        specials: { barrels: [1, 3] },
         sea: 0xff5a1f, foam: 0xffd23f, island: 0x2e2232, outline: 0x120a12,
         floor: [0x544350, 0x47384a], floorJitter: 0.05,
         dust: 0x8a7a80, scorch: 0x140c10, clouds: 0x4a3a48,
@@ -72,6 +78,7 @@ export const THEMES = {
     },
     beach: {
         name: 'PLAYA',
+        specials: { barrels: [1, 2], teleports: 1 },
         sea: 0x12d6e6, foam: 0xffffff, island: 0xf0b45a, outline: 0x3a1c2e,
         floor: [0xffe6a6, 0xf8d68c], floorJitter: 0.03,
         dust: 0xfff1c9, scorch: 0x8a5a3a, clouds: 0xffffff,
@@ -87,6 +94,7 @@ export const THEMES = {
     },
     meadow: {
         name: 'PRADERA',
+        specials: { barrels: [1, 2] },
         sea: 0x3fb8ff, foam: 0xf0fbff, island: 0x8a5a34, outline: 0x1c2410,
         floor: [0x9ae86e, 0x86d85e], floorJitter: 0.04,
         dust: 0xf4ffd8, scorch: 0x3a2a18, clouds: 0xffffff,
@@ -103,6 +111,7 @@ export const THEMES = {
     },
     city: {
         name: 'CIUDAD DE NOCHE',
+        specials: { barrels: [2, 3], teleports: 1 },
         sea: 0x0c1033, foam: 0x4a5cff, island: 0x232642, outline: 0x05040f,
         floor: [0x3c4160, 0x343854], floorJitter: 0.05,
         dust: 0x9aa4ff, scorch: 0x0e0d1c, clouds: 0x2a2f5a,
@@ -118,6 +127,7 @@ export const THEMES = {
     },
     space: {
         name: 'ESPACIO',
+        specials: { teleports: 2, ice: [1, 2] },
         sea: 0x080420, foam: 0x8a7aff, island: 0x4a3f6b, outline: 0x05030f,
         floor: [0x66739a, 0x5a668a], floorJitter: 0.03,
         dust: 0xc8d4ff, scorch: 0x1a1430, clouds: null,
@@ -134,6 +144,7 @@ export const THEMES = {
     // Mundo secreto de la campaña: una pista de arcoíris flotando en el cielo de noche
     rainbow: {
         name: 'ARCOÍRIS',
+        specials: { teleports: 2 },
         sea: 0x1a0640, foam: 0xff8fd8, island: 0x7b5cff, outline: 0x12052e,
         floor: [0xffffff, 0xf2eaff], floorJitter: 0,
         dust: 0xffffff, scorch: 0x3a1a6b, clouds: 0xffd6f4,

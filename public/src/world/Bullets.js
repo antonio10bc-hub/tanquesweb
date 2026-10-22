@@ -79,8 +79,10 @@ export class BulletSystem {
             const nx = x + this.vx[i] * dt, nz = z + this.vz[i] * dt;
             if (arena.solidAt(nx, nz)) {
                 const c = Math.floor(nx), r = Math.floor(nz);
+                const style = arena.styleAt(c, r);
                 const res = arena.damageTile(c, r, this.dmg[i]);
-                if (res) this.events.emit('tileHit', c, r, res, this.color[i], 'crate', this.owner[i]);
+                if (res) this.events.emit('tileHit', c, r, res, this.color[i], style, this.owner[i]);
+                if (res === 'broken' && style === 'barrel') world.explodeBarrel(c, r, this.owner[i]);
                 if (this.bounce[i] > 0 && res !== 'broken') {
                     // Rebote: invierte la componente que ha chocado
                     const hitX = arena.solidAt(nx, z), hitZ = arena.solidAt(x, nz);

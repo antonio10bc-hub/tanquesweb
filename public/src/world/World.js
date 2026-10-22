@@ -19,7 +19,8 @@ export class World {
         this.events = ctx.events;
         this.bullets = ctx.bullets;
         this.root = new THREE.Group();
-        const generated = def.generator ? generateArena(def.generator, ctx.seed) : null;
+        // Las casillas especiales (hielo, teletransportes, barriles) las pone el tema
+        const generated = def.generator ? generateArena({ ...def.generator, ...theme.specials }, ctx.seed) : null;
         this.seed = generated ? generated.seed : null;
         this.arena = new Arena(generated ? generated.map : def.map);
         this.arena.build(this.root, theme);
@@ -146,6 +147,7 @@ export class World {
             for (const t of this.tanks) t.step(dt, this);
             this.separate();
             this.rams();
+            this.teleport();
             this.hazards.step(dt);
             if (this.pickups) this.pickups.step(dt, this);
         }
@@ -209,6 +211,47 @@ export class World {
                 this.arena.resolveCircle(a, a.radius);
                 this.arena.resolveCircle(b, b.radius);
             }
+        }
+    }
+
+    // Teletransportes: al pisar uno apareces en su pareja. Para volver a usarlo hay que salir.
+    teleport() {
+        for (const t of this.tanks) {
+            if (!t.alive) continue;
+            const pad = this.arena.teleportAt(t.x, t.z);
+            if (!pad) {
+                t.tpLock = null;
+                continue;
+            }
+            if (t.tpLock === pad) continue;
+            const to = pad.to;
+            const from = { x: t.x, z: t.z };
+            t.x = to.x;
+            t.z = to.z;
+            t.tpLock = to;
+            this.arena.resolveCircle(t, t.radius);
+            this.events.emit('teleport', t, from, to);
+        }
+    }
+
+    // Barril explosivo: daña a los tanques cercanos, rompe los muros rompibles de alrededor y
+    // hace estallar en cadena a otros barriles.
+    explodeBarrel(c, r, owner) {
+        const a = this.arena, x = c + 0.5, z = r + 0.5, R = 1.6;
+        this.events.emit('barrelBoom', x, z, R);
+        for (const t of this.tanks) {
+            if (!t.alive) continue;
+            const d = Math.hypot(t.x - x, t.z - z);
+            if (d > R + t.radius * 0.5) continue;
+            this.hitTank(t, owner, 1, d > 0.01 ? (t.x - x) / d : 0, d > 0.01 ? (t.z - z) / d : 1, t.x, t.z, 0xff9a1f, 'barrel');
+        }
+        for (let rr = r - 1; rr <= r + 1; rr++) for (let cc = c - 1; cc <= c + 1; cc++) {
+            if (cc === c && rr === r) continue;
+            const style = a.styleAt(cc, rr);
+            const res = a.damageTile(cc, rr, 9);
+            if (!res) continue;
+            this.events.emit('tileHit', cc, rr, res, 0xff9a1f, style, owner);
+            if (res === 'broken' && style === 'barrel') this.explodeBarrel(cc, rr, owner);
         }
     }
 

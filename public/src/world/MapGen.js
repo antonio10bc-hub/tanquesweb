@@ -6,6 +6,8 @@
 //   menos un tile de pasillo, para que no salgan rincones ni callejones encerrados.
 // - Cada pieza es de un material elegido por peso: muro (#), bloque bajo (B) o rompible (D).
 // - Después se siembran manchas de hierba alta (g), también simétricas: no bloquean, esconden.
+// - Según el tema, casillas especiales: hielo (i), parejas de teletransporte (T) y barriles
+//   explosivos (X). Los barriles solo se ponen si el mapa sigue conectado.
 // - Cada mapa se valida: todo el suelo conectado, densidad razonable y sin línea de tiro
 //   directa entre las dos salidas. Si no cumple, se descarta y se genera otro.
 
@@ -32,6 +34,9 @@ const DEFAULTS = {
     mirrorChance: 0.5,      // probabilidad de añadir espejo izquierda/derecha
     spawnClear: 2,          // filas libres delante de cada salida
     gap: 1,                 // anchura mínima de los pasillos (2 en las arenas de jefe: el boss es grande)
+    ice: [0, 0],            // manchas de hielo
+    teleports: 0,           // parejas de teletransporte
+    barrels: [0, 0],        // barriles explosivos (cada uno se copia por simetría)
 };
 
 // PRNG con semilla (mulberry32): la misma semilla da el mismo mapa.
@@ -103,7 +108,10 @@ function tryGenerate(p, rng) {
     grid[1][mid] = 'E';
     grid[rows - 2][mid] = 'P';
     if (!isGood(grid, p)) return null;
-    sowBushes(grid, p, rng, copies);
+    sowPatches(grid, p, rng, copies, 'g', p.bushes, p.bushSize);
+    sowPatches(grid, p, rng, copies, 'i', p.ice, [3, 6]);
+    placeTeleports(grid, p, rng);
+    placeBarrels(grid, p, rng, copies);
     return grid.map((row) => row.join(''));
 }
 
@@ -114,21 +122,21 @@ function pickWeighted(weights, rng) {
     return entries[0][0];
 }
 
-// Manchas de hierba: paseo aleatorio por el suelo libre desde una semilla, con sus copias
-// simétricas. Pueden pegarse a muros (es donde más sentido tiene esconderse) pero nunca
-// tapan las salidas: la casilla de salida y la de delante quedan libres.
-function sowBushes(grid, p, rng, copies) {
+// Manchas (hierba, hielo): paseo aleatorio por el suelo libre desde una semilla, con sus
+// copias simétricas. Pueden pegarse a muros (es donde más sentido tiene esconderse) pero
+// nunca tapan las salidas: la casilla de salida y la de delante quedan libres.
+function sowPatches(grid, p, rng, copies, ch, countRange, sizeRange) {
     const { cols, rows } = p;
     const mid = (cols - 1) / 2;
     const free = (c, r) => c > 0 && r > 0 && c < cols - 1 && r < rows - 1 && grid[r][c] === '.' &&
         !(c === mid && (r <= 2 || r >= rows - 3));
-    const n = p.bushes[0] + Math.floor(rng() * (p.bushes[1] - p.bushes[0] + 1));
+    const n = countRange[0] + Math.floor(rng() * (countRange[1] - countRange[0] + 1));
     for (let k = 0; k < n; k++) {
         let c = 1 + Math.floor(rng() * (cols - 2)), r = 1 + Math.floor(rng() * Math.ceil((rows - 2) / 2));
-        const size = p.bushSize[0] + Math.floor(rng() * (p.bushSize[1] - p.bushSize[0] + 1));
+        const size = sizeRange[0] + Math.floor(rng() * (sizeRange[1] - sizeRange[0] + 1));
         for (let s = 0, guard = 0; s < size && guard < 40; guard++) {
             if (free(c, r)) {
-                for (const [cc, rr] of copies(c, r)) if (free(cc, rr)) grid[rr][cc] = 'g';
+                for (const [cc, rr] of copies(c, r)) if (free(cc, rr)) grid[rr][cc] = ch;
                 s++;
             }
             const d = Math.floor(rng() * 4);
@@ -137,6 +145,43 @@ function sowBushes(grid, p, rng, copies) {
             c = Math.max(1, Math.min(cols - 2, c));
             r = Math.max(1, Math.min(rows - 2, r));
         }
+    }
+}
+
+// Parejas de teletransporte: una casilla y su copia girada 180° (cada bando tiene la suya).
+function placeTeleports(grid, p, rng) {
+    const { cols, rows } = p, mid = (cols - 1) / 2;
+    for (let k = 0, placed = 0; placed < p.teleports && k < 80; k++) {
+        const c = 1 + Math.floor(rng() * (cols - 2)), r = 3 + Math.floor(rng() * Math.max(1, Math.floor(rows / 2) - 4));
+        const c2 = cols - 1 - c, r2 = rows - 1 - r;
+        if (grid[r][c] !== '.' || grid[r2][c2] !== '.' || Math.abs(c - mid) <= 1) continue;
+        if (Math.hypot(c - c2, r - r2) < 7) continue;
+        grid[r][c] = grid[r2][c2] = 'T';
+        placed++;
+    }
+}
+
+// Barriles: junto a algún muro (es donde hacen gracia) y sin cerrar ningún paso.
+function placeBarrels(grid, p, rng, copies) {
+    const { cols, rows } = p;
+    const n = p.barrels[0] + Math.floor(rng() * (p.barrels[1] - p.barrels[0] + 1));
+    const mid = (cols - 1) / 2;
+    for (let k = 0, placed = 0; placed < n && k < 80; k++) {
+        const c = 1 + Math.floor(rng() * (cols - 2)), r = 2 + Math.floor(rng() * Math.ceil((rows - 4) / 2));
+        const cells = copies(c, r);
+        if (cells.some(([cc, rr]) => grid[rr][cc] !== '.' || (Math.abs(cc - mid) <= 1 && (rr <= 2 || rr >= rows - 3)))) continue;
+        // Pegado a un muro y con un pasillo de "gap" casillas libre por el otro lado
+        const wall = [[1, 0], [-1, 0], [0, 1], [0, -1]].find(([dc, dr]) => solid(grid[r + dr][c + dc]));
+        if (!wall) continue;
+        let roomy = true;
+        for (let g = 1; g <= p.gap; g++) {
+            const rr = r - wall[1] * g, cc = c - wall[0] * g;
+            if (rr <= 0 || cc <= 0 || rr >= rows - 1 || cc >= cols - 1 || solid(grid[rr][cc])) roomy = false;
+        }
+        if (!roomy) continue;
+        for (const [cc, rr] of cells) grid[rr][cc] = 'X';
+        if (connected(grid, p)) placed++;
+        else for (const [cc, rr] of cells) grid[rr][cc] = '.';
     }
 }
 
@@ -171,7 +216,30 @@ function hasMargin(grid, set, cols, rows, gap = 1) {
     return true;
 }
 
-const solid = (ch) => ch === '#' || ch === 'B' || ch === 'D';
+const solid = (ch) => ch === '#' || ch === 'B' || ch === 'D' || ch === 'X';
+
+// ¿Todo el suelo se alcanza desde la salida del jugador (4 direcciones)?
+function connected(grid, p) {
+    const { cols, rows } = p;
+    let open = 0, start = null;
+    for (let r = 1; r < rows - 1; r++) for (let c = 1; c < cols - 1; c++) {
+        if (solid(grid[r][c])) continue;
+        open++;
+        if (grid[r][c] === 'P') start = [c, r];
+    }
+    const seen = new Set([start[1] * cols + start[0]]);
+    const stack = [start];
+    while (stack.length) {
+        const [c, r] = stack.pop();
+        for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+            const nc = c + dc, nr = r + dr, key = nr * cols + nc;
+            if (seen.has(key) || solid(grid[nr][nc])) continue;
+            seen.add(key);
+            stack.push([nc, nr]);
+        }
+    }
+    return seen.size === open;
+}
 
 function isGood(grid, p) {
     const { cols, rows } = p;

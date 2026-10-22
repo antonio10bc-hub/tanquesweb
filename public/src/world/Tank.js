@@ -39,6 +39,9 @@ export class Tank {
         this.cloak = 0;
         this.radar = 0;
         this.inBush = false;
+        this.vx = 0;         // velocidad real (sobre hielo tarda en cambiar)
+        this.vz = 0;
+        this.tpLock = null;  // teletransporte del que acaba de salir (hay que pisar fuera para volver a usarlo)
         this.slowT = 0;      // pisando hielo o caramelo: va más lento mientras dure
         this.slowMult = 1;
         this.chargeT = 0;    // embestida de un jefe: corre mucho más durante este tiempo
@@ -98,12 +101,29 @@ export class Tank {
         this.moving = len > 0.12;
 
         const w = this.weapon;
-        if (this.moving) {
-            const speed = this.speed * (this.turbo > 0 ? this.speedMult : 1) *
-                (this.slowT > 0 ? this.slowMult : 1) * (this.chargeT > 0 ? this.chargeMult : 1);
-            this.x += ix * speed * dt;
-            this.z += iz * speed * dt;
+        const speed = this.speed * (this.turbo > 0 ? this.speedMult : 1) *
+            (this.slowT > 0 ? this.slowMult : 1) * (this.chargeT > 0 ? this.chargeMult : 1);
+        const tx = this.moving ? ix * speed : 0, tz = this.moving ? iz * speed : 0;
+        if (world.arena.iceAt(this.x, this.z)) {
+            // Hielo: la velocidad cambia despacio, así que resbalas al frenar y al girar
+            const k = Math.min(1, 2.2 * dt);
+            this.vx += (tx - this.vx) * k;
+            this.vz += (tz - this.vz) * k;
+        } else {
+            this.vx = tx;
+            this.vz = tz;
+        }
+        if (this.vx || this.vz) {
+            const ox = this.x + this.vx * dt, oz = this.z + this.vz * dt;
+            this.x = ox;
+            this.z = oz;
             world.arena.resolveCircle(this, this.radius);
+            // Contra un muro se pierde la velocidad en esa dirección
+            if (Math.abs(this.x - ox) > 1e-4) this.vx = 0;
+            if (Math.abs(this.z - oz) > 1e-4) this.vz = 0;
+            if (Math.hypot(this.vx, this.vz) < 0.05) this.vx = this.vz = 0;
+        }
+        if (this.moving) {
             this.yaw = turnTowards(this.yaw, Math.atan2(ix, iz), 14 * dt);
             this.aimYaw = turnTowards(this.aimYaw, this.yaw, 14 * dt);
             if (this.cooldown < w.firstShotDelay) this.cooldown = w.firstShotDelay;

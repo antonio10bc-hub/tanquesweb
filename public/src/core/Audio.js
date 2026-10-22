@@ -110,6 +110,7 @@ export class Sfx {
             case 'bounceGet': this.seq('square', [523, 784, 659, 1047], 0.05, 0.12, 0.08); break;
             case 'radar': this.tone('sine', 1320, 1320, 0.08, 0.15); this.tone('sine', 1320, 1320, 0.08, 0.1, 0, 0.25); break;
             case 'pause': this.tone('square', 660, 440, 0.08, 0.12); break;
+            case 'teleport': this.tone('sine', 300, 1500, 0.18, 0.14, pan); this.tone('square', 1500, 600, 0.12, 0.06, pan, 0.16); break;
             case 'triple': this.seq('square', [880, 1175, 1568], 0.04, 0.12, 0.08); break;
             case 'decoy': this.tone('triangle', 300, 900, 0.25, 0.14); this.noise(0.3, 0.25, 3000); break;
             case 'decoyPop': this.tone('square', 700, 120, 0.2, 0.14, pan); this.noise(0.25, 0.3, 2500, pan); break;

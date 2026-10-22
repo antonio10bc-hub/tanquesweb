@@ -36,6 +36,10 @@ cargado para que lo guarde, así que no hay lista de archivos que mantener a man
     quema la hierba y hace 4 de daño (también a quien la lanza).
 - **Hierba alta**: dentro solo te ven casi pegados y disparar te delata un instante. Se mueve al pasar.
 - **Muros rompibles**: aguantan 3 balas.
+- **Casillas especiales** según el tema: **hielo** (nieve, espacio) en el que resbalas,
+  **teletransportes** por parejas (caramelo, playa, ciudad, espacio, arcoíris) y **barriles
+  explosivos** (desierto, volcán, ciudad, playa, pradera) que revientan de un disparo, dañan a los
+  tanques cercanos, rompen muros y estallan en cadena.
 - **Tres modos**: **Partida rápida** (duelo contra un rival), **Campaña** y **Supervivencia** (cada
   oleada trae un enemigo más, hasta 8, de soldados, exploradores y brutos, todos con 2 de vida;
   recuperas 2 de vida al superar cada oleada y se guarda tu récord).

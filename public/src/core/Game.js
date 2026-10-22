@@ -11,6 +11,7 @@ import { NukeView } from '../render/NukeView.js';
 import { HazardView } from '../render/HazardView.js';
 import { weatherParticle } from '../render/weather.js';
 import { CampaignMap } from '../ui/CampaignMap.js';
+import { COMMON_WALLS } from '../world/Arena.js';
 import { BulletSystem, FIRE as FLAMES } from '../world/Bullets.js';
 import { World } from '../world/World.js';
 import { EventBus } from './EventBus.js';
@@ -812,7 +813,7 @@ export class Game {
         });
 
         ev.on('tileHit', (c, r, res, color, style = 'crate') => {
-            const st = this.theme.walls[style] || this.theme.walls.crate, x = c + 0.5, z = r + 0.5;
+            const st = this.theme.walls[style] || COMMON_WALLS[style] || this.theme.walls.crate, x = c + 0.5, z = r + 0.5;
             if (res === 'broken') {
                 this.particles.burst(x, 0.5, z, 34, [st.top, st.side, 0xffffff], { speed: 4, up: 5, size: 0.2, ttl: 1, grav: 14 });
                 this.waves.spawn(x, z, st.top, 1.8, 0.4);
@@ -855,6 +856,33 @@ export class Game {
         });
 
         ev.on('nukeBoom', (n) => this.nukeFx(n));
+
+        ev.on('barrelBoom', (x, z, R) => {
+            this.particles.burst(x, 0.4, z, 50, FIRE, { speed: R * 3, up: 5, size: 0.22, ttl: 0.7, grav: 4 });
+            this.particles.burst(x, 0.8, z, 20, [0x5a4a6a, 0x8a7a9a], { speed: 1.5, up: 4, size: 0.3, ttl: 1.1, grav: -1 });
+            this.waves.spawn(x, z, 0xffe03a, R, 0.45);
+            this.waves.spawn(x, z, 0xff3e1f, R * 1.3, 0.7);
+            this.rig.shake(0.6);
+            this.renderer.flash(0xffb03a, 0.35);
+            this.hitStop = Math.max(this.hitStop, 0.05);
+            this.sfx.play('boom', this.panOf(x));
+            vibrate('crate');
+            const mark = new THREE.Mesh(new THREE.CircleGeometry(R * 0.7, 10),
+                new THREE.MeshBasicMaterial({ color: this.theme.scorch, transparent: true, opacity: 0.45, depthWrite: false }));
+            mark.position.set(x, 0.014, z);
+            mark.rotation.set(-Math.PI / 2, 0, Math.random() * Math.PI);
+            this.world.root.add(mark);
+            this.world.arena.trash.push(mark.material, mark.geometry);
+        });
+
+        ev.on('teleport', (tank, from, to) => {
+            for (const p of [from, to]) {
+                this.particles.burst(p.x, 0.5, p.z, 22, [0x9af6ff, 0x7b5cff, 0xffffff], { speed: 2.5, up: 3, size: 0.12, ttl: 0.5, grav: -2 });
+                this.waves.spawn(p.x, p.z, 0x9af6ff, 1.2, 0.35);
+            }
+            // El rival solo lo nota si te estaba viendo
+            if (tank === this.world.player || tank.viewFade > 0.4) this.sfx.play('teleport', this.panOf(to.x));
+        });
 
         // Señuelo: una nube de humo al soltarlo (tapa el cambio) y un "¡puf!" al deshacerse
         ev.on('decoy', (d) => {
