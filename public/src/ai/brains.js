@@ -9,6 +9,16 @@ export const BRAINS = {
     player: (params, ctx) => new PlayerBrain(ctx.input),
     hunter: (params) => new HunterBrain(params),
     boss: (params) => new BossBrain(params),
+    // Señuelo: quieto, sin disparar y delatándose hasta que se deshace
+    decoy: (params) => ({
+        life: params.life || 6,
+        update(tank, dt, world) {
+            tank.intent.x = tank.intent.z = 0;
+            tank.cooldown = 99;
+            tank.reveal = 99;
+            if ((this.life -= dt) <= 0) world.popDecoy(tank);
+        },
+    }),
 };
 
 export function createBrain(id, params, ctx) {

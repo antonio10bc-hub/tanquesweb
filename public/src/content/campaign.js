@@ -11,7 +11,7 @@
 
 // Arena de jefe: algo más grande y con pasillos de 2 casillas para que quepa el gigante.
 const BOSS_ARENA = { cols: 15, rows: 21, pieces: [4, 7], density: [0.07, 0.2], gap: 2, spawnClear: 3 };
-const BOSS_PICKUPS = { kinds: { heal: 3, shield: 2, power: 2, bounce: 1, turbo: 1, radar: 2, nuke: 1 }, lifetime: 6 };
+const BOSS_PICKUPS = { kinds: { heal: 3, shield: 2, power: 2, bounce: 1, turbo: 1, radar: 2, triple: 2, decoy: 2, nuke: 1 }, lifetime: 6 };
 
 // Mapa fijo de respaldo con pasillos anchos.
 const BOSS_FALLBACK = [

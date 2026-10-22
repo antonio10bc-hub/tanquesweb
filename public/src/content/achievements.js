@@ -1,5 +1,9 @@
 // Logros. Los que tienen "progress" muestran una barra (valor actual, objetivo) a partir de
 // las estadísticas guardadas; el resto se consiguen con una hazaña concreta (core/Achievements.js).
+import { PICKUPS } from './pickups.js';
+
+const KINDS = Object.keys(PICKUPS).length;
+
 export const ACHIEVEMENTS = [
     { id: 'first_win', name: 'PRIMERA VICTORIA', desc: 'Gana una partida rápida.' },
     { id: 'untouched', name: 'INTOCABLE', desc: 'Gana una partida rápida sin recibir ni un impacto.' },
@@ -9,7 +13,7 @@ export const ACHIEVEMENTS = [
     { id: 'bounce_kill', name: 'CARAMBOLA', desc: 'Remata a un rival con una bala rebotada.' },
     { id: 'bush_kill', name: 'EMBOSCADA', desc: 'Remata a un rival desde la hierba alta.' },
     { id: 'demolisher', name: 'DEMOLEDOR', desc: 'Rompe 25 muros.', progress: (s) => [s.cratesBroken, 25] },
-    { id: 'collector', name: 'COLECCIONISTA', desc: 'Recoge los 8 tipos de objeto.', progress: (s) => [s.pickupKinds.length, 8] },
+    { id: 'collector', name: 'COLECCIONISTA', desc: `Recoge los ${KINDS} tipos de objeto.`, progress: (s) => [s.pickupKinds.length, KINDS] },
     { id: 'wave5', name: 'SUPERVIVIENTE', desc: 'Supera 5 oleadas en supervivencia.', progress: (s) => [s.bestWave, 5] },
     { id: 'wave10', name: 'IMPARABLE', desc: 'Supera 10 oleadas en supervivencia.', progress: (s) => [s.bestWave, 10] },
     { id: 'rich', name: 'HUCHA', desc: 'Consigue 5 monedas de oro.', progress: (s) => [s.coinsEarned, 5] },

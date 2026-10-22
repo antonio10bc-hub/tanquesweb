@@ -57,6 +57,24 @@ const BUILDERS = {
         add(0.28, 0.28, 0.5, def.color, 0, 0, 0, false);
         add(0.1, 0.1, 0.1, def.accent, -0.1, 0.12, 0.22, false);
     },
+    // Tres balas en abanico: triple disparo
+    triple(add, def) {
+        for (const [x, r] of [[-0.24, 0.45], [0, 0], [0.24, -0.45]]) {
+            const b = add(0.16, 0.3, 0.16, def.color, x, x === 0 ? 0.06 : -0.02, 0);
+            b.rotation.z = r;
+            const tip = add(0.1, 0.1, 0.1, 0xffffff, x - Math.sin(r) * 0.2, (x === 0 ? 0.06 : -0.02) + Math.cos(r) * 0.2, 0, false);
+            tip.rotation.z = r;
+        }
+        add(0.6, 0.08, 0.14, def.accent, 0, -0.28, 0);
+    },
+    // Tanquecito holográfico con antifaz: señuelo
+    decoy(add, def) {
+        add(0.5, 0.2, 0.34, def.color, 0, -0.1, 0);
+        add(0.3, 0.18, 0.26, def.color, 0, 0.1, 0);
+        add(0.08, 0.08, 0.26, def.accent, 0, 0.1, 0.24);
+        add(0.34, 0.07, 0.04, 0x1b0b33, 0, 0.13, 0.14, false);
+        for (const x of [-0.08, 0.08]) add(0.05, 0.04, 0.04, def.accent, x, 0.13, 0.16, false);
+    },
     // Bomba nuclear: cuerpo negro con franja y aletas amarillas
     nuke(add, def) {
         buildBomb(add, def);

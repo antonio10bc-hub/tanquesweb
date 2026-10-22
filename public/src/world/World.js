@@ -73,13 +73,39 @@ export class World {
     }
 
     enemies() {
-        return this.tanks.filter((t) => t.team !== 'player');
+        return this.tanks.filter((t) => t.team !== 'player' && !t.decoy);
     }
 
     aliveEnemies() {
         let n = 0;
-        for (const t of this.tanks) if (t.team !== 'player' && t.alive) n++;
+        for (const t of this.tanks) if (t.team !== 'player' && t.alive && !t.decoy) n++;
         return n;
+    }
+
+    // Señuelo: una copia idéntica del tanque, quieta, que se delata sin parar (los rivales la
+    // ven desde cualquier sitio y van a por ella). Un impacto o el tiempo la deshacen.
+    spawnDecoy(owner, spec) {
+        const d = new Tank({ ...owner.def, hp: 1 }, owner.team, owner.x, owner.z, createBrain('decoy', spec, this.ctx));
+        d.decoy = true;
+        d.yaw = owner.yaw;
+        d.aimYaw = owner.aimYaw;
+        d.model = new TankModel(owner.def.palette, this.theme.outline, d.weapon.magazine, owner.model.skin);
+        d.model.addTo(this.root);
+        for (const other of this.tanks) {
+            if (other.team === d.team) continue;
+            other.know(d);
+            d.know(other);
+        }
+        this.tanks.push(d);
+        this.events.emit('decoy', d, owner);
+        return d;
+    }
+
+    popDecoy(d) {
+        if (!d.alive) return;
+        d.alive = false;
+        d.hp = 0;
+        this.events.emit('decoyPop', d);
     }
 
     // Reglas de visibilidad (iguales para jugador e IA):
@@ -208,6 +234,7 @@ export class World {
 
     // cause: 'bullet' | 'bounce' | 'nuke' | 'ram' | 'hazard' (para los logros)
     hitTank(tank, owner, damage, dirX, dirZ, x, z, color, cause = 'bullet') {
+        if (tank.decoy) return this.popDecoy(tank);
         const dealt = tank.damage(damage, dirX, dirZ, this);
         if (!dealt) {
             this.events.emit('shieldBreak', tank, x, z);

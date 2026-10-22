@@ -26,6 +26,8 @@ const FIRE = [0xffe03a, 0xff9a1f, 0xffffff, 0xff3e3e];
 const SPARKS = [0xff4fd8, 0xffffff, 0xffb3f0];
 const TURBO = [0x00e5ff, 0xffffff, 0x8af6ff];
 const NUKE = [0xffe600, 0x1b0b33, 0xffffff];
+const TRIPLE = [0x6ff6ff, 0xffffff, 0x2a8bff];
+const DECOY = [0xb46bff, 0xffffff, 0xe2dcff];
 const REPLAY = { length: 2.2, speed: 0.45 };
 // Escena de la fase 2 (segundos): ruge, estalla con el cartel, la cámara vuelve, sigue la partida
 const PHASE = { roar: 0.55, rage: 1.45, back: 2.6, end: 3.2 };
@@ -649,6 +651,7 @@ export class Game {
             let target;
             if (!playing || w.forceReveal) target = 1;
             else if (tank === player) target = tank.exposed ? 1 : tank.cloak > 0 ? 0.22 : stealth.playerGhost;
+            else if (tank.decoy && tank.team === player.team) target = 0.8; // tu señuelo: lo ves siempre
             else target = player.intel.get(tank)?.visible ? 1 : 0;
             tank.viewFade = approach(tank.viewFade, target, stealth.fadeSpeed * dt);
             tank.model.sync(dt, tank, tank.viewFade, this.rig.camera);
@@ -694,7 +697,7 @@ export class Game {
             }
 
             // Siguiente bala cargada: fuego o chispas rosas en la boca del cañón
-            const loaded = tank.nukeNext ? NUKE : tank.damageMult > 1 ? FLAMES : tank.bounceNext > 0 ? SPARKS : null;
+            const loaded = tank.nukeNext ? NUKE : tank.damageMult > 1 ? FLAMES : tank.bounceNext > 0 ? SPARKS : tank.tripleNext ? TRIPLE : null;
             if (loaded && shown) {
                 tank.fireT = (tank.fireT || 0) - dt;
                 if (tank.fireT <= 0) {
@@ -715,7 +718,7 @@ export class Game {
                 }
             }
 
-            if (tank === player) continue;
+            if (tank === player || (tank.decoy && tank.team === player.team)) continue;
             const info = player.intel.get(tank);
             const seen = !!info?.visible;
             if (playing && seen && !tank.wasSeen) {
@@ -789,7 +792,7 @@ export class Game {
             this.waves.spawn(item.x, item.z, d.color, 1.6, 0.4);
             if (me || tank.viewFade > 0.5) this.pickupFx(tank, item);
             if (me) {
-                const SOUNDS = { heal: 'heal', power: 'power', shield: 'shieldGet', turbo: 'turbo', cloak: 'cloak', bounce: 'bounceGet', radar: 'radar', nuke: 'nukeGet' };
+                const SOUNDS = { heal: 'heal', power: 'power', shield: 'shieldGet', turbo: 'turbo', cloak: 'cloak', bounce: 'bounceGet', radar: 'radar', nuke: 'nukeGet', triple: 'triple', decoy: 'decoy' };
                 this.sfx.play(SOUNDS[item.kind] || 'heal');
                 this.renderer.flash(d.color, 0.25);
                 vibrate('pickup');
@@ -852,6 +855,18 @@ export class Game {
         });
 
         ev.on('nukeBoom', (n) => this.nukeFx(n));
+
+        // Señuelo: una nube de humo al soltarlo (tapa el cambio) y un "¡puf!" al deshacerse
+        ev.on('decoy', (d) => {
+            this.particles.burst(d.x, 0.5, d.z, 34, DECOY, { speed: 2.4, up: 2, size: 0.24, ttl: 0.8, grav: -1 });
+            this.waves.spawn(d.x, d.z, 0xb46bff, 1.4, 0.4);
+        });
+        ev.on('decoyPop', (d) => {
+            this.particles.burst(d.x, 0.5, d.z, 30, DECOY, { speed: 3, up: 3, size: 0.2, ttl: 0.7, grav: 2 });
+            this.markers.pop(d.x, 1.2, d.z, '?', 0xb46bff, this.theme.outline);
+            this.sfx.play('decoyPop', this.panOf(d.x));
+            this.markers.hideGhost(d.id);
+        });
 
         ev.on('death', (tank) => {
             if (this.boss && tank.team !== 'player' && tank !== this.boss && this.fallen === this.boss) return;
@@ -1065,6 +1080,9 @@ export class Game {
                 break;
             case 'nuke':
                 this.particles.burst(x, 0.6, z, 24, NUKE, { speed: 2.5, up: 4, size: 0.12, ttl: 0.6, grav: 6 });
+                break;
+            case 'triple':
+                this.particles.burst(x, 0.6, z, 24, TRIPLE, { speed: 3, up: 3, size: 0.1, ttl: 0.5, grav: 6 });
                 break;
         }
     }

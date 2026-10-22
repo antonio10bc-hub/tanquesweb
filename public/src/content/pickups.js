@@ -53,6 +53,21 @@ export const PICKUPS = {
         useful: (t) => t.radar <= 0,
         desc: (d) => `Durante ${String(d.radar).replace('.', ',')} segundos ves al rival esté donde esté, aunque se esconda.`,
     },
+    triple: {
+        name: 'TRIPLE DISPARO',
+        triple: 3,            // balas de tu siguiente disparo, en abanico
+        spread: 0.22,         // apertura entre ellas (rad)
+        color: 0x6ff6ff, accent: 0x2a8bff,
+        useful: (t) => !t.tripleNext,
+        desc: (d) => `Tu siguiente disparo sale en abanico: ${d.triple} balas a la vez. Si llevas fuego o rebote, las ${d.triple} lo llevan.`,
+    },
+    decoy: {
+        name: 'SEÑUELO',
+        decoy: { life: 6, cloak: 1.5 }, // segundos que dura la copia / que tú eres invisible al soltarla
+        color: 0xb46bff, accent: 0xffffff,
+        useful: (t) => !t.def.boss,
+        desc: (d) => `Dejas una copia exacta de tu tanque que se delata y atrae a los rivales durante ${d.decoy.life} segundos. Tú te vuelves invisible un momento para escabullirte.`,
+    },
     nuke: {
         name: 'BOMBA NUCLEAR',
         nuke: { radius: 3, damage: 4, flight: 1.4 }, // radio en tiles, daño a tanques, segundos en el aire

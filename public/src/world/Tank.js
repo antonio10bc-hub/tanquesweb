@@ -30,6 +30,9 @@ export class Tank {
         this.damageMult = 1; // >1 tras coger un potenciador: se gasta en el siguiente disparo
         this.bounceNext = 0; // rebotes de la siguiente bala
         this.nukeNext = null; // { radius, damage, flight } si el siguiente disparo es la bomba
+        this.tripleNext = 0; // balas en abanico del siguiente disparo (0: normal)
+        this.tripleSpread = 0;
+        this.decoy = false;  // copia falsa (objeto señuelo): no dispara y atrae a los rivales
         this.shield = 0;     // impactos que absorbe
         this.turbo = 0;      // segundos restantes de cada efecto temporal
         this.speedMult = 1;
@@ -150,10 +153,12 @@ export class Tank {
             this.nukeNext = null;
         } else {
             const power = this.damageMult, bounce = this.bounceNext;
+            const count = this.tripleNext || w.count, spread = this.tripleNext ? this.tripleSpread : w.spread;
             this.damageMult = 1;
             this.bounceNext = 0;
-            for (let k = 0; k < w.count; k++) {
-                world.bullets.spawn(this, mx, mz, this.aimYaw + (k - (w.count - 1) / 2) * w.spread, w, power, bounce);
+            this.tripleNext = 0;
+            for (let k = 0; k < count; k++) {
+                world.bullets.spawn(this, mx, mz, this.aimYaw + (k - (count - 1) / 2) * spread, w, power, bounce);
             }
         }
         const s = CONFIG.stealth;
@@ -176,6 +181,8 @@ export class Tank {
         if (def.bounce) this.bounceNext = Math.max(this.bounceNext, def.bounce);
         if (def.radar) this.radar = def.radar;
         if (def.nuke) this.nukeNext = def.nuke;
+        if (def.triple) { this.tripleNext = def.triple; this.tripleSpread = def.spread; }
+        if (def.decoy) { this.cloak = Math.max(this.cloak, def.decoy.cloak); this.reveal = 0; }
     }
 
     // Devuelve el daño realmente recibido (0 si lo para el escudo).

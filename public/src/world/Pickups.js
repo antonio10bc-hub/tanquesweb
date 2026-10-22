@@ -24,10 +24,11 @@ export class PickupSpawner {
         }
         cur.life += dt;
         for (const t of world.tanks) {
-            if (!t.alive) continue;
+            if (!t.alive || t.decoy) continue;
             const r = t.radius + this.rules.radius;
             if ((t.x - cur.x) ** 2 + (t.z - cur.z) ** 2 < r * r) {
                 t.applyPickup(cur.def);
+                if (cur.def.decoy) world.spawnDecoy(t, cur.def.decoy);
                 this.remove(this.rules.respawnDelay);
                 this.events.emit('pickup', t, cur);
                 return;
@@ -68,7 +69,7 @@ export class PickupSpawner {
     findSpot(world) {
         const { arena, tanks } = world;
         const r = this.rules;
-        const alive = tanks.filter((t) => t.alive);
+        const alive = tanks.filter((t) => t.alive && !t.decoy);
         const player = alive.find((t) => t.team === 'player');
         const valid = [], fair = [];
         for (let row = 0; row < arena.rows; row++) {
