@@ -1,4 +1,4 @@
-# Tanques DS
+# Tanques Invisibles
 
 Duelo de tanques voxel para un jugador con estética retro 3D estilo Nintendo DS:
 render a baja resolución escalado sin suavizado, color de 5 bits con trama (dither),

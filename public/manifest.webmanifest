@@ -1,7 +1,7 @@
 {
-  "name": "Tanques",
+  "name": "Tanques Invisibles",
   "short_name": "Tanques",
-  "description": "Duelo de tanques voxel con sigilo, en estética retro de consola portátil.",
+  "description": "Duelo de tanques con sigilo: muévete y eres invisible, para y disparas solo, pero disparar te delata.",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
@@ -9,8 +9,23 @@
   "background_color": "#1fb6ff",
   "theme_color": "#1b0b33",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

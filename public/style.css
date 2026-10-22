@@ -68,20 +68,43 @@ html, body {
     letter-spacing: 2px;
     line-height: 1;
 }
-.logo span {
+.logo .word { display: block; white-space: nowrap; }
+.logo .ch {
     display: inline-block;
     text-shadow:
         0 5px 0 var(--ink), 0 10px 0 var(--ink),
         4px 0 0 var(--ink), -4px 0 0 var(--ink), 0 -4px 0 var(--ink);
     animation: hop 1.6s steps(6) infinite;
 }
-.logo span:nth-child(7n+1) { color: var(--yellow); animation-delay: 0s; }
-.logo span:nth-child(7n+2) { color: var(--pink); animation-delay: .1s; }
-.logo span:nth-child(7n+3) { color: var(--cyan); animation-delay: .2s; }
-.logo span:nth-child(7n+4) { color: var(--orange); animation-delay: .3s; }
-.logo span:nth-child(7n+5) { color: #b6ff5c; animation-delay: .4s; }
-.logo span:nth-child(7n+6) { color: var(--purple); animation-delay: .5s; }
-.logo span:nth-child(7n+7) { color: var(--yellow); animation-delay: .6s; }
+.logo .ch:nth-child(7n+1) { color: var(--yellow); animation-delay: 0s; }
+.logo .ch:nth-child(7n+2) { color: var(--pink); animation-delay: .1s; }
+.logo .ch:nth-child(7n+3) { color: var(--cyan); animation-delay: .2s; }
+.logo .ch:nth-child(7n+4) { color: var(--orange); animation-delay: .3s; }
+.logo .ch:nth-child(7n+5) { color: #b6ff5c; animation-delay: .4s; }
+.logo .ch:nth-child(7n+6) { color: var(--purple); animation-delay: .5s; }
+.logo .ch:nth-child(7n+7) { color: var(--yellow); animation-delay: .6s; }
+
+/* "INVISIBLES": más pequeño, pálido y con letras que se desvanecen por turnos */
+.logo .ghost { margin-top: 14px; font-size: .58em; letter-spacing: 1px; }
+.logo .ghost .ch {
+    color: #e2dcff;
+    animation: hop 1.6s steps(6) infinite, vanish 2.4s steps(4) infinite;
+}
+.logo .ghost .ch:nth-child(n) { color: #e2dcff; }
+.logo .ghost .ch:nth-child(1) { animation-delay: 0s, 0s; }
+.logo .ghost .ch:nth-child(2) { animation-delay: .1s, .15s; }
+.logo .ghost .ch:nth-child(3) { animation-delay: .2s, .3s; }
+.logo .ghost .ch:nth-child(4) { animation-delay: .3s, .45s; }
+.logo .ghost .ch:nth-child(5) { animation-delay: .4s, .6s; }
+.logo .ghost .ch:nth-child(6) { animation-delay: .5s, .75s; }
+.logo .ghost .ch:nth-child(7) { animation-delay: .6s, .9s; }
+.logo .ghost .ch:nth-child(8) { animation-delay: .7s, 1.05s; }
+.logo .ghost .ch:nth-child(9) { animation-delay: .8s, 1.2s; }
+.logo .ghost .ch:nth-child(10) { animation-delay: .9s, 1.35s; }
+@keyframes vanish {
+    0%, 70%, 100% { opacity: 1; }
+    80%, 90% { opacity: .2; }
+}
 
 @keyframes hop {
     0%, 60%, 100% { transform: translateY(0); }
@@ -120,6 +143,16 @@ html, body {
     animation: pulse 1s steps(2) infinite;
 }
 .btn:active { transform: translateY(6px); box-shadow: 0 1px 0 var(--ink), inset 0 -2px 0 #ffb300; }
+/* JUGAR abajo del todo, como en los juegos de móvil (en pantallas muy bajas, en su sitio) */
+#menu #btn-play {
+    position: absolute;
+    left: 50%;
+    bottom: calc(max(28px, env(safe-area-inset-bottom)) + 20px);
+    translate: -50% 0;
+}
+@media (max-height: 620px) {
+    #menu #btn-play { position: static; translate: none; }
+}
 .btn:disabled { opacity: .6; animation: none; cursor: wait; }
 
 @keyframes pulse {

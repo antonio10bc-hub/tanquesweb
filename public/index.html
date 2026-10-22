@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#1b0b33">
-    <title>Tanques DS</title>
+    <title>Tanques Invisibles</title>
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" type="image/png" href="icons/favicon-64.png">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -56,10 +56,10 @@
     </div>
 
     <div id="menu" class="screen">
-        <h1 class="logo">
-            <span>T</span><span>A</span><span>N</span><span>Q</span><span>U</span><span>E</span><span>S</span>
+        <h1 class="logo" aria-label="Tanques Invisibles">
+            <span class="word"><span class="ch">T</span><span class="ch">A</span><span class="ch">N</span><span class="ch">Q</span><span class="ch">U</span><span class="ch">E</span><span class="ch">S</span></span>
+            <span class="word ghost"><span class="ch">I</span><span class="ch">N</span><span class="ch">V</span><span class="ch">I</span><span class="ch">S</span><span class="ch">I</span><span class="ch">B</span><span class="ch">L</span><span class="ch">E</span><span class="ch">S</span></span>
         </h1>
-        <button id="btn-play" class="btn" disabled>CARGANDO...</button>
         <button id="btn-items" class="items-btn" aria-label="Objetos">
             <canvas width="48" height="48"></canvas>
             <span>OBJETOS</span>
@@ -69,11 +69,11 @@
             PARA Y DISPARAS SOLO<br>
             <em>PERO DISPARAR TE DELATA</em>
         </p>
+        <button id="btn-play" class="btn" disabled>CARGANDO...</button>
     </div>
 
     <div id="glossary" class="screen glossary hidden">
         <h2 class="end-title">OBJETOS</h2>
-        <p class="tag">SALEN DE UNO EN UNO</p>
         <div id="glossary-list" class="glossary-list"></div>
         <button id="btn-glossary-close" class="btn btn-small">VOLVER</button>
     </div>

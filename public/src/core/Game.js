@@ -252,6 +252,7 @@ export class Game {
         this.setState('end');
         this.timeScale = 1;
         this.hud.showReplay(false);
+        this.hud.showHint(false);
         this.bullets.clear();
         this.world.forceReveal = true;
         for (const t of this.world.tanks) t.alive = t.hp > 0;
