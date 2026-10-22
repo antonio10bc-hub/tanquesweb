@@ -212,7 +212,7 @@ export class Tank {
             this.flash = 0.6;
             return 0;
         }
-        this.hp = Math.max(0, this.hp - amount);
+        this.hp = Math.max(this.immortal ? 1 : 0, this.hp - amount); // tutorial: nunca llega a 0
         this.flash = 1;
         this.reveal = Math.max(this.reveal, CONFIG.stealth.revealOnHit);
         this.x += dirX * 0.15;

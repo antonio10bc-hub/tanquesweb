@@ -10,6 +10,14 @@ export const BRAINS = {
     player2: (params, ctx) => new PlayerBrain(ctx.input2), // duelo en un móvil
     hunter: (params) => new HunterBrain(params),
     boss: (params) => new BossBrain(params),
+    // Muñeco del tutorial: quieto, sin disparar y siempre a la vista
+    dummy: () => ({
+        update(tank) {
+            tank.intent.x = tank.intent.z = 0;
+            tank.cooldown = 99;
+            tank.reveal = 99;
+        },
+    }),
     // Señuelo: quieto, sin disparar y delatándose hasta que se deshace
     decoy: (params) => ({
         life: params.life || 6,

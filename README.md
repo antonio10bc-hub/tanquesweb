@@ -18,6 +18,10 @@ cargado para que lo guarde, así que no hay lista de archivos que mantener a man
 
 ## Cómo se juega
 
+La primera vez que se abre empieza un **tutorial** muy corto (se puede saltar y repetir desde
+Ajustes): moverse, disparar al pararse (y que eso te delata y recargas), esconderse en la hierba,
+coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu primer combate.
+
 - **Joystick flotante** (táctil/ratón, donde toques) o **WASD / flechas**.
 - **Mientras te mueves no disparas y eres invisible** para el rival.
 - **Si te paras, disparas solo cada 1 s** hacia el rival (o hacia donde lo viste por última vez),

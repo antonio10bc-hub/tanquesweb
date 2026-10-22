@@ -36,7 +36,7 @@ export class Achievements {
                 this.unlock('boss1');
                 if (world === 'secret') this.unlock('prisma');
             }
-            if (win && mode !== 'duel' && player().hp === 1) this.unlock('clutch');
+            if (win && mode !== 'duel' && mode !== 'tutorial' && player().hp === 1) this.unlock('clutch');
             this.check();
         });
         ev.on('waveCleared', () => this.check());

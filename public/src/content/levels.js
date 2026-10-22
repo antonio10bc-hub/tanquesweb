@@ -93,6 +93,34 @@ LEVELS.supervivencia = {
     enemies: [{ tank: 'grunt', spawn: 'E', brain: 'hunter', hp: 2, params: { dodge: 0.25 } }],
 };
 
+// Tutorial de la primera partida (core/Tutorial.js): arena pequeña y fija.
+const TUTORIAL_MAP = [
+    '#############',
+    '#...........#',
+    '#.....E.....#',
+    '#...........#',
+    '#..##...##..#',
+    '#...........#',
+    '#ggg.....ggg#',
+    '#ggg.....ggg#',
+    '#...........#',
+    '#...........#',
+    '#...........#',
+    '#.....P.....#',
+    '#############',
+];
+
+LEVELS.tutorial = {
+    name: 'TUTORIAL',
+    tagline: 'APRENDE LO BÁSICO',
+    tutorial: true,
+    themes: ['meadow'],
+    map: TUTORIAL_MAP,
+    pickups: { kinds: { heal: 2, power: 2, shield: 1 }, firstDelay: 1e9, lifetime: 1e9 },
+    player: { tank: 'hero', spawn: 'P' },
+    enemies: [],
+};
+
 // Duelo local: dos personas en el mismo móvil. No entra en la rotación de partidas rápidas.
 LEVELS.duelo = {
     name: 'DUELO',

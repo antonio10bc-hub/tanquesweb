@@ -12,6 +12,7 @@ import { HazardView } from '../render/HazardView.js';
 import { weatherParticle } from '../render/weather.js';
 import { CampaignMap } from '../ui/CampaignMap.js';
 import { drawMinimap } from '../ui/Minimap.js';
+import { Tutorial } from './Tutorial.js';
 import { COMMON_WALLS } from '../world/Arena.js';
 import { BulletSystem, FIRE as FLAMES } from '../world/Bullets.js';
 import { World } from '../world/World.js';
@@ -99,6 +100,7 @@ export class Game {
         this.bindEvents();
         this.bindUi();
         this.campaign = new CampaignMap(this);
+        this.tutorial = new Tutorial(this);
 
         this.last = performance.now();
         this.frame = this.frame.bind(this);
@@ -112,6 +114,7 @@ export class Game {
         hud.onQuit = () => {
             this.resume(true);
             this.music.stop();
+            if (this.mode === 'tutorial') this.finishTutorial();
             if (this.mode === 'campaign') this.showCampaign();
             else this.showMenu();
         };
@@ -154,7 +157,7 @@ export class Game {
 
     // ---------- Flujo ----------
     randomLevel() {
-        const all = Object.keys(LEVELS).filter((id) => !LEVELS[id].survival && !LEVELS[id].campaign && !LEVELS[id].duel);
+        const all = Object.keys(LEVELS).filter((id) => !LEVELS[id].survival && !LEVELS[id].campaign && !LEVELS[id].duel && !LEVELS[id].tutorial);
         const ids = all.filter((id) => id !== this.levelId);
         return pick(ids.length ? ids : all);
     }
@@ -218,6 +221,7 @@ export class Game {
     again() {
         if (this.mode === 'survival') this.startSurvival();
         else if (this.mode === 'duel') this.startDuel();
+        else if (this.mode === 'tutorial') this.startTutorial();
         else if (this.mode === 'campaign') this.startBoss(this.worldId, this.hard);
         else this.startMatch();
     }
@@ -258,7 +262,8 @@ export class Game {
         this.streak = 0;
         this.lastKill = null;
         this.load(levelId, seed, themeId);
-        this.mode = this.def.survival ? 'survival' : this.def.campaign ? 'campaign' : this.def.duel ? 'duel' : 'quick';
+        this.tutorial.stop();
+        this.mode = this.def.survival ? 'survival' : this.def.campaign ? 'campaign' : this.def.duel ? 'duel' : this.def.tutorial ? 'tutorial' : 'quick';
         const duel = this.mode === 'duel';
         this.input.setSide(duel ? 'bottom' : null);
         this.input2.setSide(duel ? 'top' : null);
@@ -280,7 +285,7 @@ export class Game {
         this.playTime = 0;
         this.damageTaken = 0;
         this.hud.showBoss(this.boss ? this.boss.def.name : null);
-        this.hud.endButtons('OTRA VEZ', this.mode === 'campaign' ? 'VER EL MAPA' : 'MENÚ PRINCIPAL');
+        this.hud.endButtons(this.mode === 'tutorial' ? 'REPETIR' : 'OTRA VEZ', this.mode === 'campaign' ? 'VER EL MAPA' : 'MENÚ PRINCIPAL');
         this.wave = 1;
         this.waveSize = this.world.enemies().length;
         this.waveClear = false;
@@ -299,7 +304,7 @@ export class Game {
         this.hud.screen('play');
         this.hud.showReplay(false);
         this.hud.showHint(true);
-        if (!this.boss) this.hud.stage(this.def.name, `${this.theme.name} · ${this.def.tagline}`);
+        if (!this.boss && this.mode !== 'tutorial') this.hud.stage(this.def.name, `${this.theme.name} · ${this.def.tagline}`);
         this.rig.zoomTarget = 1.6;
         this.rig.yawTarget = 0.7;
         this.rig.focus(this.world.player.x, this.world.player.z);
@@ -315,6 +320,20 @@ export class Game {
         this.input.setEnabled(on, capture);
         const duel = this.mode === 'duel' && (this.state === 'intro' || this.state === 'play');
         this.input2.setEnabled(duel && on, duel && capture);
+    }
+
+    // Tutorial de la primera partida
+    startTutorial() {
+        this.startMatch('tutorial');
+    }
+
+    // Saltar o dejar el tutorial también cuenta como visto (no vuelve a salir solo)
+    finishTutorial() {
+        this.tutorial.stop();
+        if (!Profile.data.tutorialDone) {
+            Profile.data.tutorialDone = true;
+            Profile.save();
+        }
     }
 
     startDuel() {
@@ -404,7 +423,10 @@ export class Game {
         for (const t of this.world.tanks) t.alive = t.hp > 0;
         const p = this.world.player;
         const st = Profile.data.stats;
-        if (this.mode === 'duel') {
+        if (this.mode === 'tutorial') {
+            this.finishTutorial();
+            this.hud.showEnd(true, 'YA SABES LO BÁSICO: ¡A JUGAR!', '¡TUTORIAL COMPLETADO!');
+        } else if (this.mode === 'duel') {
             this.hud.showEnd(true, win ? 'EL JUGADOR 2 HA CAÍDO' : 'EL JUGADOR 1 HA CAÍDO', win ? '¡GANA EL J1!' : '¡GANA EL J2!');
         } else if (this.mode === 'campaign') {
             const w = WORLD_BY_ID[this.worldId], hard = this.hard;
@@ -510,7 +532,10 @@ export class Game {
                 this.playTime += simDt;
                 this.recorder.record(simDt, w, this.bullets);
                 this.updateDrops(dt);
-                if (!w.player.alive) this.endMatch(false);
+                if (this.mode === 'tutorial') {
+                    this.tutorial.update(dt);
+                    if (this.tutorial.step === 4 && w.aliveEnemies() === 0) this.endMatch(true);
+                } else if (!w.player.alive) this.endMatch(false);
                 else if (this.mode === 'survival') this.updateSurvival(dt);
                 else if (this.mode === 'campaign') { if (!this.boss.alive) this.endMatch(true); }
                 else if (w.aliveEnemies() === 0) this.endMatch(true);
@@ -527,7 +552,7 @@ export class Game {
                 break;
         }
 
-        const p = w.player, e = w.enemies()[0];
+        const p = w.player, e = w.enemies().find((t) => t.alive) || w.enemies()[0];
         this.hud.setHp('p', p.hp, p.maxHp);
         // Supervivencia: el panel del rival cuenta los enemigos que quedan en la oleada
         if (this.mode === 'survival') this.hud.setHp('e', w.aliveEnemies(), this.waveSize);
@@ -614,6 +639,14 @@ export class Game {
         // Jefes: antes de la cuenta atrás, su presentación
         const extra = this.boss ? BOSS_INTRO.extra : 0;
         if (this.boss) this.updateBossIntro(t);
+        // Tutorial: sin cuenta atrás, en cuanto aterriza ya puedes moverte
+        if (this.mode === 'tutorial' && t >= 0.9) {
+            this.world.forceReveal = false;
+            this.setInputs(true);
+            this.setState('play');
+            this.tutorial.start();
+            return;
+        }
         this.world.tanks.forEach((tank, i) => {
             const start = 0.25 + i * 0.25;
             const k = clamp((t - start) / m.dropTime, 0, 1);

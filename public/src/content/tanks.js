@@ -16,6 +16,15 @@ export const TANKS = {
         weapon: 'cannon',
         palette: { body: 0xff3e8e, accent: 0xff9a1f, tread: 0x3a1640, barrel: 0xfff6e8, bullet: 0xff9fd0 },
     },
+    // Muñeco de entrenamiento del tutorial (de paja)
+    dummy: {
+        name: 'MUÑECO',
+        hp: 99,
+        speed: 0,
+        radius: 0.36,
+        weapon: 'cannon',
+        palette: { body: 0xe8c070, accent: 0xc44a3a, tread: 0x7a5a3a, barrel: 0xd8b080, bullet: 0xffffff },
+    },
     // Enemigos de supervivencia: más débiles por separado, peligrosos en grupo
     grunt: {
         name: 'SOLDADO',

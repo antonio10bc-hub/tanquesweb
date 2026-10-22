@@ -52,6 +52,7 @@ hud.onAgain = () => {
 
 hud.onMenu = () => {
     sfx.play('ui');
+    if (game.mode === 'tutorial') game.finishTutorial();
     game.music.stop();
     // Desde un jefe de la campaña se vuelve al mapa
     if (game.mode === 'campaign') game.showCampaign();
@@ -67,6 +68,20 @@ Profile.onChange(syncProfile);
 syncProfile();
 
 game.showMenu();
+// Primera vez que se abre el juego: directo al tutorial
+if (!Profile.data.tutorialDone) game.startTutorial();
+document.getElementById('btn-tut-skip').addEventListener('click', () => {
+    sfx.play('ui');
+    game.finishTutorial();
+    game.music.stop();
+    game.showMenu();
+});
+document.getElementById('btn-tutorial').addEventListener('click', () => {
+    sfx.unlock();
+    sfx.play('ui');
+    hud.showSettings(false);
+    game.startTutorial();
+});
 new Glossary(sfx);
 new Trophies(sfx);
 const garage = new Garage(sfx);

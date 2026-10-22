@@ -304,6 +304,36 @@ export class Hud {
         this.el.hud.classList.toggle('duel-mode', on);
     }
 
+    // ---------- Tutorial ----------
+    // title null: lo oculta. i/n: paso actual (puntitos de progreso).
+    tutorial(title, text, i, n) {
+        const box = document.getElementById('tut');
+        box.classList.toggle('hidden', !title);
+        this.el.hud.classList.toggle('tut-mode', !!title);
+        if (!title) return this.tutorialTip('', false);
+        document.getElementById('tut-title').textContent = title;
+        document.getElementById('tut-text').textContent = text;
+        document.getElementById('tut-dots').innerHTML = Array.from({ length: n }, (_, k) => `<i class="${k < i ? 'ok' : k === i ? 'now' : ''}"></i>`).join('');
+        box.classList.remove('pop', 'done');
+        void box.offsetWidth;
+        box.classList.add('pop');
+    }
+
+    // Pista extra bajo el paso; highlight resalta el aviso OCULTO / ¡VISIBLE!
+    tutorialTip(text, highlight) {
+        const tip = document.getElementById('tut-tip');
+        tip.textContent = text;
+        tip.classList.toggle('hidden', !text);
+        this.el.stealth.classList.toggle('hl', !!highlight);
+    }
+
+    tutorialDone() {
+        const box = document.getElementById('tut');
+        box.classList.remove('pop');
+        void box.offsetWidth;
+        box.classList.add('done');
+    }
+
     // ---------- Jefes ----------
     showBoss(name) {
         const bar = document.getElementById('bossbar');

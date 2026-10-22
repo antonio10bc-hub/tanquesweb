@@ -42,6 +42,14 @@
     </div>
 
     <div id="banner" class="banner"></div>
+    <!-- Tutorial: el paso actual arriba, con puntitos de progreso y botón para saltarlo -->
+    <div id="tut" class="tut hidden">
+        <div id="tut-dots" class="tut-dots"></div>
+        <div id="tut-title" class="tut-title"></div>
+        <div id="tut-text" class="tut-text"></div>
+        <div id="tut-tip" class="tut-tip hidden"></div>
+        <button id="btn-tut-skip" class="tut-skip">SALTAR</button>
+    </div>
     <div id="callout" class="callout"></div>
     <!-- Presentación del jefe: franjas que entran por los lados y su nombre en grande -->
     <div id="boss-intro" class="boss-intro">
@@ -192,6 +200,7 @@
             <button class="toggle" data-key="vibration">VIBRACIÓN</button>
         </div>
         <button id="btn-settings-close" class="btn btn-small">VOLVER</button>
+        <button id="btn-tutorial" class="btn btn-small">VER TUTORIAL</button>
         <button id="btn-reset" class="btn btn-small btn-danger">BORRAR PROGRESO</button>
     </div>
 

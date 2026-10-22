@@ -9,6 +9,7 @@ const fresh = () => ({
     paint: 'p_default',  // pintura equipada
     trail: 't_default',  // estela de bala equipada
     achievements: {},    // id -> fecha de desbloqueo
+    tutorialDone: false, // el tutorial sale solo la primera vez
     // Campaña: jefes derrotados y estrellas (1-3) por mundo; "hard" lo mismo en modo difícil
     campaign: { beaten: [], stars: {}, hard: { beaten: [], stars: {} } },
     stats: {
@@ -33,6 +34,8 @@ export const Profile = {
             const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
             if (saved) {
                 const base = fresh();
+                // Quien ya jugaba antes de que existiera el tutorial no lo necesita
+                if (saved.tutorialDone === undefined) saved.tutorialDone = !!((saved.stats && saved.stats.wins) || saved.coins || (saved.campaign && saved.campaign.beaten && saved.campaign.beaten.length));
                 this.data = {
                     ...base, ...saved,
                     stats: { ...base.stats, ...(saved.stats || {}) },
