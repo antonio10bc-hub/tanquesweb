@@ -11,6 +11,7 @@ import { NukeView } from '../render/NukeView.js';
 import { HazardView } from '../render/HazardView.js';
 import { weatherParticle } from '../render/weather.js';
 import { CampaignMap } from '../ui/CampaignMap.js';
+import { drawMinimap } from '../ui/Minimap.js';
 import { COMMON_WALLS } from '../world/Arena.js';
 import { BulletSystem, FIRE as FLAMES } from '../world/Bullets.js';
 import { World } from '../world/World.js';
@@ -290,6 +291,7 @@ export class Game {
         if (this.paused || (this.state !== 'play' && this.state !== 'intro')) return;
         this.paused = true;
         this.input.setEnabled(false);
+        drawMinimap(document.getElementById('pause-map'), this.world, this.theme);
         this.hud.showPause(true, Settings);
         this.sfx.play('pause');
         this.sfx.hold(true);
