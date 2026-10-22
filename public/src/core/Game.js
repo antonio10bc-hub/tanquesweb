@@ -63,6 +63,11 @@ export class Game {
 
         Settings.load();
         this.applySettings();
+        // Si la partida empezó antes de que el navegador dejara sonar el audio, la música
+        // arranca en cuanto lo permite (antes había que apagarla y encenderla a mano).
+        sfx.onStateChange = (state) => {
+            if (state === 'running' && Settings.music && !this.music.playing && (this.state === 'intro' || this.state === 'play')) this.startMusic();
+        };
 
         this.renderer.onResize = (w, h) => this.rig.resize(w / h);
         this.renderer.resize();
@@ -83,11 +88,15 @@ export class Game {
             this.music.stop();
             this.showMenu();
         };
+        hud.settingsSource = Settings;
+        hud.syncToggles(Settings);
         hud.onToggle = (key) => {
             Settings.toggle(key);
             this.applySettings();
             hud.syncToggles(Settings);
             if (key === 'vibration' && Settings.vibration) vibrate('pickup');
+            this.sfx.unlock();
+            this.sfx.play('ui');
         };
         this.input.onMove = () => hud.showHint(false);
 
@@ -205,14 +214,14 @@ export class Game {
         this.input.setEnabled(false);
         this.hud.showPause(true, Settings);
         this.sfx.play('pause');
-        if (this.sfx.ctx) this.sfx.ctx.suspend();
+        this.sfx.hold(true);
     }
 
     resume(silent) {
         if (!this.paused) return;
         this.paused = false;
         this.hud.showPause(false);
-        if (this.sfx.ctx) this.sfx.ctx.resume();
+        this.sfx.hold(false);
         if (!silent) this.input.setEnabled(this.state === 'play', true);
         this.last = performance.now();
     }

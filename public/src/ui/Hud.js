@@ -5,6 +5,7 @@ export class Hud {
         this.el = {
             hud: $('hud'), menu: $('menu'), end: $('end'), banner: $('banner'),
             play: $('btn-play'), again: $('btn-again'), endMenu: $('btn-end-menu'),
+            settings: $('settings'),
             pause: $('pause'), pauseBtn: $('btn-pause'), resume: $('btn-resume'), quit: $('btn-quit'),
             stage: $('stage'), stageName: $('stage-name'), stageSub: $('stage-sub'), replay: $('replay'),
             endTitle: $('end-title'), endSub: $('end-sub'),
@@ -21,6 +22,10 @@ export class Hud {
         this.onQuit = null;
         this.onToggle = null;
         this.el.pauseBtn.addEventListener('click', () => this.onPause && this.onPause());
+        $('btn-settings').addEventListener('click', () => this.showSettings(true));
+        $('btn-settings-close').addEventListener('click', () => this.showSettings(false));
+        window.addEventListener('keydown', (e) => e.code === 'Escape' && this.showSettings(false));
+        this.settingsSource = null;
         this.el.resume.addEventListener('click', () => this.onResume && this.onResume());
         this.el.quit.addEventListener('click', () => this.onQuit && this.onQuit());
         this.toggles = [...document.querySelectorAll('.toggle')];
@@ -45,6 +50,12 @@ export class Hud {
     showPause(on, settings) {
         this.el.pause.classList.toggle('hidden', !on);
         if (settings) this.syncToggles(settings);
+    }
+
+    // Pantalla de ajustes del menú principal (los mismos interruptores que la pausa).
+    showSettings(on) {
+        this.el.settings.classList.toggle('hidden', !on);
+        if (on && this.settingsSource) this.syncToggles(this.settingsSource);
     }
 
     syncToggles(settings) {

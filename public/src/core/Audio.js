@@ -6,12 +6,17 @@ export class Sfx {
         this.enabled = true; // efectos (la música va aparte, en core/Music.js)
     }
 
-    // Los navegadores exigen un gesto del usuario para arrancar el audio.
+    // Los navegadores exigen un gesto del usuario para arrancar el audio. Se llama en cada
+    // toque/tecla: crea el contexto la primera vez y lo reanuda siempre que no esté sonando
+    // (en iPhone el estado puede ser "interrupted", no solo "suspended").
     unlock() {
         if (!this.ctx) {
             const AC = window.AudioContext || window.webkitAudioContext;
             if (!AC) return;
+            // Safari 16.4+: que el interruptor de silencio del iPhone no apague el juego
+            try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { /* no disponible */ }
             this.ctx = new AC();
+            this.ctx.onstatechange = () => this.onStateChange && this.onStateChange(this.ctx.state);
             this.master = this.ctx.createGain();
             this.master.gain.value = this.volume;
             this.master.connect(this.ctx.destination);
@@ -20,7 +25,22 @@ export class Sfx {
             const data = this.noiseBuf.getChannelData(0);
             for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
         }
-        if (this.ctx.state === 'suspended') this.ctx.resume();
+        if (this.ctx.state !== 'running' && !this.held) {
+            this.ctx.resume().catch(() => {});
+            // Un sonido vacío dentro del gesto termina de desbloquear el audio en iOS
+            const src = this.ctx.createBufferSource();
+            src.buffer = this.ctx.createBuffer(1, 1, 22050);
+            src.connect(this.ctx.destination);
+            src.start(0);
+        }
+    }
+
+    // Pausa: suspende el audio y evita que un toque lo reanude mientras dura.
+    hold(on) {
+        this.held = on;
+        if (!this.ctx) return;
+        if (on) this.ctx.suspend().catch(() => {});
+        else this.ctx.resume().catch(() => {});
     }
 
     out(pan) {

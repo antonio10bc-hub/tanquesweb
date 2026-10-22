@@ -32,7 +32,7 @@ export class Music {
         this.prog = PROGRESSIONS[this.cfg.scale] || PROGRESSIONS.minor;
         this.melody = makeMelody(seed);
         this.bus = ctx.createGain();
-        this.bus.gain.value = 0;
+        this.bus.gain.setValueAtTime(0, ctx.currentTime);
         this.bus.gain.linearRampToValueAtTime(0.42, ctx.currentTime + 0.6);
         this.bus.connect(this.sfx.master);
         this.step = 0;

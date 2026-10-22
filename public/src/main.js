@@ -10,9 +10,11 @@ const sfx = new Sfx();
 const input = new Input(canvas, document.getElementById('joy'));
 const game = new Game({ canvas, hud, input, sfx });
 
+// Desbloqueo del audio en los gestos que los navegadores aceptan (Safari no acepta pointerdown)
 const unlock = () => sfx.unlock();
-window.addEventListener('pointerdown', unlock);
-window.addEventListener('keydown', unlock);
+for (const type of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']) {
+    window.addEventListener(type, unlock, { capture: true, passive: true });
+}
 
 // JUGAR: el escenario que se ve de fondo en el menú. OTRA VEZ: un arquetipo nuevo.
 hud.onPlay = () => {
