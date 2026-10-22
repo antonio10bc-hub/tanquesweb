@@ -56,6 +56,12 @@ export const ACHIEVEMENT_ICONS = {
     bosses: { bg: '#b46bff', rows: [
         '............', '............', '.K...KK...K.', 'KYK.KYYK.KYK', 'KYYKYYYYKYYK', 'KYYYYRYYYYYK',
         'KYYYRRRYYYYK', 'KYYYYRYYYYYK', 'KooooooooooK', 'KKKKKKKKKKKK', '............', '............'] },
+    stars_all: { bg: '#7b5cff', rows: [
+        '.....KK.....', '....KYYK....', '....KYYK....', 'KKKKYWYYKKKK', 'KYYYYWYYYYYK', '.KYYYYYYYYK.',
+        '..KYYYYYYK..', '..KYYYYYYK..', '.KYYYKKYYYK.', '.KYYK..KYYK.', 'KYKK....KKYK', 'KK........KK'] },
+    nightmare: { bg: '#ff2a3a', rows: [
+        '..KKKKKKKK..', '.KWWWWWWWWK.', 'KWWWWWWWWWWK', 'KWKKKWWKKKWK', 'KWKKKWWKKKWK', 'KWWKWWWWKWWK',
+        'KWWWWKKWWWWK', '.KWWWWWWWWK.', '..KWKWKWKK..', '..KWKWKWKK..', '...KKKKKK...', '............'] },
     prisma: { bg: 'rainbow', rows: [
         '............', '............', '...KKKKKK...', '..KRRRRRRK..', '.KRROOOORRK.', 'KROOYYYYOORK',
         'KROYGGGGYORK', 'KOYGBBBBGYOK', 'KOYGBKKBGYOK', 'KYGBK..KBGYK', 'KKKK....KKKK', '............'] },

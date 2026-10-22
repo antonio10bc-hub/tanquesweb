@@ -337,6 +337,40 @@ export class Hud {
         el.className = `streak show${n >= 5 ? ' top' : ''}`;
     }
 
+    // Presentación del jefe con su nombre en grande (dura lo mismo que la animación CSS)
+    bossIntro(name, tagline, world, hard) {
+        const el = document.getElementById('boss-intro');
+        document.getElementById('bi-name').textContent = name;
+        document.getElementById('bi-tag').textContent = tagline;
+        document.getElementById('bi-world').textContent = world;
+        el.className = 'boss-intro';
+        void el.offsetWidth;
+        el.className = `boss-intro show${hard ? ' hard' : ''}`;
+    }
+
+    // Estrellas al ganar a un jefe: aparecen una a una y debajo se explica cada una.
+    showStars(got, best, par, onStar) {
+        const box = document.getElementById('end-stars');
+        const stars = [...box.querySelectorAll('.star')];
+        box.classList.remove('hidden');
+        stars.forEach((s) => (s.className = 'star'));
+        const n = got.filter(Boolean).length;
+        const line = (ok, text) => (ok ? `<b>★ ${text}</b>` : `<s>☆ ${text}</s>`);
+        document.getElementById('stars-why').innerHTML = [
+            line(got[0], 'GANAR'), line(got[1], 'PERDER 2 DE VIDA COMO MUCHO'), line(got[2], `GANAR EN MENOS DE ${par} S`),
+        ].join('<br>') + (best > n ? `<br>RÉCORD: ${best} ★` : '');
+        clearTimeout(this.starTimer);
+        let k = 0;
+        const next = () => {
+            if (k >= 3) return;
+            if (k < n) stars[k].classList.add('on');
+            onStar(k);
+            k++;
+            this.starTimer = setTimeout(next, 380);
+        };
+        this.starTimer = setTimeout(next, 450);
+    }
+
     // Aviso del ataque especial que viene ("¡OLA GIGANTE!")
     callout(text) {
         const c = document.getElementById('callout');
@@ -354,6 +388,7 @@ export class Hud {
 
     // title: opcional (supervivencia muestra las oleadas en lugar de VICTORIA/DERROTA)
     showEnd(win, sub, title) {
+        document.getElementById('end-stars').classList.add('hidden');
         this.el.endTitle.textContent = title || (win ? '¡VICTORIA!' : 'DERROTA');
         this.el.endTitle.classList.toggle('lose', !win);
         this.el.endSub.textContent = sub || '';

@@ -44,11 +44,21 @@ export class CampaignMap {
         this.t = 0;
         this.drag = null;
         this.freeCam = false;
+        this.hard = false;     // modo difícil (se abre al terminar la campaña)
         const $ = (id) => document.getElementById(id);
         this.el = {
             root: $('campaign'), region: $('camp-region'), card: $('camp-card'), world: $('camp-world'),
             boss: $('camp-boss'), tell: $('camp-tell'), go: $('camp-go'), status: $('camp-status'),
+            stars: $('camp-stars'), skull: $('btn-hard'),
         };
+        // Calavera: cambia entre campaña normal y modo difícil
+        this.el.skull.addEventListener('click', () => {
+            this.hard = !this.hard;
+            game.sfx.play(this.hard ? 'roar' : 'ui');
+            game.renderer.flash(this.hard ? 0xff1a3a : 0xffffff, 0.6);
+            game.rig.shake(this.hard ? 0.6 : 0.2);
+            this.open(null, this.hard);
+        });
         $('btn-campaign-back').addEventListener('click', () => {
             game.sfx.play('ui');
             game.showMenu();
@@ -73,10 +83,14 @@ export class CampaignMap {
     }
 
     // ---------- Progreso ----------
+    isBeaten(id) {
+        return Profile.beaten(id, this.hard);
+    }
+
     unlocked(i) {
         const w = WORLDS[i];
-        if (w.secret) return WORLDS.every((o) => o.secret || Profile.beaten(o.id));
-        return i === 0 || Profile.beaten(WORLDS[i - 1].id);
+        if (w.secret) return WORLDS.every((o) => o.secret || this.isBeaten(o.id));
+        return i === 0 || this.isBeaten(WORLDS[i - 1].id);
     }
 
     maxOpen() {
@@ -87,7 +101,7 @@ export class CampaignMap {
 
     // Primer mundo abierto sin ganar (o el último, si ya está todo)
     frontier() {
-        for (let i = 0; i < N; i++) if (this.unlocked(i) && !Profile.beaten(WORLDS[i].id)) return i;
+        for (let i = 0; i < N; i++) if (this.unlocked(i) && !this.isBeaten(WORLDS[i].id)) return i;
         return this.maxOpen();
     }
 
@@ -375,6 +389,27 @@ export class CampaignMap {
             this.scene.add(g);
             return { g, cloth, k: 0 };
         });
+        // Tres estrellitas sobre cada mundo ganado
+        this.starOn = toon(0xffd23f);
+        this.starOff = toon(0x4a3a7a);
+        const starHull = outline(0x1b0b33);
+        this.starModels = WORLDS.map((w, i) => {
+            const n = this.node(i), g = new THREE.Group();
+            g.position.set(n.x - 0.3, 2.3, n.z - 0.1);
+            for (let k = 0; k < 3; k++) {
+                const m = new THREE.Mesh(box(0.24, 0.24, 0.24), this.starOff);
+                m.position.set((k - 1) * 0.36, k === 1 ? 0.1 : 0, 0);
+                m.userData.k = k;
+                const o = new THREE.Mesh(box(0.24 + OUTLINE * 2, 0.24 + OUTLINE * 2, 0.24 + OUTLINE * 2), starHull);
+                o.position.copy(m.position);
+                o.userData.hull = true;
+                o.userData.k = 9;
+                g.add(m, o);
+            }
+            g.visible = false;
+            this.scene.add(g);
+            return g;
+        });
         // Flecha que marca el mundo elegido
         this.arrow = new THREE.Group();
         const yellow = toon(0xffe03a), hull = outline(0x1b0b33);
@@ -425,8 +460,15 @@ export class CampaignMap {
     }
 
     // ---------- Abrir el mapa ----------
-    open(justBeaten) {
+    open(justBeaten, hard = this.hard) {
         if (!this.built) this.build();
+        this.hard = hard && Profile.hardUnlocked;
+        this.el.skull.classList.toggle('hidden', !Profile.hardUnlocked);
+        this.el.skull.classList.toggle('on', this.hard);
+        this.el.root.classList.toggle('hard', this.hard);
+        // Modo difícil: todo teñido de rojo y negro y los jefes con su aura maligna
+        this.game.renderer.setGrade(1.35, 0.42, 0.48, this.hard ? 0.6 : 0);
+        for (const b of this.bosses) b.model.setEvil(this.hard);
         this.at = this.frontier();
         this.route = null;
         this.timeline = null;
@@ -439,8 +481,8 @@ export class CampaignMap {
 
         // Estado visible de cada mundo según el progreso guardado
         this.view = {
-            boss: WORLDS.map((w, i) => (Profile.beaten(w.id) ? 'gone' : this.unlocked(i) ? 'solid' : 'ghost')),
-            flag: WORLDS.map((w) => (Profile.beaten(w.id) ? 1 : 0)),
+            boss: WORLDS.map((w, i) => (this.isBeaten(w.id) ? 'gone' : this.unlocked(i) ? 'solid' : 'ghost')),
+            flag: WORLDS.map((w) => (this.isBeaten(w.id) ? 1 : 0)),
             lit: [],
             secret: this.unlocked(N - 1) ? 1 : 0,
         };
@@ -451,7 +493,17 @@ export class CampaignMap {
         else this.select(this.at, true);
         rig.snap();
         this.paintStones();
+        this.paintStars();
         this.show(true);
+    }
+
+    // Estrellitas voxel sobre cada mundo ganado (las conseguidas en amarillo)
+    paintStars() {
+        this.starModels.forEach((g, i) => {
+            const n = Profile.stars(WORLDS[i].id, this.hard);
+            g.visible = this.isBeaten(WORLDS[i].id);
+            g.children.forEach((m) => (m.material = m.userData.k < n ? this.starOn : m.userData.hull ? m.material : this.starOff));
+        });
     }
 
     show(on) {
@@ -537,13 +589,15 @@ export class CampaignMap {
     // ---------- Selección y movimiento ----------
     select(i, move) {
         this.selected = i;
-        const w = WORLDS[i], open = this.unlocked(i), beaten = Profile.beaten(w.id);
+        const w = WORLDS[i], open = this.unlocked(i), beaten = this.isBeaten(w.id);
         this.el.card.classList.remove('hidden');
         this.el.world.textContent = w.secret ? `MUNDO SECRETO · ${w.name}` : `MUNDO ${i + 1} · ${w.name}`;
         this.el.boss.textContent = open ? w.tank.name : '???';
         this.el.tell.textContent = open ? w.tell : w.secret ? 'DERROTA A LOS 8 JEFES PARA DESCUBRIRLO' : `DERROTA A ${WORLDS[i - 1].tank.name} PARA LLEGAR`;
         this.el.status.textContent = beaten ? 'DERROTADO' : '';
         this.el.status.classList.toggle('hidden', !beaten);
+        const n = Profile.stars(w.id, this.hard);
+        this.el.stars.innerHTML = open ? [0, 1, 2].map((k) => `<i class="star${k < n ? ' on' : ''}"></i>`).join('') : '';
         this.el.go.disabled = !open;
         this.el.go.textContent = !open ? 'BLOQUEADO' : beaten ? 'REVANCHA' : '¡A LUCHAR!';
         this.el.card.classList.toggle('locked', !open);
@@ -590,7 +644,7 @@ export class CampaignMap {
         this.game.sfx.play('ui');
         this.at = i;
         this.show(false);
-        this.game.startBoss(WORLDS[i].id);
+        this.game.startBoss(WORLDS[i].id, this.hard);
     }
 
     // ---------- Toques: arrastrar para desplazar, tocar un mundo para elegirlo ----------
@@ -732,6 +786,7 @@ export class CampaignMap {
             fl.g.scale.set(1, Math.max(0.01, k), 1);
             fl.cloth.scale.x = 0.85 + Math.sin(t * 5 + i) * 0.15;
         });
+        this.starModels.forEach((g, i) => (g.rotation.y = Math.sin(t * 1.5 + i) * 0.4));
         // Flecha sobre el mundo elegido
         const n = this.node(this.selected);
         this.arrow.position.set(n.x, 3.1 + Math.abs(Math.sin(t * 4)) * 0.3, n.z - 0.2);
@@ -840,6 +895,12 @@ export class CampaignMap {
                 weatherParticle(this.particles, amb.kind, x, z, amb.colors[(Math.random() * amb.colors.length) | 0]);
             }
         });
+        // Modo difícil: brasas rojas y humo negro por todo el mapa
+        if (this.hard && Math.random() < dt * 40) {
+            const x = -1 + Math.random() * (W + 2), z = rig.z - H + Math.random() * H * 2;
+            this.particles.spawn(x, 0.1, z, (Math.random() - 0.5) * 0.3, 0.8 + Math.random(), 0, 0.06 + Math.random() * 0.1, 1.6,
+                Math.random() < 0.5 ? 0xff1a3a : 0x1a0008, -0.4);
+        }
         for (const e of this.emitters) {
             if (Math.abs(e.z - rig.z) > H || Math.random() > dt * 10) continue;
             this.particles.spawn(e.x + (Math.random() - 0.5) * 0.3, e.y, e.z + (Math.random() - 0.5) * 0.3,
@@ -866,7 +927,8 @@ export class CampaignMap {
         const z = this.game.rig.z - 1.2;
         const i = clamp(N - 1 - Math.floor((z - TOP) / H), 0, N - 1);
         const w = WORLDS[i];
-        const text = w.secret && this.view.secret < 1 ? '???' : w.secret ? `SECRETO · ${w.name}` : `MUNDO ${i + 1} · ${w.name}`;
+        let text = w.secret && this.view.secret < 1 ? '???' : w.secret ? `SECRETO · ${w.name}` : `MUNDO ${i + 1} · ${w.name}`;
+        if (this.hard) text = `DIFÍCIL · ${text}`;
         if (this.el.region.textContent !== text) this.el.region.textContent = text;
     }
 }

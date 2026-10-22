@@ -50,6 +50,21 @@ const SPRITES = {
         ],
         pal: { K: INK, Y: '#ffd23f', O: '#e6a400', W: '#fff4b0' },
     },
+    starOn: {
+        rows: ['.....K.....', '....KYK....', '....KYK....', 'KKKKKWYKKKK', 'KYYYYWYYYYK', '.KYYYYYYYK.', '..KYYYYYK..',
+            '..KYYKYYK..', '.KYYK.KYYK.', '.KYK...KYK.', '.KK.....KK.'],
+        pal: { K: INK, Y: '#ffd23f', W: '#fff4b0' },
+    },
+    starOff: {
+        rows: ['.....K.....', '....KYK....', '....KYK....', 'KKKKKYYKKKK', 'KYYYYYYYYYK', '.KYYYYYYYK.', '..KYYYYYK..',
+            '..KYYKYYK..', '.KYYK.KYYK.', '.KYK...KYK.', '.KK.....KK.'],
+        pal: { K: INK, Y: '#3b2d6b' },
+    },
+    skull: {
+        rows: ['..KKKKKKKK..', '.KWWWWWWWWK.', 'KWWWWWWWWWWK', 'KWRRKWWKRRWK', 'KWRRKWWKRRWK', 'KWWWWKKWWWWK',
+            '.KWWWWWWWWK.', '..KWKWKWKK..', '..KWKWKWKK..', '...KKKKKK...'],
+        pal: { K: INK, W: '#ffffff', R: '#ff1a3a' },
+    },
     sparkA: {
         rows: ['...W...', '...W...', '...Y...', 'WWYWYWW', '...Y...', '...W...', '...W...'],
         pal: { W: '#ffffff', Y: '#ffe03a' },

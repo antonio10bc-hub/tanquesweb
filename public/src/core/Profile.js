@@ -9,7 +9,8 @@ const fresh = () => ({
     paint: 'p_default',  // pintura equipada
     trail: 't_default',  // estela de bala equipada
     achievements: {},    // id -> fecha de desbloqueo
-    campaign: { beaten: [] }, // mundos de la campaña con el jefe derrotado
+    // Campaña: jefes derrotados y estrellas (1-3) por mundo; "hard" lo mismo en modo difícil
+    campaign: { beaten: [], stars: {}, hard: { beaten: [], stars: {} } },
     stats: {
         wins: 0,
         streak: 0,          // victorias seguidas
@@ -18,6 +19,8 @@ const fresh = () => ({
         pickupKinds: [],    // tipos de objeto recogidos alguna vez
         bestWave: 0,        // récord de supervivencia
         bosses: 0,          // jefes normales de la campaña derrotados (sin contar el secreto)
+        stars: 0,           // estrellas de la campaña normal
+        hardBosses: 0,      // jefes derrotados en modo difícil (con el secreto)
     },
 });
 
@@ -33,7 +36,10 @@ export const Profile = {
                 this.data = {
                     ...base, ...saved,
                     stats: { ...base.stats, ...(saved.stats || {}) },
-                    campaign: { ...base.campaign, ...(saved.campaign || {}) },
+                    campaign: {
+                        ...base.campaign, ...(saved.campaign || {}),
+                        hard: { ...base.campaign.hard, ...((saved.campaign || {}).hard || {}) },
+                    },
                 };
             }
         } catch {
@@ -97,16 +103,39 @@ export const Profile = {
         return true;
     },
 
-    beaten(worldId) {
-        return this.data.campaign.beaten.includes(worldId);
+    camp(hard) {
+        const c = this.data.campaign;
+        c.stars ||= {};
+        return hard ? c.hard : c;
+    },
+
+    beaten(worldId, hard = false) {
+        return this.camp(hard).beaten.includes(worldId);
     },
 
     // Jefe derrotado. Devuelve true si es la primera vez.
-    beat(worldId) {
-        if (this.beaten(worldId)) return false;
-        this.data.campaign.beaten.push(worldId);
+    beat(worldId, hard = false) {
+        if (this.beaten(worldId, hard)) return false;
+        this.camp(hard).beaten.push(worldId);
         this.save();
         return true;
+    },
+
+    stars(worldId, hard = false) {
+        return this.camp(hard).stars[worldId] || 0;
+    },
+
+    // Guarda las estrellas si mejoran el récord. Devuelve el récord.
+    setStars(worldId, n, hard = false) {
+        const s = this.camp(hard).stars;
+        s[worldId] = Math.max(s[worldId] || 0, n);
+        this.save();
+        return s[worldId];
+    },
+
+    // El modo difícil se abre al terminar la campaña (al ganar al jefe secreto)
+    get hardUnlocked() {
+        return this.beaten('secret');
     },
 
     unlocked(id) {

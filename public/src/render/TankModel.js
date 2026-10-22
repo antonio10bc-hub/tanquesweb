@@ -182,6 +182,32 @@ export class TankModel {
         this.reloadFill.position.y = ammoY;
     }
 
+    // Modo difícil: aura maligna roja y negra (cubos en órbita, anillo en el suelo y contorno rojo)
+    setEvil(on) {
+        this.evilOn = on;
+        if (on && !this.evil) {
+            this.evil = new THREE.Group();
+            this.root.add(this.evil);
+            const red = toon(0xff1a3a, this.fx), black = toon(0x1a0008, this.fx);
+            this.materials.push(red, black);
+            for (let i = 0; i < 8; i++) {
+                const a = (i / 8) * Math.PI * 2;
+                this.part(this.evil, 0.09, 0.09, 0.09, i % 2 ? black : red, Math.sin(a) * 0.62, 0.25 + (i % 3) * 0.14, Math.cos(a) * 0.62, i % 2 === 1);
+            }
+            this.evilRingMat = new THREE.MeshBasicMaterial({ color: 0xff1a3a, transparent: true, opacity: 0.5, depthWrite: false });
+            this.evilRing = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.7, 12, 1), this.evilRingMat);
+            this.evilRing.rotation.x = -Math.PI / 2;
+            this.evilRing.position.y = 0.03;
+            this.root.add(this.evilRing);
+            this.materials.push(this.evilRingMat, { dispose: () => this.evilRing.geometry.dispose() });
+            this.baseOutline = this.outlineMat.color.getHex();
+        }
+        if (this.evil) {
+            this.evil.visible = this.evilRing.visible = on;
+            this.outlineMat.color.setHex(on ? 0x8a0018 : this.baseOutline);
+        }
+    }
+
     part(parent, w, h, d, material, x, y, z, outlined = true) {
         const m = new THREE.Mesh(box(w, h, d), material);
         m.position.set(x, y, z);
@@ -226,6 +252,12 @@ export class TankModel {
 
         if (this.hatAnim) this.hatAnim(this.t, moving);
         if (this.decoAnim) this.decoAnim(this.t, moving);
+        if (this.evilOn) {
+            this.evil.rotation.y = -this.t * 2.6;
+            this.evil.position.y = Math.sin(this.t * 3) * 0.05;
+            this.evilRing.scale.setScalar(1 + Math.sin(this.t * 5) * 0.12);
+            this.evilRingMat.opacity = (0.35 + Math.sin(this.t * 5) * 0.2) * fade;
+        }
         if (this.rainbow) this.bodyMat.color.setHSL((this.t * 0.18) % 1, 0.85, 0.68);
         this.brows.visible = !!tank.angry;
         let sheen = 0;

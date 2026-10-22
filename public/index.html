@@ -43,6 +43,16 @@
 
     <div id="banner" class="banner"></div>
     <div id="callout" class="callout"></div>
+    <!-- Presentación del jefe: franjas que entran por los lados y su nombre en grande -->
+    <div id="boss-intro" class="boss-intro">
+        <div class="bi-band top"></div>
+        <div class="bi-band bottom"></div>
+        <div class="bi-text">
+            <div id="bi-world" class="bi-world"></div>
+            <div id="bi-name" class="bi-name"></div>
+            <div id="bi-tag" class="bi-tag"></div>
+        </div>
+    </div>
     <div id="streak" class="streak"></div>
 
     <div id="stage" class="stage">
@@ -107,10 +117,12 @@
     <!-- Campaña: el mapa se dibuja en el canvas del juego; esto es la interfaz encima -->
     <div id="campaign" class="campaign hidden">
         <button id="btn-campaign-back" class="corner-btn corner-left">VOLVER</button>
+        <button id="btn-hard" class="skull-btn hidden" aria-label="Modo difícil"></button>
         <div id="camp-region" class="camp-region"></div>
         <div id="camp-card" class="camp-card">
             <div class="camp-head"><span id="camp-world" class="camp-world"></span><span id="camp-status" class="camp-status hidden"></span></div>
             <div id="camp-boss" class="camp-boss"></div>
+            <div id="camp-stars" class="camp-stars"></div>
             <div id="camp-tell" class="camp-tell"></div>
             <button id="camp-go" class="btn">¡A LUCHAR!</button>
         </div>
@@ -198,6 +210,10 @@
     <div id="end" class="screen hidden">
         <h2 id="end-title" class="end-title">¡VICTORIA!</h2>
         <p id="end-sub" class="tag"></p>
+        <div id="end-stars" class="end-stars hidden">
+            <div class="stars-row"><i class="star"></i><i class="star"></i><i class="star"></i></div>
+            <div id="stars-why" class="stars-why"></div>
+        </div>
         <button id="btn-again" class="btn">OTRA VEZ</button>
         <button id="btn-end-menu" class="btn btn-small">MENÚ PRINCIPAL</button>
     </div>

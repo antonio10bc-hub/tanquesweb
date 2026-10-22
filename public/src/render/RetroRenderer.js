@@ -18,6 +18,8 @@ uniform float uDither;
 uniform float uSat;
 uniform vec3 uTint;
 uniform float uTintAmt;
+uniform vec3 uGrade;
+uniform float uGradeAmt;
 varying vec2 vUv;
 float bayer(vec2 p) {
     ivec2 q = ivec2(mod(p, 4.0));
@@ -28,9 +30,12 @@ void main() {
     vec3 c = texture2D(tDiffuse, vUv).rgb;
     float l = dot(c, vec3(0.299, 0.587, 0.114));
     c = mix(vec3(l), c, uSat);
+    c = mix(c, c * uGrade, uGradeAmt);
     c = mix(c, uTint, uTintAmt);
     vec2 d = vUv - 0.5;
     c *= 1.0 - dot(d, d) * 0.5;
+    // Modo difícil: bordes que se oscurecen hacia un rojo casi negro
+    c = mix(c, vec3(0.28, 0.0, 0.04), clamp(dot(d, d) * 2.6 * uGradeAmt, 0.0, 0.85));
     c += bayer(gl_FragCoord.xy) * uDither / uLevels;
     c = floor(clamp(c, 0.0, 1.0) * uLevels + 0.5) / uLevels;
     gl_FragColor = vec4(c, 1.0);
@@ -57,6 +62,8 @@ export class RetroRenderer {
             uSat: { value: cfg.saturation },
             uTint: { value: new THREE.Color(0xffffff) },
             uTintAmt: { value: 0 },
+            uGrade: { value: new THREE.Color(1, 1, 1) },
+            uGradeAmt: { value: 0 },
         };
         const quad = new THREE.Mesh(
             new THREE.PlaneGeometry(2, 2),
@@ -85,6 +92,12 @@ export class RetroRenderer {
         this.width = lw;
         this.height = lh;
         if (this.onResize) this.onResize(lw, lh);
+    }
+
+    // Gradación de color fija (modo difícil: todo teñido de rojo y con bordes oscuros).
+    setGrade(r, g, b, amount) {
+        this.uniforms.uGrade.value.setRGB(r, g, b);
+        this.uniforms.uGradeAmt.value = amount;
     }
 
     // Tinte de pantalla completa que se desvanece (daño, explosiones...).

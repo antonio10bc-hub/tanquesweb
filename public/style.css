@@ -845,6 +845,26 @@ html, body {
 .camp-card.secret .camp-world { background: var(--pink); color: #fff; }
 .camp-card.secret:not(.locked) { border-color: var(--pink); }
 
+/* Calavera del modo difícil (aparece al terminar la campaña) */
+.skull-btn {
+    position: absolute;
+    left: 14px;
+    top: calc(max(14px, env(safe-area-inset-top)) + 50px);
+    width: 52px;
+    height: 52px;
+    background: var(--px-skull) center / 36px 30px no-repeat, #3b2d6b;
+    image-rendering: pixelated;
+    border: 3px solid var(--ink);
+    box-shadow: 0 4px 0 var(--ink), inset -4px -4px 0 rgba(0, 0, 0, .25), inset 3px 3px 0 rgba(255, 255, 255, .35);
+    cursor: pointer;
+}
+.skull-btn.on { background-color: #ff1a3a; animation: skullPulse .6s steps(2) infinite; }
+@keyframes skullPulse { 50% { background-color: #12000a; } }
+.campaign.hard .camp-card { border-color: #ff1a3a; background: #12000a; }
+.campaign.hard .camp-region { background: #ff1a3a; color: #fff; }
+.camp-stars { display: flex; gap: 6px; min-height: 0; }
+.camp-stars .star { width: 22px; height: 22px; animation: none; }
+
 /* ---------- JEFES: BARRA DE VIDA Y AVISO DE ATAQUE ---------- */
 .bossbar {
     position: absolute;
@@ -915,6 +935,54 @@ html, body {
 .duel-line { position: absolute; left: 0; right: 0; top: 50%; border-top: 3px dashed rgba(255, 255, 255, .35); }
 .joy-p2 .joy-thumb { background: var(--pink); }
 .hud.duel-mode .stealth, .hud.duel-mode .hint { display: none; }
+
+/* ---------- PRESENTACIÓN DEL JEFE ---------- */
+.boss-intro { position: fixed; inset: 0; z-index: 14; pointer-events: none; display: none; }
+.boss-intro.show { display: block; animation: biOut 1.95s steps(1) forwards; }
+.bi-band {
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    height: 16%;
+    background: repeating-linear-gradient(-45deg, var(--yellow) 0 18px, var(--ink) 18px 36px);
+    border-top: 4px solid var(--ink);
+    border-bottom: 4px solid var(--ink);
+}
+.bi-band.top { top: 22%; transform: rotate(-4deg); animation: biInL .3s steps(3) both; }
+.bi-band.bottom { top: 62%; transform: rotate(-4deg); animation: biInR .3s steps(3) both; }
+.boss-intro.hard .bi-band { background: repeating-linear-gradient(-45deg, #ff1a3a 0 18px, #12000a 18px 36px); }
+.bi-text { position: absolute; left: 0; right: 0; top: 40%; text-align: center; transform: rotate(-4deg); }
+.bi-world { display: inline-block; font-size: 10px; padding: 5px 8px; color: var(--ink); background: var(--cyan); border: 3px solid var(--ink); animation: biPop .3s .15s steps(2) both; }
+.boss-intro.hard .bi-world { background: #ff1a3a; color: #fff; }
+.bi-name {
+    margin: 10px 0 8px;
+    font-size: clamp(26px, 9vw, 60px);
+    color: var(--yellow);
+    text-shadow: 0 5px 0 var(--orange), 0 10px 0 var(--ink), 4px 0 0 var(--ink), -4px 0 0 var(--ink), 0 -4px 0 var(--ink);
+    animation: biName .45s .1s steps(3) both;
+}
+.boss-intro.hard .bi-name { color: #ff4a5a; text-shadow: 0 5px 0 #6a0010, 0 10px 0 #000, 4px 0 0 #000, -4px 0 0 #000, 0 -4px 0 #000; }
+.bi-tag { display: inline-block; font-size: 9px; padding: 5px 8px; color: #fff; background: var(--ink); animation: biPop .3s .35s steps(2) both; }
+@keyframes biInL { from { transform: translateX(-110%) rotate(-4deg); } }
+@keyframes biInR { from { transform: translateX(110%) rotate(-4deg); } }
+@keyframes biName { 0% { transform: scale(2.4); opacity: 0; } 34% { opacity: 1; } 67% { transform: scale(.9); } 100% { transform: scale(1); } }
+@keyframes biPop { from { transform: scale(0); } }
+@keyframes biOut { 0%, 88% { opacity: 1; } 94% { opacity: .5; } 100% { opacity: 0; } }
+
+/* ---------- ESTRELLAS AL VENCER A UN JEFE ---------- */
+.end-stars { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.stars-row { display: flex; gap: 10px; }
+.star {
+    width: 44px;
+    height: 44px;
+    background: var(--px-star-off) center / 100% 100% no-repeat;
+    image-rendering: pixelated;
+}
+.star.on { background-image: var(--px-star-on); animation: starPop .4s steps(3) both; }
+@keyframes starPop { 0% { transform: scale(2); } 66% { transform: scale(.85); } 100% { transform: scale(1); } }
+.stars-why { font-size: 8px; line-height: 1.9; color: #cfc8ea; text-align: center; text-shadow: 2px 2px 0 var(--ink); }
+.stars-why b { color: var(--yellow); font-weight: normal; }
+.stars-why s { color: #8e86a8; text-decoration: none; }
 
 /* ---------- RACHAS ---------- */
 .streak {

@@ -34,6 +34,12 @@ const DECOY = [0xb46bff, 0xffffff, 0xe2dcff];
 const REPLAY = { length: 2.2, speed: 0.45 };
 // Escena de la fase 2 (segundos): ruge, estalla con el cartel, la cámara vuelve, sigue la partida
 const PHASE = { roar: 0.55, rage: 1.45, back: 2.6, end: 3.2 };
+// Presentación del jefe antes de la cuenta atrás: cámara encima, gesto y nombre en grande
+const BOSS_INTRO = { card: 0.75, gesture: 1.0, back: 2.7, extra: 2.6 };
+// Estrellas de cada jefe: ganar · perder como mucho 2 de vida · ganar en menos de "par" segundos
+const STARS = { maxDamage: 2, par: 75, parHard: 95 };
+// Modo difícil: los jefes, más duros (vida, velocidad, frecuencia de especiales, esquiva)
+const HARD = { hp: 1.5, speed: 1.12, every: 0.75, dodge: 0.15 };
 
 // Orquesta todo: bucle, estados de partida, cámara, efectos, música y HUD.
 // Estados: menu -> intro -> play -> outro -> replay -> end -> (intro...)
@@ -200,6 +206,7 @@ export class Game {
         this.hud.ready();
         this.hud.showBoss(null);
         this.hud.showDuel(false);
+        this.renderer.setGrade(1, 1, 1, 0);
         this.input.setSide(null);
         this.input2.setSide(null);
         this.rig.zoomTarget = 1.15;
@@ -211,7 +218,7 @@ export class Game {
     again() {
         if (this.mode === 'survival') this.startSurvival();
         else if (this.mode === 'duel') this.startDuel();
-        else if (this.mode === 'campaign') this.startBoss(this.worldId);
+        else if (this.mode === 'campaign') this.startBoss(this.worldId, this.hard);
         else this.startMatch();
     }
 
@@ -228,15 +235,17 @@ export class Game {
         this.hud.screen('campaign');
         this.hud.showBoss(null);
         this.hud.showReplay(false);
-        this.campaign.open(this.justBeaten);
+        this.campaign.open(this.justBeaten, this.hard);
         this.justBeaten = null;
         if (Settings.music) this.music.start({ root: 60, scale: 'major', tempo: 104, lead: 'triangle' }, 7);
     }
 
     // Campaña: el combate contra el jefe de un mundo.
-    startBoss(worldId) {
+    startBoss(worldId, hard = false) {
         this.worldId = worldId;
+        this.hard = hard;
         this.startMatch(`boss_${worldId}`);
+        this.introPrev = -1;
     }
 
     startSurvival(seed, themeId) {
@@ -256,6 +265,20 @@ export class Game {
         this.hud.showDuel(duel);
         if (duel) this.hud.setNames('JUGADOR 1', 'JUGADOR 2');
         this.boss = this.mode === 'campaign' ? this.world.enemies()[0] : null;
+        if (this.mode !== 'campaign') this.hard = false;
+        if (this.boss && this.hard) {
+            // Modo difícil: aura maligna y jefe más duro
+            const b = this.boss;
+            b.hp = b.maxHp = Math.round(b.maxHp * HARD.hp);
+            b.speed *= HARD.speed;
+            b.brain.every *= HARD.every;
+            b.brain.p.dodge = Math.min(0.8, b.brain.p.dodge + HARD.dodge);
+            b.evil = true;
+            b.model.setEvil(true);
+        }
+        this.renderer.setGrade(1.35, 0.42, 0.48, this.hard ? 0.6 : 0);
+        this.playTime = 0;
+        this.damageTaken = 0;
         this.hud.showBoss(this.boss ? this.boss.def.name : null);
         this.hud.endButtons('OTRA VEZ', this.mode === 'campaign' ? 'VER EL MAPA' : 'MENÚ PRINCIPAL');
         this.wave = 1;
@@ -276,8 +299,7 @@ export class Game {
         this.hud.screen('play');
         this.hud.showReplay(false);
         this.hud.showHint(true);
-        if (this.boss) this.hud.stage(this.def.name, `JEFE DE ${WORLD_BY_ID[this.worldId].name} · ${this.def.tagline}`);
-        else this.hud.stage(this.def.name, `${this.theme.name} · ${this.def.tagline}`);
+        if (!this.boss) this.hud.stage(this.def.name, `${this.theme.name} · ${this.def.tagline}`);
         this.rig.zoomTarget = 1.6;
         this.rig.yawTarget = 0.7;
         this.rig.focus(this.world.player.x, this.world.player.z);
@@ -385,13 +407,22 @@ export class Game {
         if (this.mode === 'duel') {
             this.hud.showEnd(true, win ? 'EL JUGADOR 2 HA CAÍDO' : 'EL JUGADOR 1 HA CAÍDO', win ? '¡GANA EL J1!' : '¡GANA EL J2!');
         } else if (this.mode === 'campaign') {
-            const w = WORLD_BY_ID[this.worldId];
+            const w = WORLD_BY_ID[this.worldId], hard = this.hard;
             if (win) {
-                const first = Profile.beat(w.id);
+                const first = Profile.beat(w.id, hard);
                 this.justBeaten = first ? w.id : null;
+                // Estrellas: ganar, perder poca vida y ganar rápido
+                const par = hard ? STARS.parHard : STARS.par;
+                const got = [true, this.damageTaken <= STARS.maxDamage, this.playTime < par];
+                const stars = got.filter(Boolean).length;
+                const best = Profile.setStars(w.id, stars, hard);
                 st.bosses = Profile.data.campaign.beaten.filter((id) => !WORLD_BY_ID[id].secret).length;
+                st.stars = Object.values(Profile.data.campaign.stars).reduce((a, b) => a + b, 0);
+                st.hardBosses = Profile.data.campaign.hard.beaten.length;
                 Profile.save();
-                this.hud.showEnd(true, w.secret ? '¡HAS COMPLETADO LA CAMPAÑA!' : `${w.tank.name} HA CAÍDO`, '¡JEFE DERROTADO!');
+                const sub = w.secret && !hard ? '¡HAS COMPLETADO LA CAMPAÑA!' : `${w.tank.name} HA CAÍDO`;
+                this.hud.showEnd(true, sub, hard ? '¡PESADILLA SUPERADA!' : '¡JEFE DERROTADO!');
+                this.hud.showStars(got, best, par, (k) => this.sfx.play(k < stars ? 'coin' : 'tick'));
             } else {
                 this.hud.showEnd(false, '¡INTÉNTALO OTRA VEZ!');
             }
@@ -476,6 +507,7 @@ export class Game {
                     break;
                 }
                 this.stepWorld(simDt, true);
+                this.playTime += simDt;
                 this.recorder.record(simDt, w, this.bullets);
                 this.updateDrops(dt);
                 if (!w.player.alive) this.endMatch(false);
@@ -579,6 +611,9 @@ export class Game {
     updateIntro() {
         const m = CONFIG.match;
         const t = this.stateTime;
+        // Jefes: antes de la cuenta atrás, su presentación
+        const extra = this.boss ? BOSS_INTRO.extra : 0;
+        if (this.boss) this.updateBossIntro(t);
         this.world.tanks.forEach((tank, i) => {
             const start = 0.25 + i * 0.25;
             const k = clamp((t - start) / m.dropTime, 0, 1);
@@ -588,8 +623,8 @@ export class Game {
         });
 
         const labels = ['3', '2', '1'];
-        const step = Math.floor((t - m.countdownStart) / m.countdownStep);
-        if (t >= m.countdownStart && step >= this.countdown) {
+        const step = Math.floor((t - m.countdownStart - extra) / m.countdownStep);
+        if (t >= m.countdownStart + extra && step >= this.countdown) {
             if (step < labels.length) {
                 this.hud.banner(labels[step]);
                 this.sfx.play('tick');
@@ -604,6 +639,30 @@ export class Game {
                 this.setState('play');
             }
         }
+    }
+
+    // Presentación del jefe: se le acerca la cámara, hace su gesto (salto, giro de torreta y
+    // rugido) y aparece su nombre con franjas, como en los juegos de lucha.
+    updateBossIntro(t) {
+        const b = this.boss, prev = this.introPrev ?? -1;
+        const at = (s) => prev < s && t >= s;
+        if (t < prev) this.introPrev = -1;
+        if (at(BOSS_INTRO.card)) {
+            const w = WORLD_BY_ID[this.worldId];
+            this.hud.bossIntro(b.def.name, this.def.tagline, this.hard ? 'MODO DIFÍCIL' : `JEFE DE ${w.name}`, this.hard);
+        }
+        if (at(BOSS_INTRO.gesture)) {
+            this.sfx.play('roar', this.panOf(b.x));
+            this.rig.shake(0.5);
+            this.waves.spawn(b.x, b.z, this.hard ? 0xff1a3a : 0xffffff, 2.4 * b.model.scale, 0.6);
+        }
+        const g = (t - BOSS_INTRO.gesture) / 0.9;
+        if (g > 0 && g < 1) {
+            b.model.dropY = Math.abs(Math.sin(g * Math.PI * 2)) * 0.5 * (1 - g);
+            b.aimYaw = b.yaw + Math.sin(g * Math.PI * 2) * 1.2;
+        }
+        if (at(BOSS_INTRO.back)) b.aimYaw = b.yaw;
+        this.introPrev = t;
     }
 
     landed(tank) {
@@ -665,6 +724,11 @@ export class Game {
             this.rig.yawTarget = 0;
             this.rig.zoomTarget = Math.max(1, (w.arena.rows + 1.5) / (2 * this.rig.halfDepth)); // ancho y alto enteros
             this.rig.focus(w.arena.cols / 2, w.arena.rows / 2);
+        } else if (this.state === 'intro' && this.boss && this.stateTime < BOSS_INTRO.back) {
+            this.rig.free = true;
+            this.rig.zoomTarget = this.stateTime > 0.5 ? 0.5 : 1;
+            this.rig.yawTarget = 0.3;
+            this.rig.focus(this.boss.x, this.boss.z);
         } else if (this.cutscene) {
             // Escena de la fase 2: primer plano del jefe y vuelta a tu tanque al final
             const c = this.cutscene, back = c.t >= PHASE.back;
@@ -679,7 +743,7 @@ export class Game {
             this.rig.zoomTarget = 1;
             this.rig.focus(w.player.x, w.player.z);
         }
-        if (!this.cutscene && this.mode !== 'duel') this.rig.free = false;
+        if (!this.cutscene && this.mode !== 'duel' && !(this.state === 'intro' && this.boss && this.stateTime < BOSS_INTRO.back)) this.rig.free = false;
     }
 
     // Visibilidad desde el punto de vista del jugador + animación de modelos y sus efectos.
@@ -712,6 +776,12 @@ export class Game {
                 }
             }
             const shown = tank.viewFade > 0.4;
+            // Jefe del modo difícil: humo negro y chispas rojas a su alrededor
+            if (tank.evil && shown && Math.random() < dt * 30) {
+                const a = Math.random() * Math.PI * 2, rr = (0.5 + Math.random() * 0.4) * tank.model.scale;
+                this.particles.spawn(tank.x + Math.sin(a) * rr, 0.1 + Math.random() * 0.4, tank.z + Math.cos(a) * rr, 0, 1 + Math.random(), 0,
+                    0.08 + Math.random() * 0.1, 0.8, Math.random() < 0.55 ? 0x1a0008 : 0xff1a3a, -0.6);
+            }
             // Jefe enfadado (fase 2): echa humo por la cabeza
             if (tank.angry && shown && Math.random() < dt * 14) {
                 const sc = tank.model.scale;
@@ -887,6 +957,7 @@ export class Game {
         });
 
         ev.on('hit', (tank, x, z, color, damage) => {
+            if (tank === this.world.player) this.damageTaken += damage;
             const pal = tank.def.palette, me = mine(tank);
             if (damage > 1) {
                 this.particles.burst(x, 0.5, z, 30, FLAMES, { speed: 5, up: 4, size: 0.2, ttl: 0.6, grav: -1 });

@@ -54,12 +54,16 @@ cargado para que lo guarde, así que no hay lista de archivos que mantener a man
   láser que cortan los muros). A mitad de vida pasa a la **fase 2**: ruge, se enfada, va más rápido
   y su ataque se vuelve más fuerte. Se desbloquean en orden; al ganar a los 8 se apartan las nubes
   de lo alto del mapa y aparece el **mundo arcoíris** con el jefe secreto, PRISMA, que usa los
-  ataques de todos.
+  ataques de todos. Cada jefe se **presenta** antes de la cuenta atrás (primer plano, gesto y su
+  nombre en grande con franjas) y da hasta **3 estrellas**: ganar, perder 2 de vida como mucho y
+  ganar en menos de 75 s. Al terminar la campaña aparece una **calavera** en el mapa: el **modo
+  difícil**, con todo teñido de rojo y negro y los jefes con aura maligna, más vida, más velocidad
+  y especiales más seguidos (con su propio progreso y estrellas).
 - **Monedas y skins**: ganar una partida rápida da una moneda de oro (en supervivencia, una cada 3
   oleadas). En **Mi Tanque** se compran y equipan, en tres pestañas: 8 gorros voxel y el **tanque
   dorado** (aura, pilar de luz, chispas y balas de oro), 7 **pinturas** y 5 **estelas de bala**
   (arcoíris, llamarada, estrellas, burbujas, confeti), con una bala de muestra en el escaparate.
-- **Logros**: 17, con aviso al conseguirlos y pantalla propia con barras de progreso.
+- **Logros**: 19, con aviso al conseguirlos y pantalla propia con barras de progreso.
 - **Arquetipos de escenario**: cada partida elige uno (Arena clásica, Emboscada, Demolición, Fortaleza,
   Carreras, Fantasmas) que decide cuánto muro, qué materiales, cuánta hierba y qué objetos salen,
   y lo viste con uno de sus temas visuales (nieve, desierto, caramelo, volcán, playa, pradera,

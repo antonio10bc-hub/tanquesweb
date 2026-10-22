@@ -22,4 +22,6 @@ export const ACHIEVEMENTS = [
     { id: 'boss1', name: 'CAZAJEFES', desc: 'Derrota a tu primer jefe de la campaña.' },
     { id: 'bosses', name: 'LEYENDA', desc: 'Derrota a los 8 jefes de la campaña.', progress: (s) => [s.bosses, 8] },
     { id: 'prisma', name: 'MÁS ALLÁ DEL ARCOÍRIS', desc: 'Derrota al jefe secreto.' },
+    { id: 'stars_all', name: 'PERFECCIONISTA', desc: 'Consigue las 27 estrellas de la campaña.', progress: (s) => [s.stars, 27] },
+    { id: 'nightmare', name: 'PESADILLA', desc: 'Derrota a los 9 jefes en modo difícil.', progress: (s) => [s.hardBosses, 9] },
 ];
