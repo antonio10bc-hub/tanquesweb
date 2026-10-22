@@ -171,6 +171,7 @@ export class Game {
         this.hemi.intensity = theme.light.hemiIntensity;
         this.bullets.setOutline(theme.outline);
         this.hazardView.setOutline(theme.outline);
+        this.sfx.setAmbience(theme.sound);
 
         this.world = new World(def, theme, { events: this.events, bullets: this.bullets, input: this.input, seed, skin: Profile.data.skin });
         this.scene.add(this.world.root);
@@ -236,6 +237,8 @@ export class Game {
     startMatch(levelId, seed, themeId) {
         this.endToken++;
         this.cutscene = null;
+        this.streak = 0;
+        this.lastKill = null;
         this.load(levelId, seed, themeId);
         this.mode = this.def.survival ? 'survival' : this.def.campaign ? 'campaign' : 'quick';
         this.boss = this.mode === 'campaign' ? this.world.enemies()[0] : null;
@@ -683,6 +686,18 @@ export class Game {
                 w.arena.rustle(tank.x, tank.z);
             }
 
+            // Orugas: tu tanque siempre; los rivales cercanos también se oyen aunque no se vean
+            if (playing && tank.alive && !tank.decoy && (tank.moving || Math.hypot(tank.vx, tank.vz) > 0.5)) {
+                const near = tank === player ? 1 : Math.max(0, 1 - Math.hypot(tank.x - player.x, tank.z - player.z) / 4.5);
+                tank.stepT = (tank.stepT || 0) - dt;
+                if (near > 0 && tank.stepT <= 0) {
+                    tank.stepT = tank.turbo > 0 ? 0.1 : 0.17;
+                    const a = w.arena;
+                    const surface = tank.inBush ? 'bush' : a.iceAt(tank.x, tank.z) ? 'ice' : undefined;
+                    this.sfx.tread(tank === player ? 0 : this.panOf(tank.x), tank === player ? 1 : near * 0.8, surface);
+                }
+            }
+
             if (tank.moving && shown && !tank.inBush) {
                 tank.dustT = (tank.dustT || 0) - dt;
                 if (tank.dustT <= 0) {
@@ -894,6 +909,20 @@ export class Game {
             this.markers.pop(d.x, 1.2, d.z, '?', 0xb46bff, this.theme.outline);
             this.sfx.play('decoyPop', this.panOf(d.x));
             this.markers.hideGhost(d.id);
+        });
+
+        // Rachas: destruir varios tanques seguidos (menos de 4 s entre uno y otro)
+        ev.on('death', (tank, owner) => {
+            const p = this.world.player;
+            if (owner !== p || tank === p || tank.decoy) return;
+            const now = this.time;
+            this.streak = now - (this.lastKill ?? -99) < 4 ? (this.streak || 1) + 1 : 1;
+            this.lastKill = now;
+            if (this.streak < 2) return;
+            const NAMES = ['', '', '¡DOBLE!', '¡TRIPLE!', '¡CUÁDRUPLE!'];
+            this.hud.streak(NAMES[this.streak] || '¡IMPARABLE!', this.streak);
+            this.sfx.play(`streak${Math.min(this.streak, 5)}`);
+            if (this.streak >= 5) this.renderer.flash(0xffe03a, 0.3);
         });
 
         ev.on('death', (tank) => {

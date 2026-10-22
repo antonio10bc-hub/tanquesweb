@@ -20,6 +20,18 @@ export class Sfx {
             this.master = this.ctx.createGain();
             this.master.gain.value = this.volume;
             this.master.connect(this.ctx.destination);
+            // Los efectos pasan por su propio bus con un eco opcional (la música va aparte)
+            this.fx = this.ctx.createGain();
+            this.fx.connect(this.master);
+            this.delay = this.ctx.createDelay(1);
+            this.feedback = this.ctx.createGain();
+            this.wet = this.ctx.createGain();
+            this.feedback.gain.value = 0;
+            this.wet.gain.value = 0;
+            this.fx.connect(this.delay);
+            this.delay.connect(this.feedback).connect(this.delay);
+            this.delay.connect(this.wet).connect(this.master);
+            this.setAmbience(this.ambience);
             const len = this.ctx.sampleRate;
             this.noiseBuf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
             const data = this.noiseBuf.getChannelData(0);
@@ -43,12 +55,40 @@ export class Sfx {
         else this.ctx.resume().catch(() => {});
     }
 
+    // Acústica del escenario: tipo de suelo (cambia el ruido de las orugas) y eco
+    // (la ciudad entre edificios, la cueva del volcán, el vacío del espacio...).
+    setAmbience(amb = {}) {
+        this.ambience = amb;
+        this.ground = amb.ground || 'grass';
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime, echo = amb.echo || 0;
+        this.delay.delayTime.setValueAtTime(echo || 0.1, t);
+        this.feedback.gain.setValueAtTime(echo ? 0.32 : 0, t);
+        this.wet.gain.setValueAtTime(echo ? 0.32 : 0, t);
+    }
+
     out(pan) {
-        if (!pan || !this.ctx.createStereoPanner) return this.master;
+        if (!pan || !this.ctx.createStereoPanner) return this.fx;
         const p = this.ctx.createStereoPanner();
         p.pan.value = Math.max(-1, Math.min(1, pan));
-        p.connect(this.master);
+        p.connect(this.fx);
         return p;
+    }
+
+    // Orugas sobre el suelo del escenario (vol: 1 tu tanque, menos para los rivales cercanos)
+    tread(pan = 0, vol = 1, surface = this.ground) {
+        if (!this.ctx || this.ctx.state !== 'running' || !this.enabled) return;
+        const v = 0.7 * vol;
+        switch (surface) {
+            case 'sand': this.noise(0.06, 0.07 * v, 3200, pan); break;
+            case 'snow': this.noise(0.08, 0.09 * v, 1800, pan); this.tone('triangle', 130, 80, 0.04, 0.04 * v, pan); break;
+            case 'candy': this.tone('square', 900 + Math.random() * 300, 1300, 0.03, 0.025 * v, pan); break;
+            case 'rock': this.tone('sine', 95, 50, 0.06, 0.1 * v, pan); this.noise(0.04, 0.05 * v, 700, pan); break;
+            case 'metal': this.tone('square', 240, 190, 0.03, 0.035 * v, pan); this.noise(0.03, 0.04 * v, 6500, pan); break;
+            case 'ice': this.noise(0.14, 0.05 * v, 7500, pan); break;
+            case 'bush': this.noise(0.1, 0.08 * v, 2600, pan); break;
+            default: this.noise(0.05, 0.06 * v, 1000, pan); // hierba
+        }
     }
 
     tone(type, f0, f1, dur, vol, pan = 0, delay = 0) {
@@ -111,6 +151,10 @@ export class Sfx {
             case 'radar': this.tone('sine', 1320, 1320, 0.08, 0.15); this.tone('sine', 1320, 1320, 0.08, 0.1, 0, 0.25); break;
             case 'pause': this.tone('square', 660, 440, 0.08, 0.12); break;
             case 'teleport': this.tone('sine', 300, 1500, 0.18, 0.14, pan); this.tone('square', 1500, 600, 0.12, 0.06, pan, 0.16); break;
+            case 'streak2': this.seq('square', [784, 1047], 0.07, 0.14, 0.12); break;
+            case 'streak3': this.seq('square', [784, 988, 1319], 0.07, 0.14, 0.12); break;
+            case 'streak4': this.seq('square', [784, 988, 1175, 1568], 0.06, 0.14, 0.12); break;
+            case 'streak5': this.seq('square', [523, 659, 784, 1047, 1319, 1568, 2093], 0.06, 0.14, 0.16); this.seq('sawtooth', [262, 330, 392, 523], 0.09, 0.08, 0.2); break;
             case 'triple': this.seq('square', [880, 1175, 1568], 0.04, 0.12, 0.08); break;
             case 'decoy': this.tone('triangle', 300, 900, 0.25, 0.14); this.noise(0.3, 0.25, 3000); break;
             case 'decoyPop': this.tone('square', 700, 120, 0.2, 0.14, pan); this.noise(0.25, 0.3, 2500, pan); break;

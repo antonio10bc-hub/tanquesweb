@@ -320,6 +320,16 @@ export class Hud {
         document.getElementById('bossbar').classList.toggle('angry', angry);
     }
 
+    // Racha de destrucciones ("¡DOBLE!", "¡TRIPLE!"...): cuanto más larga, más grande
+    streak(text, n) {
+        const el = document.getElementById('streak');
+        el.className = 'streak';
+        void el.offsetWidth;
+        el.textContent = text;
+        el.style.setProperty('--k', Math.min(n, 5));
+        el.className = `streak show${n >= 5 ? ' top' : ''}`;
+    }
+
     // Aviso del ataque especial que viene ("¡OLA GIGANTE!")
     callout(text) {
         const c = document.getElementById('callout');

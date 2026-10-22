@@ -865,6 +865,29 @@ html, body {
     100% { opacity: 0; }
 }
 
+/* ---------- RACHAS ---------- */
+.streak {
+    position: fixed;
+    right: 14px;
+    top: 30%;
+    z-index: 15;
+    font-size: calc(14px + var(--k, 2) * 4px);
+    color: var(--yellow);
+    text-shadow: 0 3px 0 var(--orange), 0 6px 0 var(--ink), 3px 0 0 var(--ink), -3px 0 0 var(--ink), 0 -3px 0 var(--ink);
+    transform: rotate(-6deg);
+    pointer-events: none;
+    opacity: 0;
+}
+.streak.top { color: #fff; text-shadow: 0 3px 0 var(--pink), 0 6px 0 var(--ink), 3px 0 0 var(--ink), -3px 0 0 var(--ink), 0 -3px 0 var(--ink); }
+.streak.show { animation: streakPop 1.6s steps(1) forwards; }
+@keyframes streakPop {
+    0% { opacity: 1; transform: rotate(-6deg) scale(1.8); }
+    10% { transform: rotate(-6deg) scale(1.2); }
+    20%, 80% { opacity: 1; transform: rotate(-6deg) scale(1); }
+    30%, 50% { transform: rotate(-3deg) scale(1.05); }
+    100% { opacity: 0; transform: rotate(-6deg) translateY(-16px); }
+}
+
 /* ---------- BANNER ---------- */
 .banner {
     position: fixed;
