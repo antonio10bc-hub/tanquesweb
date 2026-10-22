@@ -868,6 +868,78 @@ html, body {
 .camp-stars { display: flex; gap: 6px; min-height: 0; }
 .camp-stars .star { width: 22px; height: 22px; animation: none; }
 
+/* Ceremonia: modo difícil desbloqueado */
+.campaign.locked > * { pointer-events: none; }
+.hard-unlock {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 20px;
+    text-align: center;
+    pointer-events: none;
+    background: rgba(18, 0, 10, .78);
+}
+.hard-unlock.show { display: flex; animation: huIn .4s steps(3) both; }
+.hard-unlock.fly { background: transparent; }
+.hard-unlock.fly .hu-title, .hard-unlock.fly .hu-sub, .hard-unlock.fly .hu-text { visibility: hidden; }
+@keyframes huIn { from { background: rgba(18, 0, 10, 0); } }
+.hu-skull {
+    width: 144px;
+    height: 120px;
+    background: var(--px-skull) center / 100% 100% no-repeat;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 0 0 #ff1a3a) drop-shadow(0 8px 0 rgba(0, 0, 0, .6));
+    animation: huSkull .6s steps(3) both, huShake .2s steps(2) .6s 4;
+}
+.hard-unlock.fly .hu-skull { animation: none; }
+@keyframes huSkull { 0% { transform: scale(0); } 66% { transform: scale(1.3); } 100% { transform: scale(1); } }
+@keyframes huShake { 50% { transform: translateX(6px) rotate(4deg); } }
+.hu-title, .hu-sub, .hu-text { visibility: hidden; }
+.hu-title { font-size: clamp(18px, 6vw, 34px); color: var(--yellow); text-shadow: 0 4px 0 var(--orange), 0 8px 0 #000; }
+.hu-sub {
+    font-size: clamp(13px, 4.4vw, 22px);
+    color: #fff;
+    padding: 8px 10px;
+    background: #ff1a3a;
+    border: 3px solid #000;
+    box-shadow: 0 5px 0 #000;
+    transform: rotate(-3deg);
+}
+.hu-text { font-size: 9px; line-height: 1.8; color: #ffd0d6; max-width: 320px; }
+.hard-unlock.t1 .hu-title { visibility: visible; animation: biPop .3s steps(2) both; }
+.hard-unlock.t2 .hu-sub { visibility: visible; animation: biPop .3s steps(2) both; }
+.hard-unlock.t2 .hu-text { visibility: visible; animation: biPop .3s .4s steps(2) both; }
+.skull-btn.arrive { animation: skullArrive .5s steps(3); }
+@keyframes skullArrive { 0% { transform: scale(1.6); background-color: #fff; } 100% { transform: scale(1); } }
+.hard-tip {
+    position: absolute;
+    left: 74px;
+    top: calc(max(14px, env(safe-area-inset-top)) + 62px);
+    font-size: 10px;
+    padding: 7px 9px;
+    color: #fff;
+    background: #ff1a3a;
+    border: 3px solid #000;
+    box-shadow: 0 4px 0 #000;
+    pointer-events: none;
+    animation: tipBob .5s steps(2) infinite;
+}
+.hard-tip::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    margin-top: -6px;
+    border: 6px solid transparent;
+    border-right-color: #000;
+}
+@keyframes tipBob { 50% { transform: translateX(-6px); } }
+
 /* ---------- JEFES: BARRA DE VIDA Y AVISO DE ATAQUE ---------- */
 .bossbar {
     position: absolute;

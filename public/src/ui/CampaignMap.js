@@ -65,7 +65,7 @@ export class CampaignMap {
         });
         this.el.go.addEventListener('click', () => this.play());
         window.addEventListener('keydown', (e) => {
-            if (game.state !== 'campaign') return;
+            if (game.state !== 'campaign' || this.locked) return;
             if (e.code === 'Escape') game.showMenu();
             else if (e.code === 'ArrowUp') this.select(Math.min(this.maxOpen(), this.selected + 1), true);
             else if (e.code === 'ArrowDown') this.select(Math.max(0, this.selected - 1), true);
@@ -463,7 +463,9 @@ export class CampaignMap {
     open(justBeaten, hard = this.hard) {
         if (!this.built) this.build();
         this.hard = hard && Profile.hardUnlocked;
-        this.el.skull.classList.toggle('hidden', !Profile.hardUnlocked);
+        // Recién terminada la campaña, la calavera aún no está: llega volando en la ceremonia
+        const fresh = justBeaten === 'secret' && !this.hard;
+        this.el.skull.classList.toggle('hidden', !Profile.hardUnlocked || fresh);
         this.el.skull.classList.toggle('on', this.hard);
         this.el.root.classList.toggle('hard', this.hard);
         // Modo difícil: todo teñido de rojo y negro y los jefes con su aura maligna
@@ -550,10 +552,75 @@ export class CampaignMap {
                 this.goTo(next);
             }]);
             steps.push([3.6, () => this.select(next, false)]);
+        } else if (WORLDS[idx].secret && !this.hard) {
+            // Campaña terminada: con calma, se desbloquea el modo difícil
+            steps.push([2.2, () => this.unlockHard()]);
         } else {
             steps.push([1.6, () => this.select(idx, false)]);
         }
         this.timeline = { t: 0, steps };
+    }
+
+    // Ceremonia del modo difícil: sin poder tocar nada, la calavera aparece en el centro, se
+    // explica qué se ha desbloqueado, vuela a su botón y un bocadillo señala dónde ha quedado.
+    unlockHard() {
+        const g = this.game, $ = (id) => document.getElementById(id);
+        const box = $('hard-unlock'), big = box.querySelector('.hu-skull'), btn = this.el.skull;
+        this.locked = true;
+        this.el.root.classList.add('locked');
+        this.el.card.classList.add('hidden');
+        box.className = 'hard-unlock';
+        const at = (ms, fn) => setTimeout(fn, ms);
+        at(0, () => {
+            box.classList.add('show');
+            g.sfx.play('roar');
+            g.renderer.flash(0xff1a3a, 0.6);
+            g.rig.shake(0.6);
+        });
+        at(900, () => {
+            box.classList.add('t1');
+            g.sfx.play('win');
+        });
+        at(2000, () => {
+            box.classList.add('t2');
+            g.sfx.play('unlock');
+        });
+        at(5200, () => {
+            // Vuela a saltos hasta su botón, encogiendo
+            box.classList.add('fly');
+            btn.classList.remove('hidden');
+            btn.style.visibility = 'hidden';
+            const a = big.getBoundingClientRect(), b = btn.getBoundingClientRect();
+            const dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2);
+            const s1 = (b.width * 0.7) / a.width;
+            let k = 0;
+            const hop = () => {
+                k++;
+                const t = k / 8;
+                big.style.transform = `translate(${Math.round(dx * t)}px, ${Math.round(dy * t - Math.sin(t * Math.PI) * 60)}px) scale(${1 + (s1 - 1) * t})`;
+                g.sfx.play('step');
+                if (k < 8) at(70, hop);
+                else at(70, land);
+            };
+            hop();
+        });
+        const land = () => {
+            box.className = 'hard-unlock';
+            big.style.transform = '';
+            btn.style.visibility = '';
+            btn.classList.add('arrive');
+            g.sfx.play('reloaded');
+            g.hud.landSparks(btn.getBoundingClientRect());
+            $('hard-tip').classList.remove('hidden');
+            at(600, () => btn.classList.remove('arrive'));
+            at(1800, () => {
+                // Ya se puede tocar
+                this.locked = false;
+                this.el.root.classList.remove('locked');
+                this.select(this.selected, false);
+            });
+            at(5000, () => $('hard-tip').classList.add('hidden'));
+        };
     }
 
     bossFalls(i) {
@@ -649,7 +716,7 @@ export class CampaignMap {
 
     // ---------- Toques: arrastrar para desplazar, tocar un mundo para elegirlo ----------
     down(e) {
-        if (this.game.state !== 'campaign') return;
+        if (this.game.state !== 'campaign' || this.locked) return;
         this.drag = { id: e.pointerId, y: e.clientY, x: e.clientX, y0: e.clientY, t: performance.now(), moved: false, vel: 0 };
     }
 
