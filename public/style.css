@@ -705,6 +705,8 @@ html, body {
 .toggle.off { background: #8e86a8; text-decoration: line-through; }
 .toggle.off::after { content: ' NO'; }
 .btn-small { font-size: 12px; padding: 12px 18px; background: #fff; animation: none; box-shadow: 0 5px 0 var(--ink); }
+.btn-danger { margin-top: 26px; font-size: 9px; padding: 10px 12px; background: #3b2d6b; color: #ff9fb0; box-shadow: 0 4px 0 var(--ink); }
+.btn-danger.armed { background: #ff2a4a; color: #fff; animation: pulse .5s steps(2) infinite; }
 
 /* ---------- NOMBRE DEL ESCENARIO ---------- */
 .stage {

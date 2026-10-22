@@ -71,6 +71,26 @@ garage.onEquip = (id) => {
     if (game.state === 'menu') game.showMenu(game.levelId);
 };
 
+// Ajustes > BORRAR PROGRESO: hay que pulsar dos veces (la primera solo pide confirmación)
+const resetBtn = document.getElementById('btn-reset');
+let resetTimer = 0;
+resetBtn.addEventListener('click', () => {
+    sfx.unlock();
+    if (!resetBtn.classList.contains('armed')) {
+        sfx.play('warn');
+        resetBtn.classList.add('armed');
+        resetBtn.textContent = '¿SEGURO? PULSA OTRA VEZ';
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(() => {
+            resetBtn.classList.remove('armed');
+            resetBtn.textContent = 'BORRAR PROGRESO';
+        }, 3000);
+        return;
+    }
+    Profile.reset();
+    location.reload();
+});
+
 // Acceso desde la consola para depurar: window.game
 window.game = game;
 

@@ -49,6 +49,16 @@ export const Profile = {
         for (const fn of this.listeners) fn(this.data);
     },
 
+    // Borra todo el progreso guardado (monedas, skins, logros, campaña, tutorial).
+    reset() {
+        try {
+            localStorage.removeItem(KEY);
+        } catch {
+            /* ignorar */
+        }
+        this.data = fresh();
+    },
+
     onChange(fn) {
         this.listeners.push(fn);
     },
