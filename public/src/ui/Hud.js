@@ -1,5 +1,6 @@
 // Capa DOM: menús, marcador de vida, aviso de sigilo y carteles.
 import { drawCoin, COIN_SPIN, installPixelSprites } from './PixelArt.js';
+import { achievementIcon, achievementBg } from './achievementIcons.js';
 export class Hud {
     constructor() {
         installPixelSprites();
@@ -154,9 +155,9 @@ export class Hud {
     }
 
     // Logro completado: baja desde arriba del todo. Si llegan varios, van saliendo de uno en uno.
-    achievement(name, desc) {
+    achievement(name, desc, id) {
         this.achQueue = this.achQueue || [];
-        this.achQueue.push({ name, desc });
+        this.achQueue.push({ name, desc, id });
         if (!this.achBusy && !this.achHold) this.nextAchievement();
     }
 
@@ -170,6 +171,13 @@ export class Hud {
         this.achBusy = true;
         document.getElementById('ach-name').textContent = a.name;
         document.getElementById('ach-desc').textContent = a.desc;
+        // El icono propio del logro sobre su color
+        const icon = achievementIcon(a.id), bg = achievementBg(a.id);
+        document.getElementById('ach-trophy').style.backgroundImage = icon || '';
+        const box = document.getElementById('ach-icon');
+        box.style.background = bg === 'rainbow'
+            ? 'linear-gradient(180deg, #ff3e5e 0 17%, #ff9a1f 17% 34%, #ffe03a 34% 50%, #7dff4a 50% 67%, #23e0d6 67% 84%, #7b5cff 84%)'
+            : bg;
         el.classList.remove('show');
         void el.offsetWidth;
         el.classList.add('show');
