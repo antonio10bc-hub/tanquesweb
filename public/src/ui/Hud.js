@@ -25,6 +25,19 @@ export class Hud {
         this.onQuit = null;
         this.onToggle = null;
         this.el.pauseBtn.addEventListener('click', () => this.onPause && this.onPause());
+        // Depuración secreta: tres toques rápidos sobre tu barra de vida
+        this.onDebug = null;
+        let taps = [];
+        document.querySelector('.team-p').addEventListener('pointerdown', (e) => {
+            e.stopPropagation();
+            const now = performance.now();
+            taps = taps.filter((t) => now - t < 600);
+            taps.push(now);
+            if (taps.length >= 3) {
+                taps = [];
+                if (this.onDebug) this.onDebug();
+            }
+        });
         $('btn-settings').addEventListener('click', () => this.showSettings(true));
         $('btn-settings-close').addEventListener('click', () => this.showSettings(false));
         window.addEventListener('keydown', (e) => e.code === 'Escape' && this.showSettings(false));

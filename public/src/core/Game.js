@@ -110,6 +110,7 @@ export class Game {
     bindUi() {
         const hud = this.hud;
         hud.onPause = () => this.pause();
+        hud.onDebug = () => this.debugWin();
         hud.onResume = () => this.resume();
         hud.onQuit = () => {
             this.resume(true);
@@ -1132,6 +1133,34 @@ export class Game {
                 this.dropping.push({ tank, t: -i * 0.25 });
             }
         });
+    }
+
+    // ---------- Depuración ----------
+    // Triple toque en tu barra de vida: gana la partida. Contra un jefe, primero fuerza su fase 2
+    // y a la siguiente gana; en supervivencia supera la oleada; en el tutorial pasa de paso.
+    debugWin() {
+        if (this.state !== 'play' || this.cutscene || this.paused) return;
+        const w = this.world, p = w.player;
+        const kill = (t) => t.alive && w.hitTank(t, p, 999, 0, 1, t.x, t.z, 0xffffff);
+        this.sfx.play('warn');
+        if (this.mode === 'tutorial' && this.tutorial.step < 4) {
+            this.tutorial.wait = 0;
+            this.tutorial.next();
+            return;
+        }
+        if (this.boss) {
+            const b = this.boss;
+            if (b.brain.phase === 1) {
+                // Lo deja justo por encima de la mitad y un golpe lo pasa a la fase 2
+                b.hp = Math.floor(b.maxHp / 2) + 1;
+                w.hitTank(b, p, 1, 0, 1, b.x, b.z, 0xffffff);
+            } else {
+                kill(b);
+            }
+            return;
+        }
+        for (const t of w.tanks) if (t.team !== p.team && !t.decoy) kill(t);
+        for (const d of this.dropping) d.tank.frozen = false;
     }
 
     // ---------- Escena de la fase 2 ----------
