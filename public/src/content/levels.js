@@ -94,17 +94,14 @@ LEVELS.supervivencia = {
 };
 
 // Tutorial de la primera partida (core/Tutorial.js): arena pequeña y fija.
+// Baja a propósito: arriba queda sitio para los textos del tutorial sin tapar el tablero.
 const TUTORIAL_MAP = [
     '#############',
-    '#...........#',
     '#.....E.....#',
-    '#...........#',
-    '#..##...##..#',
+    '#.##.....##.#',
     '#...........#',
     '#ggg.....ggg#',
     '#ggg.....ggg#',
-    '#...........#',
-    '#...........#',
     '#...........#',
     '#.....P.....#',
     '#############',
@@ -117,7 +114,7 @@ LEVELS.tutorial = {
     themes: ['meadow'],
     map: TUTORIAL_MAP,
     pickups: { kinds: { heal: 2, power: 2, shield: 1 }, firstDelay: 1e9, lifetime: 1e9 },
-    player: { tank: 'hero', spawn: 'P' },
+    player: { tank: 'hero', spawn: 'P', hp: 20 }, // en el tutorial es imposible perder
     enemies: [],
 };
 

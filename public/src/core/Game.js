@@ -328,6 +328,13 @@ export class Game {
         this.startMatch('tutorial');
     }
 
+    // Cuánto subir el foco de la cámara para que el tablero quede bajo el cuadro de texto
+    tutorialLift() {
+        const box = document.getElementById('tut').getBoundingClientRect();
+        const covered = box.height ? box.bottom / window.innerHeight : 0.35; // parte de pantalla tapada arriba
+        return covered * this.rig.halfDepth * 0.95;
+    }
+
     // Saltar o dejar el tutorial también cuenta como visto (no vuelve a salir solo)
     finishTutorial() {
         this.tutorial.stop();
@@ -715,6 +722,7 @@ export class Game {
         this.pickupView.sync(item, w.pickups && w.pickups.rules, this.time);
         this.nukeView.sync(w.nukes, this.time);
         this.hazardView.sync(w.hazards.list, this.time, dt, w.arena);
+        this.tutorial.animate(this.time);
         // El objeto de la bala de fuego también echa llamas
         if (item && item.kind === 'power' && (this.itemFireT = (this.itemFireT || 0) - dt) <= 0) {
             this.itemFireT = 0.05;
@@ -752,6 +760,12 @@ export class Game {
         if (this.state === 'menu') {
             this.rig.yawTarget = Math.sin(this.time * 0.25) * 0.35;
             this.rig.focus(w.arena.cols / 2, w.arena.rows / 2 + Math.sin(this.time * 0.18) * 3);
+        } else if (this.mode === 'tutorial' && this.state !== 'outro' && this.state !== 'replay') {
+            // Tutorial: tablero quieto en la parte de abajo y los textos arriba, sin taparlo
+            this.rig.free = true;
+            this.rig.yawTarget = 0;
+            this.rig.zoomTarget = 1;
+            this.rig.focus(w.arena.cols / 2, w.arena.rows / 2 - this.tutorialLift());
         } else if (this.mode === 'duel' && this.state !== 'outro' && this.state !== 'replay') {
             // Duelo: los dos miran la misma pantalla, así que se ve la arena entera
             this.rig.free = true;
@@ -777,7 +791,7 @@ export class Game {
             this.rig.zoomTarget = 1;
             this.rig.focus(w.player.x, w.player.z);
         }
-        if (!this.cutscene && this.mode !== 'duel' && !(this.state === 'intro' && this.boss && this.stateTime < BOSS_INTRO.back)) this.rig.free = false;
+        if (!this.cutscene && this.mode !== 'duel' && this.mode !== 'tutorial' && !(this.state === 'intro' && this.boss && this.stateTime < BOSS_INTRO.back)) this.rig.free = false;
     }
 
     // Visibilidad desde el punto de vista del jugador + animación de modelos y sus efectos.

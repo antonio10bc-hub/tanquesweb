@@ -270,6 +270,7 @@ export class Hud {
     setHp(side, hp, max) {
         const c = this.cache[side], box = this.el[side].hp;
         if (c.max !== max) {
+            box.classList.toggle('many', max > 10); // mucha vida (tutorial): casillas pequeñas
             box.innerHTML = '';
             for (let i = 0; i < max; i++) box.appendChild(Object.assign(document.createElement('div'), { className: 'pip' }));
             c.max = max;

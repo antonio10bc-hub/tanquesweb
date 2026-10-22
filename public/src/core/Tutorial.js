@@ -1,18 +1,24 @@
+import * as THREE from 'three';
 import { PICKUPS } from '../content/index.js';
+import { box, toon, outline, OUTLINE } from '../render/materials.js';
 import { vibrate } from './Haptics.js';
 
 // Tutorial de la primera partida: lo mínimo para entender el juego, de uno en uno y en una
 // arena segura. Cada paso tiene un título, una frase y una condición para pasar al siguiente.
 //   1 moverse · 2 disparar al pararse (y que eso te delata / recarga) · 3 esconderse
 //   4 coger un objeto · 5 el muñeco despierta: primer combate de verdad
-const GOAL = { x: 9.5, z: 9.5 };   // marca a la que hay que llegar
-const ITEM = { x: 3.5, z: 5.5 };   // dónde aparece el objeto
+const GOAL = { x: 9.5, z: 3.5 };   // marca a la que hay que llegar
+// El objeto sale en el arbusto contrario al que te hayas metido
+const ITEM_LEFT = { x: 2.5, z: 4.5 }, ITEM_RIGHT = { x: 10.5, z: 4.5 };
 
 
 const STEPS = [
     {
         title: 'MUÉVETE',
-        text: 'ARRASTRA EL DEDO (O WASD) Y LLEGA A LA MARCA',
+        text: 'ARRASTRA EL DEDO (O WASD) Y LLEGA A LA FLECHA',
+        enter(tu) {
+            tu.point(GOAL);
+        },
         tick(tu, dt) {
             if ((tu.ping -= dt) <= 0) {
                 tu.ping = 0.6;
@@ -26,6 +32,7 @@ const STEPS = [
         title: 'DISPARA',
         text: 'SUELTA EL DEDO: QUIETO, TU TANQUE DISPARA SOLO',
         enter(tu) {
+            tu.point(null);
             tu.dummy = tu.spawnDummy();
             tu.hits = 0;
         },
@@ -50,6 +57,7 @@ const STEPS = [
         },
         tick(tu, dt) {
             tu.inBush = tu.player.inBush ? tu.inBush + dt : 0;
+            if (tu.player.inBush) tu.bushSide = tu.player.x < tu.world.arena.cols / 2 ? 'left' : 'right';
         },
         done: (tu) => tu.inBush > 0.8,
     },
@@ -58,8 +66,9 @@ const STEPS = [
         text: 'LOS OBJETOS DAN VENTAJAS: ESTE HACE DE FUEGO TU SIGUIENTE BALA',
         enter(tu) {
             tu.game.hud.tutorialTip('', false);
-            const sp = tu.world.pickups;
-            sp.current = { id: 999, kind: 'power', def: PICKUPS.power, x: ITEM.x, z: ITEM.z, life: 0 };
+            const sp = tu.world.pickups, at = tu.bushSide === 'left' ? ITEM_RIGHT : ITEM_LEFT;
+            sp.current = { id: 999, kind: 'power', def: PICKUPS.power, x: at.x, z: at.z, life: 0 };
+            tu.point(at);
             tu.game.events.emit('pickupSpawn', sp.current);
             tu.got = false;
         },
@@ -69,6 +78,7 @@ const STEPS = [
         title: '¡EL MUÑECO DESPIERTA!',
         text: 'DERRÓTALO. ÉL TAMBIÉN SE ESCONDE: SOLO LO VES SI DISPARA O ESTÁ CERCA',
         enter(tu) {
+            tu.point(null);
             tu.awaken();
         },
         done: () => false, // se acaba cuando gana la partida (Game.endMatch)
@@ -103,6 +113,38 @@ export class Tutorial {
     stop() {
         this.active = false;
         this.game.hud.tutorial(null);
+        this.point(null);
+    }
+
+    // Flecha grande que bota encima de donde hay que ir (null: la quita)
+    point(at) {
+        if (!this.arrow) {
+            const g = new THREE.Group(), yellow = toon(0xffe03a), hull = outline(0x1b0b33);
+            const add = (w, h, d, y, mat = yellow) => {
+                const m = new THREE.Mesh(box(w, h, d), mat);
+                m.position.y = y;
+                const o = new THREE.Mesh(box(w + OUTLINE * 2, h + OUTLINE * 2, d + OUTLINE * 2), hull);
+                o.position.y = y;
+                g.add(m, o);
+            };
+            add(0.34, 0.7, 0.34, 1.05);                     // palo
+            add(0.9, 0.22, 0.9, 0.62);                      // punta, en escalones
+            add(0.62, 0.2, 0.62, 0.42);
+            add(0.34, 0.18, 0.34, 0.24);
+            add(0.12, 0.12, 0.12, 0.12, toon(0xffffff));
+            this.arrow = g;
+        }
+        this.target = at;
+        if (at) this.game.scene.add(this.arrow);
+        else this.arrow.removeFromParent();
+    }
+
+    // Anima la flecha (se llama cada fotograma desde Game.draw)
+    animate(time) {
+        if (!this.target || !this.arrow) return;
+        this.arrow.position.set(this.target.x, 0.5 + Math.abs(Math.sin(time * 4)) * 0.6, this.target.z);
+        this.arrow.rotation.y = time * 2;
+        this.arrow.scale.setScalar(1.3);
     }
 
     next() {
