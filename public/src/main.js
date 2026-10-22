@@ -7,6 +7,7 @@ import { Garage } from './ui/Garage.js';
 import { Trophies } from './ui/Trophies.js';
 import { Profile } from './core/Profile.js';
 import { Achievements, achievementCount } from './core/Achievements.js';
+import { trackGame, trackGarage } from './core/GameAnalytics.js';
 
 Profile.load();
 
@@ -15,6 +16,8 @@ const hud = new Hud();
 const sfx = new Sfx();
 const input = new Input(canvas, document.getElementById('joy'));
 const game = new Game({ canvas, hud, input, sfx });
+// Analíticas (solo en la web publicada): antes del primer menú y del tutorial automático
+trackGame(game, hud);
 
 // Desbloqueo del audio en los gestos que los navegadores aceptan (Safari no acepta pointerdown)
 const unlock = () => sfx.unlock();
@@ -85,6 +88,7 @@ document.getElementById('btn-tutorial').addEventListener('click', () => {
 new Glossary(sfx);
 new Trophies(sfx);
 const garage = new Garage(sfx);
+trackGarage(garage);
 garage.onEquip = (id) => {
     achievements.equipped(id);
     // El tanque del menú de fondo luce la skin nueva

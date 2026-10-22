@@ -447,6 +447,7 @@ export class Game {
                 const got = [true, this.damageTaken <= STARS.maxDamage, this.playTime < par];
                 const stars = got.filter(Boolean).length;
                 const best = Profile.setStars(w.id, stars, hard);
+                this.lastStars = stars;
                 st.bosses = Profile.data.campaign.beaten.filter((id) => !WORLD_BY_ID[id].secret).length;
                 st.stars = Object.values(Profile.data.campaign.stars).reduce((a, b) => a + b, 0);
                 st.hardBosses = Profile.data.campaign.hard.beaten.length;

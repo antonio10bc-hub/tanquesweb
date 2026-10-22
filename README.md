@@ -182,3 +182,15 @@ y regístrala en `ai/brains.js`.
 **Un tema nuevo** — copia `candy` en `content/themes.js` y cambia los colores.
 
 Para depurar: `window.game` está expuesto en la consola (`game.startMatch('base')`, `game.world`...).
+
+## Analíticas
+
+PostHog (región EU), solo en la web publicada (https, nunca en `localhost`). Eventos anónimos,
+sin clics automáticos ni grabaciones: `public/src/core/Analytics.js` (arranque y `track`) y
+`public/src/core/GameAnalytics.js` (qué se mide, escuchando el bus de eventos y los botones):
+`app_opened`, `screen_viewed`, `modal_opened`, `setting_toggled`, `tutorial_step`,
+`tutorial_skipped`, `match_started`, `match_ended`, `match_quit`, `pickup_collected`,
+`wave_cleared`, `boss_beaten`, `hard_mode_unlocked`, `achievement_unlocked`, `item_bought` e
+`item_equipped`. Todos llevan `app: tankless` (el proyecto de PostHog es compartido con los
+otros juegos). Salen por `/ingest` (rewrite en `vercel.json`) para esquivar los bloqueadores;
+el service worker no los toca.
