@@ -425,8 +425,10 @@ export class Hud {
     }
 
     // Textos de los botones del final (la campaña vuelve al mapa en vez de al menú)
+    // again null: oculta ese botón
     endButtons(again, menu) {
-        this.el.again.textContent = again;
+        this.el.again.classList.toggle('hidden', !again);
+        if (again) this.el.again.textContent = again;
         this.el.endMenu.textContent = menu;
     }
 

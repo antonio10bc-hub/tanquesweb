@@ -136,6 +136,7 @@ export class Game {
                 e.preventDefault();
                 this.sfx.unlock();
                 if (this.state === 'menu') this.startMatch(this.levelId, undefined, this.themeId);
+                else if (document.getElementById('btn-again').classList.contains('hidden')) this.hud.onMenu();
                 else this.again();
             } else if (e.code === 'Escape' || e.code === 'KeyP') {
                 if (this.paused) this.resume();
@@ -452,6 +453,8 @@ export class Game {
                 Profile.save();
                 const sub = w.secret && !hard ? '¡HAS COMPLETADO LA CAMPAÑA!' : `${w.tank.name} HA CAÍDO`;
                 this.hud.showEnd(true, sub, hard ? '¡PESADILLA SUPERADA!' : '¡JEFE DERROTADO!');
+                // Al ganar, solo se vuelve al mapa (allí se ve cómo se abre el siguiente mundo)
+                this.hud.endButtons(null, 'VOLVER AL MAPA');
                 this.hud.showStars(got, best, par, (k) => this.sfx.play(k < stars ? 'coin' : 'tick'));
             } else {
                 this.hud.showEnd(false, '¡INTÉNTALO OTRA VEZ!');
@@ -788,7 +791,9 @@ export class Game {
             this.rig.zoomTarget = this.state === 'replay' ? 0.7 : 0.8;
             this.rig.focus(this.fallen.x, this.fallen.z);
         } else {
+            // Cámara normal (también al acabar la presentación del jefe, que la deja ladeada)
             this.rig.zoomTarget = 1;
+            this.rig.yawTarget = 0;
             this.rig.focus(w.player.x, w.player.z);
         }
         if (!this.cutscene && this.mode !== 'duel' && this.mode !== 'tutorial' && !(this.state === 'intro' && this.boss && this.stateTime < BOSS_INTRO.back)) this.rig.free = false;
