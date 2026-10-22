@@ -18,9 +18,9 @@ export class EventBus {
         if (i >= 0) list.splice(i, 1);
     }
 
-    emit(type, a, b, c, d, e) {
+    emit(type, a, b, c, d, e, f) {
         const list = this.handlers.get(type);
         if (!list) return;
-        for (let i = 0; i < list.length; i++) list[i](a, b, c, d, e);
+        for (let i = 0; i < list.length; i++) list[i](a, b, c, d, e, f);
     }
 }

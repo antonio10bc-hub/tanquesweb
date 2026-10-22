@@ -288,6 +288,7 @@ export class Arena {
         }
 
         this.buildBushes(root, theme, own, cx, cz);
+        if (theme.flowers) this.buildFlowers(root, theme, own, cx, cz);
 
         this.buildFoam(root, theme, own);
         this.buildClouds(root, theme, own);
@@ -351,6 +352,23 @@ export class Arena {
         this.bushView = [this.addAnimated(root, mesh, clumps, cx, cz, 0.35), this.addAnimated(root, hull, hullClumps, cx, cz, 0.35)];
     }
 
+    // Florecitas decorativas sobre el suelo libre (solo adorno, no afectan a nada).
+    buildFlowers(root, theme, own, cx, cz) {
+        const { cols, rows } = this, pts = [];
+        for (let r = 1; r < rows - 1; r++) for (let c = 1; c < cols - 1; c++) {
+            const i = r * cols + c;
+            if (this.solid[i] || this.bush[i] || Math.random() > 0.3) continue;
+            const n = 1 + ((Math.random() * 3) | 0);
+            for (let k = 0; k < n; k++) {
+                pts.push({ x: c + 0.15 + Math.random() * 0.7, y: 0.04, z: r + 0.15 + Math.random() * 0.7, sx: 0.1, sy: 0.08, sz: 0.1, ry: Math.random() });
+            }
+        }
+        if (!pts.length) return;
+        const mesh = new THREE.InstancedMesh(box(1, 1, 1), own(toon(0xffffff)), pts.length);
+        pts.forEach((p, i) => mesh.setColorAt(i, _c.setHex(theme.flowers[(Math.random() * theme.flowers.length) | 0])));
+        this.addAnimated(root, mesh, pts, cx, cz, 0.15);
+    }
+
     buildFoam(root, theme, own) {
         const { cols, rows } = this;
         const pts = [];
@@ -365,6 +383,10 @@ export class Arena {
     }
 
     buildClouds(root, theme, own) {
+        if (!theme.clouds) {
+            this.clouds = [];
+            return;
+        }
         const mat = own(toon(theme.clouds));
         const hullMat = own(outline(theme.outline));
         this.clouds = [];

@@ -3,6 +3,12 @@ import { Input } from './core/Input.js';
 import { Sfx } from './core/Audio.js';
 import { Hud } from './ui/Hud.js';
 import { Glossary } from './ui/Glossary.js';
+import { Garage } from './ui/Garage.js';
+import { Trophies } from './ui/Trophies.js';
+import { Profile } from './core/Profile.js';
+import { Achievements, achievementCount } from './core/Achievements.js';
+
+Profile.load();
 
 const canvas = document.getElementById('view');
 const hud = new Hud();
@@ -16,16 +22,22 @@ for (const type of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'])
     window.addEventListener(type, unlock, { capture: true, passive: true });
 }
 
-// JUGAR: el escenario que se ve de fondo en el menú. OTRA VEZ: un arquetipo nuevo.
+// PARTIDA RÁPIDA: el escenario que se ve de fondo en el menú. OTRA VEZ: repite el modo
+// (partida rápida con un arquetipo nuevo, o supervivencia desde la oleada 1).
 hud.onPlay = () => {
     sfx.unlock();
     sfx.play('ui');
     game.startMatch(game.levelId, undefined, game.themeId);
 };
+document.getElementById('btn-survival').addEventListener('click', () => {
+    sfx.unlock();
+    sfx.play('ui');
+    game.startSurvival();
+});
 hud.onAgain = () => {
     sfx.unlock();
     sfx.play('ui');
-    game.startMatch();
+    game.again();
 };
 
 hud.onMenu = () => {
@@ -34,8 +46,23 @@ hud.onMenu = () => {
     game.showMenu();
 };
 
+const achievements = new Achievements(game);
+const syncProfile = () => {
+    hud.setCoins(Profile.coins);
+    hud.setTrophies(...achievementCount());
+};
+Profile.onChange(syncProfile);
+syncProfile();
+
 game.showMenu();
 new Glossary(sfx);
+new Trophies(sfx);
+const garage = new Garage(sfx);
+garage.onEquip = (id) => {
+    achievements.equipped(id);
+    // El tanque del menú de fondo luce la skin nueva
+    if (game.state === 'menu') game.showMenu(game.levelId);
+};
 
 // Acceso desde la consola para depurar: window.game
 window.game = game;

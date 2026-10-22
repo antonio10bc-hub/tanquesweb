@@ -136,16 +136,6 @@ html, body {
     animation: pulse 1s steps(2) infinite;
 }
 .btn:active { transform: translateY(6px); box-shadow: 0 1px 0 var(--ink), inset 0 -2px 0 #ffb300; }
-/* JUGAR abajo del todo, como en los juegos de móvil (en pantallas muy bajas, en su sitio) */
-#menu #btn-play {
-    position: absolute;
-    left: 50%;
-    bottom: calc(max(28px, env(safe-area-inset-bottom)) + 20px);
-    translate: -50% 0;
-}
-@media (max-height: 620px) {
-    #menu #btn-play { position: static; translate: none; }
-}
 .btn:disabled { opacity: .6; animation: none; cursor: wait; }
 
 @keyframes pulse {
@@ -255,11 +245,13 @@ html, body {
 /* ---------- OBJETOS: botón del menú y glosario ---------- */
 .items-btn {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 4px 16px 4px 6px;
+    gap: 8px;
+    width: 128px;
+    padding: 8px 6px 10px;
     font-family: var(--font);
-    font-size: 13px;
+    font-size: 10px;
     color: var(--ink);
     background: #fff;
     border: 4px solid var(--ink);
@@ -307,6 +299,145 @@ html, body {
 }
 .g-text h3 { margin: 0 0 8px; font-size: 12px; text-shadow: 2px 2px 0 #000; }
 .g-text p { margin: 0; font-size: 9px; line-height: 1.7; color: #fff; }
+
+/* ---------- MENÚ ---------- */
+.menu {
+    justify-content: space-between;
+    padding-top: calc(max(14px, env(safe-area-inset-top)) + 54px);
+    padding-bottom: calc(max(20px, env(safe-area-inset-bottom)) + 12px);
+    overflow-y: auto;
+}
+.menu-top { display: flex; flex-direction: column; align-items: center; gap: 18px; margin: auto 0; }
+.menu-row { display: flex; gap: 12px; }
+.play-col { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.play-col .btn { width: min(300px, 82vw); }
+.btn-alt {
+    background: var(--pink);
+    color: #fff;
+    text-shadow: 2px 2px 0 var(--ink);
+    box-shadow: 0 7px 0 var(--ink), inset 0 -6px 0 #c4245f, inset 0 4px 0 #ff8fbd;
+    animation: none;
+}
+.trophy-btn { display: flex; align-items: center; gap: 8px; }
+.trophy {
+    display: inline-block;
+    width: 14px;
+    height: 12px;
+    background: var(--yellow);
+    box-shadow: 0 3px 0 -1px var(--ink), inset -3px 0 0 #ffb300;
+    clip-path: polygon(0 0, 100% 0, 100% 45%, 65% 75%, 65% 100%, 35% 100%, 35% 75%, 0 45%);
+}
+
+/* Monedas de oro */
+.coin {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ffd23f;
+    border: 3px solid var(--ink);
+    box-shadow: inset -3px -3px 0 #e6a400, inset 2px 2px 0 #fff4b0;
+    vertical-align: -2px;
+}
+.coins-badge {
+    position: absolute;
+    top: max(14px, env(safe-area-inset-top));
+    left: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    padding: 7px 12px 7px 8px;
+    color: var(--ink);
+    background: var(--yellow);
+    border: 3px solid var(--ink);
+    box-shadow: 0 4px 0 var(--ink);
+}
+.coins-badge.static { position: static; }
+.coins-badge .coin { width: 18px; height: 18px; }
+
+/* ---------- MI TANQUE ---------- */
+.garage { z-index: 25; background-color: rgba(27, 11, 51, .94); gap: 14px; }
+.garage.golden { background: radial-gradient(circle at 50% 42%, rgba(255, 210, 63, .45), rgba(27, 11, 51, .94) 60%); }
+.garage-stage { display: flex; align-items: center; gap: 10px; }
+#garage-view {
+    width: min(224px, 56vw);
+    height: min(224px, 56vw);
+    background: var(--sea);
+    border: 4px solid #fff;
+    box-shadow: 0 6px 0 var(--ink);
+    image-rendering: pixelated;
+    touch-action: pan-y;
+}
+.arrow {
+    font-family: var(--font);
+    font-size: 22px;
+    width: 52px;
+    height: 64px;
+    color: var(--ink);
+    background: var(--yellow);
+    border: 4px solid var(--ink);
+    box-shadow: 0 6px 0 var(--ink);
+    cursor: pointer;
+}
+.arrow:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--ink); }
+.garage-name { font-size: 16px; color: #fff; text-shadow: 3px 3px 0 var(--ink); }
+.garage.golden .garage-name { color: #ffd23f; }
+.garage-count { font-size: 9px; color: #b9b0d8; }
+.btn.buy { background: #ffd23f; }
+#garage-action { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+#garage-action:disabled { opacity: .55; cursor: default; }
+
+/* ---------- LOGROS ---------- */
+.t-row { opacity: .55; }
+.t-row.done { opacity: 1; }
+.t-icon {
+    flex: none;
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    background: #3b2d6b;
+    border: 3px solid #fff;
+}
+.t-row.done .t-icon { background: var(--yellow); }
+.t-icon .trophy { width: 26px; height: 22px; }
+.t-row:not(.done) .t-icon .trophy { background: #8e86a8; box-shadow: none; }
+.t-bar { margin-top: 8px; height: 8px; background: #3b2d6b; border: 2px solid #fff; }
+.t-bar i { display: block; height: 100%; background: var(--cyan); }
+
+/* ---------- AVISOS (monedas, logros) ---------- */
+.toast {
+    position: fixed;
+    left: 50%;
+    top: calc(max(10px, env(safe-area-inset-top)) + 104px);
+    z-index: 30;
+    transform: translate(-50%, -20px);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: var(--ink);
+    background: #fff;
+    border: 3px solid var(--ink);
+    box-shadow: 0 5px 0 var(--ink);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+}
+.toast.show { animation: toastIn 2.6s ease forwards; }
+.toast.trophy-toast { background: var(--yellow); }
+@keyframes toastIn {
+    0% { opacity: 0; transform: translate(-50%, -20px); }
+    10%, 85% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, -10px); }
+}
+
+@media (max-height: 640px) {
+    .menu .help { display: none; }
+    .menu-top { gap: 12px; }
+}
 
 /* ---------- AJUSTES ---------- */
 .corner-btn {

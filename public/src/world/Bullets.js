@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { box, OUTLINE } from '../render/materials.js';
 
-const FIELDS = ['x', 'z', 'vx', 'vz', 'life', 'ttl', 'size', 'dmg', 'trail', 'power', 'bounce'];
+const FIELDS = ['x', 'z', 'vx', 'vz', 'life', 'ttl', 'size', 'dmg', 'trail', 'power', 'bounce', 'bounced'];
 const _d = new THREE.Object3D();
 const _c = new THREE.Color();
 const HEIGHT = 0.45;
@@ -48,6 +48,7 @@ export class BulletSystem {
         this.size[i] = power > 1 ? w.size * 2.1 : w.size;
         this.power[i] = power;
         this.bounce[i] = bounce;
+        this.bounced[i] = 0;
         this.dmg[i] = w.damage * power;
         this.trail[i] = 0;
         this.owner[i] = owner;
@@ -79,13 +80,14 @@ export class BulletSystem {
             if (arena.solidAt(nx, nz)) {
                 const c = Math.floor(nx), r = Math.floor(nz);
                 const res = arena.damageTile(c, r, this.dmg[i]);
-                if (res) this.events.emit('tileHit', c, r, res, this.color[i], 'crate');
+                if (res) this.events.emit('tileHit', c, r, res, this.color[i], 'crate', this.owner[i]);
                 if (this.bounce[i] > 0 && res !== 'broken') {
                     // Rebote: invierte la componente que ha chocado
                     const hitX = arena.solidAt(nx, z), hitZ = arena.solidAt(x, nz);
                     if (hitX || !hitZ) this.vx[i] = -this.vx[i];
                     if (hitZ || !hitX) this.vz[i] = -this.vz[i];
                     this.bounce[i]--;
+                    this.bounced[i] = 1;
                     this.events.emit('bulletBounce', x, z);
                     continue;
                 }
@@ -99,13 +101,13 @@ export class BulletSystem {
             const owner = this.owner[i];
             let hit = null;
             for (const t of tanks) {
-                if (!t.alive || t.team === owner.team) continue;
+                if (!t.alive || t.frozen || t.team === owner.team) continue;
                 const dx = t.x - nx, dz = t.z - nz, rr = t.radius + this.size[i] * 0.5;
                 if (dx * dx + dz * dz < rr * rr) { hit = t; break; }
             }
             if (hit) {
                 const sp = Math.hypot(this.vx[i], this.vz[i]);
-                world.hitTank(hit, owner, this.dmg[i], this.vx[i] / sp, this.vz[i] / sp, nx, nz, this.color[i]);
+                world.hitTank(hit, owner, this.dmg[i], this.vx[i] / sp, this.vz[i] / sp, nx, nz, this.color[i], this.bounced[i] ? 'bounce' : 'bullet');
                 this.remove(i--);
                 continue;
             }

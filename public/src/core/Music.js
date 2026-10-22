@@ -6,11 +6,13 @@ const SCALES = {
     major: [0, 2, 4, 5, 7, 9, 11],
     minor: [0, 2, 3, 5, 7, 8, 10],
     dorian: [0, 2, 3, 5, 7, 9, 10],
+    phrygian: [0, 1, 3, 5, 7, 8, 10],
 };
 const PROGRESSIONS = {
     major: [0, 5, 3, 4],
     minor: [0, 5, 2, 6],
     dorian: [0, 3, 0, 6],
+    phrygian: [0, 1, 0, 6],
 };
 const BASS = [1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0];
 const midiToHz = (m) => 440 * Math.pow(2, (m - 69) / 12);

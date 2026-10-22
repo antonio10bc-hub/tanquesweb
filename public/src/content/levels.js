@@ -36,28 +36,28 @@ export const LEVELS = {
     clasico: {
         name: 'ARENA CLÁSICA',
         tagline: 'FUEGO Y VIDA',
-        themes: ['candy', 'mountain'],
+        themes: ['candy', 'meadow'],
         generator: { materials: { '#': 3, B: 2, D: 1 }, bushes: [1, 2] },
-        pickups: { kinds: { heal: 2, power: 2, bounce: 1 } },
+        pickups: { kinds: { heal: 2, power: 2, bounce: 1, nuke: 1 } },
     },
     emboscada: {
         name: 'EMBOSCADA',
         tagline: 'LA HIERBA ESCONDE',
-        themes: ['autumn', 'beach', 'candy'],
+        themes: ['meadow', 'beach', 'desert'],
         generator: { pieces: [4, 6], density: [0.1, 0.22], materials: { '#': 2, B: 2 }, bushes: [5, 7], bushSize: [3, 6] },
-        pickups: { kinds: { radar: 2, cloak: 1, heal: 2 } },
+        pickups: { kinds: { radar: 2, cloak: 1, heal: 2, nuke: 1 } },
     },
     demolicion: {
         name: 'DEMOLICIÓN',
         tagline: 'TODO SE ROMPE',
-        themes: ['city', 'snow'],
+        themes: ['city', 'desert', 'space'],
         generator: { pieces: [6, 9], density: [0.16, 0.32], materials: { '#': 1, D: 5 }, bushes: [0, 1] },
         pickups: { kinds: { power: 3, bounce: 2, heal: 1, nuke: 1 } },
     },
     fortaleza: {
         name: 'FORTALEZA',
         tagline: 'MUROS Y ESCUDOS',
-        themes: ['mountain', 'snow', 'city'],
+        themes: ['snow', 'volcano', 'space'],
         generator: { pieces: [6, 9], density: [0.18, 0.32], materials: { '#': 4, B: 1, D: 2 }, bushes: [0, 2] },
         pickups: { kinds: { shield: 2, bounce: 2, heal: 1, nuke: 1 } },
     },
@@ -66,17 +66,50 @@ export const LEVELS = {
         tagline: 'CORRE Y DISPARA',
         themes: ['beach', 'candy', 'city'],
         generator: { pieces: [3, 5], density: [0.08, 0.18], materials: { B: 3, D: 2 }, bushes: [2, 3] },
-        pickups: { kinds: { turbo: 3, power: 2, shield: 1 }, lifetime: 4 },
+        pickups: { kinds: { turbo: 3, power: 2, shield: 1, nuke: 1 }, lifetime: 4 },
     },
     fantasmas: {
         name: 'FANTASMAS',
         tagline: 'NADIE SE VE',
-        themes: ['snow', 'autumn', 'mountain'],
+        themes: ['city', 'space', 'volcano'],
         generator: { materials: { '#': 2, B: 2, D: 1 }, bushes: [3, 5], bushSize: [2, 4] },
-        pickups: { kinds: { cloak: 2, radar: 2, heal: 1 } },
+        pickups: { kinds: { cloak: 2, radar: 2, heal: 1, nuke: 1 } },
     },
 };
 
 for (const lvl of Object.values(LEVELS)) Object.assign(lvl, { map: FALLBACK_MAP }, DUEL);
+
+// Modo supervivencia: un mapa para toda la partida y oleadas de enemigos cada vez mayores.
+// No entra en la rotación de partidas rápidas ("survival: true").
+LEVELS.supervivencia = {
+    name: 'SUPERVIVENCIA',
+    tagline: 'AGUANTA LO QUE PUEDAS',
+    survival: true,
+    themes: ['snow', 'desert', 'candy', 'volcano', 'beach', 'meadow', 'city', 'space'],
+    generator: { materials: { '#': 3, B: 2, D: 2 }, bushes: [2, 4] },
+    pickups: { kinds: { heal: 3, power: 2, shield: 2, turbo: 1, cloak: 1, bounce: 1, radar: 1, nuke: 1 }, lifetime: 6 },
+    map: FALLBACK_MAP,
+    player: { tank: 'hero', spawn: 'P' },
+    enemies: [{ tank: 'grunt', spawn: 'E', brain: 'hunter', params: { dodge: 0.25 } }],
+};
+
+// Oleadas: cuántos enemigos y de qué tipo. La 1 es la del arquetipo (un soldado).
+export const SURVIVAL = {
+    heal: 2,          // vida que recuperas al superar una oleada
+    coinEvery: 3,     // una moneda de oro cada 3 oleadas superadas
+    pause: 2.4,       // segundos de respiro entre oleadas
+    minSpawnDist: 6,  // los nuevos enemigos aparecen lejos de ti
+    wave(n) {
+        const count = Math.min(1 + Math.floor(n / 2), 5);
+        const out = [];
+        for (let i = 0; i < count; i++) {
+            let tank = 'grunt';
+            if (n >= 3 && i % 3 === 1) tank = 'scout';
+            if (n >= 5 && i % 3 === 2) tank = 'brute';
+            out.push({ tank, brain: 'hunter', params: { dodge: Math.min(0.2 + n * 0.05, 0.7) } });
+        }
+        return out;
+    },
+};
 
 export const FIRST_LEVEL = 'clasico';

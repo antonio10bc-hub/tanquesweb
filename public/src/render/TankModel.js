@@ -7,7 +7,10 @@ const PIP_GAP = 0.05;
 
 // Tanque voxel con ojitos. Solo es visual: la simulación vive en world/Tank.js.
 export class TankModel {
-    constructor(palette, outlineColor, magazine = 3) {
+    // skin: entrada de content/skins.js (gorro y/o tanque dorado), opcional.
+    constructor(palette, outlineColor, magazine = 3, skin = null) {
+        this.skin = skin;
+        if (skin && skin.palette) palette = { ...palette, ...skin.palette };
         this.fx = { fade: { value: 1 }, flash: { value: 0 } };
         this.materials = [];
         this.t = Math.random() * 10;
@@ -62,6 +65,49 @@ export class TankModel {
         this.turret.add(this.antenna);
         this.part(this.antenna, 0.04, 0.32, 0.04, mat(palette.tread), 0, 0.16, 0, false);
         this.part(this.antenna, 0.1, 0.1, 0.1, mat(palette.accent), 0, 0.34, 0);
+
+        // Gorro: va sobre la tapa de la torreta y sustituye a la antena
+        this.hatAnim = null;
+        if (skin && skin.hat) {
+            this.hat = new THREE.Group();
+            this.hat.position.set(0, 0.305, -0.03);
+            this.turret.add(this.hat);
+            const extra = skin.hat((w, h, d, color, x, y, z, outlined = true) => this.part(this.hat, w, h, d, mat(color), x, y, z, outlined));
+            this.hatAnim = extra && extra.animate;
+            this.antenna.visible = false;
+        }
+
+        // Tanque dorado: aura de cubitos en órbita y un halo en el suelo
+        if (skin && skin.gold) {
+            this.aura = new THREE.Group();
+            this.root.add(this.aura);
+            const gold = mat(0xffe680), white = mat(0xffffff);
+            for (let i = 0; i < 6; i++) {
+                const a = (i / 6) * Math.PI * 2;
+                this.part(this.aura, 0.08, 0.08, 0.08, i % 2 ? white : gold, Math.sin(a) * 0.62, 0.3 + (i % 3) * 0.12, Math.cos(a) * 0.62, i % 2 === 0);
+            }
+            this.haloMat = own(new THREE.MeshBasicMaterial({ color: 0xffd23f, transparent: true, opacity: 0.5, depthWrite: false }));
+            this.halo = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.66, 16, 1), this.haloMat);
+            this.halo.rotation.x = -Math.PI / 2;
+            this.halo.position.y = 0.03;
+            this.root.add(this.halo);
+            this.materials.push({ dispose: () => this.halo.geometry.dispose() });
+            // Pilar de luz dorada
+            this.beamMat = own(new THREE.MeshBasicMaterial({ color: 0xffe680, transparent: true, opacity: 0.2, depthWrite: false, side: THREE.DoubleSide }));
+            this.beam = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.7, 2.4, 8, 1, true), this.beamMat);
+            this.beam.position.y = 1.2;
+            this.root.add(this.beam);
+            this.materials.push({ dispose: () => this.beam.geometry.dispose() });
+            // Anillo inclinado de cubitos girando por encima
+            this.orbit = new THREE.Group();
+            this.orbit.position.y = 0.9;
+            this.orbit.rotation.x = 0.5;
+            this.root.add(this.orbit);
+            for (let i = 0; i < 10; i++) {
+                const a = (i / 10) * Math.PI * 2;
+                this.part(this.orbit, 0.06, 0.06, 0.06, i % 3 ? gold : white, Math.sin(a) * 0.48, 0, Math.cos(a) * 0.48, false);
+            }
+        }
 
         // Burbuja de escudo
         this.bubbleMat = own(new THREE.MeshBasicMaterial({ color: 0x6fd0ff, transparent: true, opacity: 0.35, depthWrite: false }));
@@ -155,7 +201,21 @@ export class TankModel {
             this.bubbleMat.opacity = 0.28 * fade + Math.sin(this.t * 6) * 0.05;
         }
 
-        this.fx.flash.value = tank.flash;
+        if (this.hatAnim) this.hatAnim(this.t, moving);
+        let sheen = 0;
+        if (this.aura) {
+            this.aura.rotation.y = this.t * 2.2 - tank.yaw;
+            this.aura.position.y = Math.sin(this.t * 3) * 0.06;
+            this.halo.scale.setScalar(1 + Math.sin(this.t * 4) * 0.12);
+            this.haloMat.opacity = (0.35 + Math.sin(this.t * 4) * 0.2) * fade;
+            this.beamMat.opacity = (0.14 + Math.sin(this.t * 3) * 0.07) * fade;
+            this.beam.rotation.y = this.t * 0.8;
+            this.orbit.rotation.y = this.t * 3.4;
+            // Brillo metálico que barre el tanque cada poco
+            sheen = Math.max(0, Math.sin(this.t * 2.6)) ** 8 * 0.45;
+        }
+
+        this.fx.flash.value = Math.max(tank.flash, sheen);
         this.fx.fade.value = fade;
         const shown = fade > 0.001 && tank.alive;
         this.root.visible = shown;

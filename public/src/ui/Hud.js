@@ -37,7 +37,39 @@ export class Hud {
 
     ready() {
         this.el.play.disabled = false;
-        this.el.play.textContent = 'JUGAR';
+        this.el.play.textContent = 'PARTIDA RÁPIDA';
+        document.getElementById('btn-survival').disabled = false;
+    }
+
+    setCoins(n) {
+        for (const id of ['menu-coins', 'garage-coins']) document.getElementById(id).textContent = n;
+    }
+
+    setTrophies(done, total) {
+        document.getElementById('menu-trophies').textContent = `${done}/${total}`;
+    }
+
+    // Aviso breve arriba (moneda ganada, logro desbloqueado). Se encolan si llegan varios.
+    toast(text, kind = '') {
+        this.toasts = this.toasts || [];
+        this.toasts.push({ text, kind });
+        if (!this.toastBusy) this.nextToast();
+    }
+
+    nextToast() {
+        const t = this.toasts.shift();
+        const el = document.getElementById('toast');
+        if (!t) {
+            this.toastBusy = false;
+            return;
+        }
+        this.toastBusy = true;
+        el.className = 'toast';
+        void el.offsetWidth;
+        el.innerHTML = `<span class="${t.kind === 'coin' ? 'coin' : 'trophy'}"></span>`;
+        el.append(t.text);
+        el.className = `toast show ${t.kind === 'trophy' ? 'trophy-toast' : ''}`;
+        setTimeout(() => this.nextToast(), 2700);
     }
 
     screen(name) {
@@ -128,8 +160,9 @@ export class Hud {
         b.className = `banner show ${kind}`;
     }
 
-    showEnd(win, sub) {
-        this.el.endTitle.textContent = win ? '¡VICTORIA!' : 'DERROTA';
+    // title: opcional (supervivencia muestra las oleadas en lugar de VICTORIA/DERROTA)
+    showEnd(win, sub, title) {
+        this.el.endTitle.textContent = title || (win ? '¡VICTORIA!' : 'DERROTA');
         this.el.endTitle.classList.toggle('lose', !win);
         this.el.endSub.textContent = sub || '';
         this.screen('end');

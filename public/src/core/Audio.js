@@ -113,6 +113,8 @@ export class Sfx {
             case 'nukeGet': this.seq('square', [196, 262, 330, 392, 523], 0.06, 0.14, 0.12); break;
             case 'nukeLaunch': this.tone('square', 220, 90, 0.25, 0.25, pan); this.tone('sine', 1400, 300, 1.35, 0.12, pan, 0.05); break;
             case 'nuke': this.noise(1.8, 1, 700, pan); this.tone('sine', 110, 22, 1.6, 0.9, pan); this.noise(0.4, 0.8, 4000, pan); break;
+            case 'coin': this.tone('square', 988, 988, 0.07, 0.14); this.tone('square', 1319, 1319, 0.2, 0.14, 0, 0.07); break;
+            case 'achievement': this.seq('square', [784, 988, 1175, 1568], 0.07, 0.13, 0.14); this.seq('triangle', [392, 494, 587, 784], 0.07, 0.12, 0.14); break;
             case 'tick': this.tone('square', 440, 440, 0.12, 0.14); break;
             case 'go': this.seq('square', [880, 1175, 1760], 0.07, 0.14, 0.2); break;
             case 'ui': this.tone('square', 660, 1320, 0.09, 0.14); break;

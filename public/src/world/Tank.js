@@ -81,7 +81,7 @@ export class Tank {
     }
 
     step(dt, world) {
-        if (!this.alive) return;
+        if (!this.alive || this.frozen) return; // frozen: aún cayendo del cielo
         this.brain.update(this, dt, world);
 
         let ix = this.intent.x, iz = this.intent.z;

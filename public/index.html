@@ -55,22 +55,58 @@
         <div class="joy-thumb"></div>
     </div>
 
-    <div id="menu" class="screen">
+    <div id="menu" class="screen menu">
+        <div class="coins-badge" aria-label="Monedas"><span class="coin"></span><span id="menu-coins">0</span></div>
         <button id="btn-settings" class="corner-btn">AJUSTES</button>
+        <div class="menu-top">
         <h1 class="logo" aria-label="Tank-less">
             <span class="word"><span class="ch">T</span><span class="ch">A</span><span class="ch">N</span><span class="ch">K</span><span class="ch ghost">-</span><span class="ch ghost">L</span><span class="ch ghost">E</span><span class="ch ghost">S</span><span class="ch ghost">S</span></span>
         </h1>
-        <button id="btn-items" class="items-btn" aria-label="Objetos">
-            <canvas width="48" height="48"></canvas>
-            <span>OBJETOS</span>
-        </button>
-        <p class="help">
-            MUÉVETE Y ERES INVISIBLE<br>
-            PARA Y DISPARAS SOLO<br>
-            <em>PERO DISPARAR TE DELATA</em>
-        </p>
-        <button id="btn-play" class="btn" disabled>CARGANDO...</button>
+            <div class="menu-row">
+                <button id="btn-garage" class="items-btn" aria-label="Mi tanque">
+                    <canvas width="56" height="56"></canvas>
+                    <span>MI TANQUE</span>
+                </button>
+                <button id="btn-items" class="items-btn" aria-label="Objetos">
+                    <canvas width="48" height="48"></canvas>
+                    <span>OBJETOS</span>
+                </button>
+            </div>
+            <button id="btn-trophies" class="btn btn-small trophy-btn"><span class="trophy"></span> LOGROS <span id="menu-trophies">0/0</span></button>
+            <p class="help">
+                MUÉVETE Y ERES INVISIBLE<br>
+                PARA Y DISPARAS SOLO<br>
+                <em>PERO DISPARAR TE DELATA</em>
+            </p>
+        </div>
+        <div class="play-col">
+            <button id="btn-play" class="btn" disabled>CARGANDO...</button>
+            <button id="btn-survival" class="btn btn-alt" disabled>SUPERVIVENCIA</button>
+        </div>
     </div>
+
+    <div id="garage" class="screen garage hidden">
+        <h2 class="end-title">MI TANQUE</h2>
+        <div class="coins-badge static"><span class="coin"></span><span id="garage-coins">0</span></div>
+        <div class="garage-stage">
+            <button id="garage-prev" class="arrow" aria-label="Anterior">&lt;</button>
+            <canvas id="garage-view" width="112" height="112"></canvas>
+            <button id="garage-next" class="arrow" aria-label="Siguiente">&gt;</button>
+        </div>
+        <div id="garage-name" class="garage-name"></div>
+        <div id="garage-count" class="garage-count"></div>
+        <button id="garage-action" class="btn">USAR</button>
+        <button id="btn-garage-close" class="btn btn-small">VOLVER</button>
+    </div>
+
+    <div id="trophies" class="screen glossary hidden">
+        <h2 class="end-title">LOGROS</h2>
+        <p id="trophies-count" class="tag"></p>
+        <div id="trophies-list" class="glossary-list"></div>
+        <button id="btn-trophies-close" class="btn btn-small">VOLVER</button>
+    </div>
+
+    <div id="toast" class="toast"></div>
 
     <div id="glossary" class="screen glossary hidden">
         <h2 class="end-title">OBJETOS</h2>

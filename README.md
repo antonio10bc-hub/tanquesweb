@@ -36,9 +36,17 @@ cargado para que lo guarde, así que no hay lista de archivos que mantener a man
     quema la hierba y hace 4 de daño (también a quien la lanza).
 - **Hierba alta**: dentro solo te ven casi pegados y disparar te delata un instante. Se mueve al pasar.
 - **Muros rompibles**: aguantan 3 balas.
+- **Dos modos**: **Partida rápida** (duelo contra un rival) y **Supervivencia** (oleadas cada vez
+  mayores de soldados, exploradores y brutos; recuperas 2 de vida al superar cada oleada y se guarda
+  tu récord).
+- **Monedas y skins**: ganar una partida rápida da una moneda de oro (en supervivencia, una cada 3
+  oleadas). En **Mi Tanque** se compran y equipan: 8 gorros voxel y el **tanque dorado** (aura,
+  pilar de luz, chispas y balas de oro).
+- **Logros**: 14, con aviso al conseguirlos y pantalla propia con barras de progreso.
 - **Arquetipos de escenario**: cada partida elige uno (Arena clásica, Emboscada, Demolición, Fortaleza,
   Carreras, Fantasmas) que decide cuánto muro, qué materiales, cuánta hierba y qué objetos salen,
-  y lo viste con uno de sus temas visuales (caramelo, nieve, playa, montaña, otoño, ciudad).
+  y lo viste con uno de sus temas visuales (nieve, desierto, caramelo, volcán, playa, pradera,
+  ciudad de noche, espacio). La bomba nuclear puede salir en cualquiera.
 - **Música chiptune** generada según el tema, que se acelera con poca vida. **Repetición** a cámara
   lenta del golpe final. **Vibración** en móviles compatibles. **Pausa** (botón, Esc o P) con ajustes
   de música, sonido y vibración que se recuerdan.
@@ -59,7 +67,9 @@ public/src/
     levels.js          arquetipos de escenario: temas + generador + objetos + rivales
     tiles.js           leyenda de los mapas
     themes.js          temas visuales (colores, clima, música): no cambian las reglas
-    pickups.js         objetos (vida, fuego, escudo, turbo, invisible, rebote, radar) y reglas
+    pickups.js         objetos (vida, fuego, escudo, turbo, invisible, rebote, radar, bomba) y reglas
+    skins.js           gorros y tanque dorado (precio, construcción voxel)
+    achievements.js    logros
   core/                bucle y estados (Game), entrada, audio y música sintetizados, repetición,
                        ajustes guardados, vibración, eventos
   world/               simulación pura: World, Tank, Arena (colisión, visión, rutas), Bullets
@@ -67,7 +77,8 @@ public/src/
     Pickups.js         aparición de objetos (uno a la vez, lejos de los tanques)
   ai/                  cerebros: PlayerBrain, HunterBrain y su registro (brains.js)
   render/              pipeline retro, cámara, modelo de tanque, partículas, marcadores
-  ui/Hud.js            capa DOM (menús, vida, aviso de sigilo)
+  ui/                  capa DOM: Hud (menús, vida, avisos), Glossary (objetos), Garage (Mi Tanque),
+                       Trophies (logros)
 ```
 
 Principios:
@@ -110,6 +121,12 @@ dos: {
 **Un arquetipo nuevo**: una entrada en `content/levels.js` con `themes`, `generator`
 (`materials` con pesos de `#`, `B`, `D`; `bushes` y `bushSize` para la hierba; `pieces`, `density`)
 y `pickups.kinds` con los objetos que salen y su peso.
+
+**Una skin nueva**: una entrada en `content/skins.js` con `hat(add)` (cubos sobre la torreta) o
+`gold`/`palette`, y su `price`. El progreso (monedas, skins, logros, récords) lo guarda `core/Profile.js`.
+
+**Un logro nuevo**: una entrada en `content/achievements.js` (con `progress` si es acumulativo) y, si
+es una hazaña, su comprobación en `core/Achievements.js`.
 
 **Un tema nuevo**: copia uno de `content/themes.js` y cambia colores, `ambient` (clima) y `music`.
 

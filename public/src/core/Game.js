@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CONFIG } from '../config.js';
-import { LEVELS, THEMES, getDef } from '../content/index.js';
+import { LEVELS, THEMES, SURVIVAL, GOLD_SPARKS, getDef } from '../content/index.js';
 import { RetroRenderer } from '../render/RetroRenderer.js';
 import { CameraRig } from '../render/CameraRig.js';
 import { Particles } from '../render/Particles.js';
@@ -14,6 +14,7 @@ import { EventBus } from './EventBus.js';
 import { Music } from './Music.js';
 import { ReplayRecorder } from './Replay.js';
 import { Settings } from './Settings.js';
+import { Profile } from './Profile.js';
 import { vibrate } from './Haptics.js';
 import { approach, clamp, pick } from './math.js';
 
@@ -60,6 +61,8 @@ export class Game {
         this.countdown = 0;
         this.result = false;
         this.paused = false;
+        this.mode = 'quick';   // 'quick' (partida rápida) | 'survival'
+        this.dropping = [];    // enemigos de oleada cayendo del cielo
 
         Settings.load();
         this.applySettings();
@@ -105,7 +108,7 @@ export class Game {
                 e.preventDefault();
                 this.sfx.unlock();
                 if (this.state === 'menu') this.startMatch(this.levelId, undefined, this.themeId);
-                else this.startMatch();
+                else this.again();
             } else if (e.code === 'Escape' || e.code === 'KeyP') {
                 if (this.paused) this.resume();
                 else this.pause();
@@ -127,8 +130,9 @@ export class Game {
 
     // ---------- Flujo ----------
     randomLevel() {
-        const ids = Object.keys(LEVELS).filter((id) => id !== this.levelId);
-        return pick(ids.length ? ids : Object.keys(LEVELS));
+        const all = Object.keys(LEVELS).filter((id) => !LEVELS[id].survival);
+        const ids = all.filter((id) => id !== this.levelId);
+        return pick(ids.length ? ids : all);
     }
 
     // seed / themeId: opcionales, para repetir un mapa concreto (game.world.seed, game.themeId).
@@ -153,7 +157,7 @@ export class Game {
         this.hemi.intensity = theme.light.hemiIntensity;
         this.bullets.setOutline(theme.outline);
 
-        this.world = new World(def, theme, { events: this.events, bullets: this.bullets, input: this.input, seed });
+        this.world = new World(def, theme, { events: this.events, bullets: this.bullets, input: this.input, seed, skin: Profile.data.skin });
         this.scene.add(this.world.root);
         this.levelId = levelId;
         this.rig.setBounds(this.world.arena.cols, this.world.arena.rows);
@@ -176,8 +180,27 @@ export class Game {
         this.rig.snap();
     }
 
+    // "Otra vez": repite el modo de la última partida.
+    again() {
+        if (this.mode === 'survival') this.startSurvival();
+        else this.startMatch();
+    }
+
+    startSurvival(seed, themeId) {
+        this.startMatch('supervivencia', seed, themeId);
+    }
+
     startMatch(levelId, seed, themeId) {
         this.load(levelId, seed, themeId);
+        this.mode = this.def.survival ? 'survival' : 'quick';
+        this.wave = 1;
+        this.waveSize = this.world.enemies().length;
+        this.waveClear = false;
+        this.dropping = [];
+        this.runCoins = 0;
+        this.newRecord = false;
+        if (this.mode === 'survival') this.hud.setNames(this.world.player.def.name, 'OLEADA 1');
+        this.events.emit('matchStart', this.mode);
         this.setState('intro');
         this.fallen = null;
         this.timeScale = 1;
@@ -275,7 +298,22 @@ export class Game {
         this.world.forceReveal = true;
         for (const t of this.world.tanks) t.alive = t.hp > 0;
         const p = this.world.player;
-        this.hud.showEnd(win, win ? '' : '¡A LA PRÓXIMA!');
+        const st = Profile.data.stats;
+        if (this.mode === 'survival') {
+            const reached = this.wave - (this.waveClear ? 0 : 1);
+            const sub = this.newRecord ? '¡NUEVO RÉCORD!' : `RÉCORD: ${st.bestWave} OLEADAS`;
+            const coins = this.runCoins ? ` · +${this.runCoins} MONEDA${this.runCoins > 1 ? 'S' : ''}` : '';
+            this.hud.showEnd(false, sub + coins, `${reached} OLEADA${reached === 1 ? '' : 'S'}`);
+        } else {
+            st.streak = win ? st.streak + 1 : 0;
+            if (win) {
+                st.wins++;
+                Profile.save();
+                this.giveCoin();
+            } else Profile.save();
+            this.hud.showEnd(win, win ? '+1 MONEDA DE ORO' : '¡A LA PRÓXIMA!');
+        }
+        this.events.emit('matchEnd', { win, mode: this.mode, wave: this.wave });
         this.sfx.play(win ? 'win' : 'lose');
         if (win) this.particles.burst(p.x, 0.8, p.z, 90, CONFETTI, { speed: 4, up: 9, size: 0.14, ttl: 2.4, grav: 9 });
     }
@@ -322,7 +360,9 @@ export class Game {
             case 'play':
                 this.stepWorld(simDt, true);
                 this.recorder.record(simDt, w, this.bullets);
+                this.updateDrops(dt);
                 if (!w.player.alive) this.endMatch(false);
+                else if (this.mode === 'survival') this.updateSurvival(dt);
                 else if (w.aliveEnemies() === 0) this.endMatch(true);
                 break;
             case 'outro':
@@ -339,13 +379,82 @@ export class Game {
 
         const p = w.player, e = w.enemies()[0];
         this.hud.setHp('p', p.hp, p.maxHp);
-        if (e) this.hud.setHp('e', e.hp, e.maxHp);
+        // Supervivencia: el panel del rival cuenta los enemigos que quedan en la oleada
+        if (this.mode === 'survival') this.hud.setHp('e', w.aliveEnemies(), this.waveSize);
+        else if (e) this.hud.setHp('e', e.hp, e.maxHp);
         let stealth = 'hidden';
         if (w.forceReveal || p.exposed) stealth = 'visible';
         else if (p.cloak > 0) stealth = 'cloak';
         else if (p.inBush) stealth = 'bush';
         this.hud.setStealth(stealth);
         this.music.intensity = this.state === 'play' ? (p.hp <= 2 ? 1 : p.hp <= 3 ? 0.5 : 0) : 0;
+    }
+
+    // ---------- Supervivencia ----------
+    updateSurvival(dt) {
+        const w = this.world;
+        if (!this.waveClear) {
+            if (w.aliveEnemies() > 0 || this.dropping.length) return;
+            // Oleada superada: respiro, curación y, cada pocas oleadas, una moneda
+            this.waveClear = true;
+            this.waveTimer = SURVIVAL.pause;
+            this.hud.banner(`¡OLEADA ${this.wave}!`, 'go');
+            this.sfx.play('win');
+            const p = w.player;
+            const healed = Math.min(p.maxHp, p.hp + SURVIVAL.heal);
+            if (healed > p.hp) {
+                p.hp = healed;
+                this.markers.sprinkle(p.x, p.z, '+', 0x17d65a, this.theme.outline, 10);
+            }
+            if (this.wave % SURVIVAL.coinEvery === 0) this.giveCoin();
+            if (this.wave > Profile.data.stats.bestWave) {
+                Profile.data.stats.bestWave = this.wave;
+                this.newRecord = true;
+                Profile.save();
+            }
+            this.events.emit('waveCleared', this.wave);
+            return;
+        }
+        this.waveTimer -= dt;
+        if (this.waveTimer > 0) return;
+        this.waveClear = false;
+        this.wave++;
+        const specs = SURVIVAL.wave(this.wave);
+        this.waveSize = specs.length;
+        this.hud.setNames(w.player.def.name, `OLEADA ${this.wave}`);
+        this.hud.banner(`OLEADA ${this.wave}`);
+        this.sfx.play('go');
+        specs.forEach((spec, i) => {
+            const tank = w.spawn(spec, 'enemy', spec.brain, w.farSpot(SURVIVAL.minSpawnDist));
+            tank.model.dropY = 9;
+            tank.frozen = true;
+            tank.reveal = 1.5; // al aterrizar se les ve un momento
+            this.dropping.push({ tank, t: -i * 0.25 });
+        });
+    }
+
+    // Los enemigos de oleada caen del cielo; hasta aterrizar no se mueven.
+    updateDrops(dt) {
+        for (let i = this.dropping.length - 1; i >= 0; i--) {
+            const d = this.dropping[i];
+            d.t += dt;
+            const k = clamp(d.t / CONFIG.match.dropTime, 0, 1);
+            d.tank.model.dropY = 9 * (1 - k) * (1 - k);
+            d.tank.cooldown = Math.max(d.tank.cooldown, 0.6);
+            if (k >= 1) {
+                d.tank.frozen = false;
+                this.landed(d.tank);
+                this.dropping.splice(i, 1);
+            }
+        }
+    }
+
+    giveCoin() {
+        Profile.addCoins(1);
+        this.runCoins++;
+        this.sfx.play('coin');
+        this.hud.toast('+1 MONEDA DE ORO', 'coin');
+        this.events.emit('coin', Profile.coins);
     }
 
     updateIntro() {
@@ -428,6 +537,17 @@ export class Game {
                 this.particles.spawn(x, 5 + Math.random() * 2, z, 0.8 + Math.random() * 0.6, -1 - Math.random() * 0.5, 0.2, 0.1 + Math.random() * 0.05, 5, color, 0);
             } else if (amb.kind === 'sparkle') {
                 this.particles.spawn(x, 0.05, z, 0, 0.4, 0, 0.06, 0.8, color, 0);
+            } else if (amb.kind === 'rain') {
+                this.particles.spawn(x, 6 + Math.random() * 2, z, -0.4, -10, 0.3, 0.05, 0.75, color, 0);
+            } else if (amb.kind === 'dust') {
+                this.particles.spawn(x - 3, 0.15 + Math.random(), z, 2.5 + Math.random() * 1.5, 0.1, 0.4, 0.05 + Math.random() * 0.04, 1.8, color, 0);
+            } else if (amb.kind === 'embers') {
+                this.particles.spawn(x, 0.05, z, (Math.random() - 0.5) * 0.4, 1 + Math.random() * 1.2, (Math.random() - 0.5) * 0.4, 0.05 + Math.random() * 0.05, 1.8, color, -0.3);
+            } else if (amb.kind === 'petals') {
+                this.particles.spawn(x, 4 + Math.random() * 2, z, 0.6 + Math.random() * 0.4, -0.6 - Math.random() * 0.3, 0.2, 0.07, 6, color, 0);
+            } else if (amb.kind === 'stars') {
+                // Por debajo del suelo: solo se ven sobre el "mar" del espacio, alrededor del asteroide
+                this.particles.spawn(x, -0.7, z, 0, 0, 0, 0.07 + Math.random() * 0.07, 1 + Math.random() * 1.5, color, 0);
             }
         }
     }
@@ -457,7 +577,20 @@ export class Game {
             else target = player.intel.get(tank)?.visible ? 1 : 0;
             tank.viewFade = approach(tank.viewFade, target, stealth.fadeSpeed * dt);
             tank.model.sync(dt, tank, tank.viewFade, this.rig.camera);
-            if (!tank.alive) continue;
+            if (!tank.alive) {
+                this.markers.hideGhost(tank.id);
+                continue;
+            }
+            // Tanque dorado: chispas de oro a su alrededor
+            if (tank.model.skin && tank.model.skin.gold && tank.viewFade > 0.4) {
+                tank.goldT = (tank.goldT || 0) - dt;
+                while (tank.goldT <= 0) {
+                    tank.goldT += 0.025;
+                    const a = Math.random() * Math.PI * 2, r = 0.35 + Math.random() * 0.45;
+                    this.particles.spawn(tank.x + Math.sin(a) * r, 0.15 + Math.random() * 0.6, tank.z + Math.cos(a) * r, 0, 0.7 + Math.random() * 0.8, 0,
+                        0.05 + Math.random() * 0.06, 0.7, GOLD_SPARKS[(Math.random() * GOLD_SPARKS.length) | 0], -0.5);
+                }
+            }
             const shown = tank.viewFade > 0.4;
 
             // La hierba se mueve al pasar: la tuya siempre, la del rival solo si está cerca.

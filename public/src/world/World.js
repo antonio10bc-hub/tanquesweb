@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CONFIG } from '../config.js';
-import { TANKS, getDef } from '../content/index.js';
+import { TANKS, SKIN_BY_ID, getDef } from '../content/index.js';
 import { createBrain } from '../ai/brains.js';
 import { TankModel } from '../render/TankModel.js';
 import { Arena } from './Arena.js';
@@ -35,11 +35,16 @@ export class World {
         for (const e of def.enemies) this.spawn(e, 'enemy', e.brain);
     }
 
-    spawn(spec, team, brainId) {
-        const def = getDef(TANKS, spec.tank, 'tanque');
-        const at = this.arena.takeSpawn(spec.spawn);
+    spawn(spec, team, brainId, at) {
+        let def = getDef(TANKS, spec.tank, 'tanque');
+        // La skin equipada solo la lleva el jugador; el dorado también tiñe sus balas
+        const skin = team === 'player' ? SKIN_BY_ID[this.ctx.skin] || null : null;
+        if (skin && skin.palette) def = { ...def, palette: { ...def.palette, ...skin.palette } };
+        if (spec.hp) def = { ...def, hp: spec.hp };
+        if (spec.speed) def = { ...def, speed: spec.speed };
+        at = at || this.arena.takeSpawn(spec.spawn);
         const tank = new Tank(def, team, at.x, at.z, createBrain(brainId, spec.params, this.ctx));
-        tank.model = new TankModel(def.palette, this.theme.outline, tank.weapon.magazine);
+        tank.model = new TankModel(def.palette, this.theme.outline, tank.weapon.magazine, skin);
         tank.model.addTo(this.root);
         for (const other of this.tanks) {
             if (other.team === team) continue;
@@ -48,6 +53,20 @@ export class World {
         }
         this.tanks.push(tank);
         return tank;
+    }
+
+    // Casilla libre lejos del jugador y de los demás enemigos (para las oleadas).
+    farSpot(minDist) {
+        const a = this.arena, p = this.player, out = [];
+        for (let r = 1; r < a.rows - 1; r++) for (let c = 1; c < a.cols - 1; c++) {
+            if (a.isSolid(c, r)) continue;
+            const x = c + 0.5, z = r + 0.5;
+            if (Math.hypot(x - p.x, z - p.z) < minDist) continue;
+            if (this.tanks.some((t) => t.alive && t !== p && Math.hypot(t.x - x, t.z - z) < 2)) continue;
+            out.push({ x, z });
+        }
+        if (!out.length) return minDist > 2 ? this.farSpot(minDist - 1.5) : { x: p.x, z: 1.5 };
+        return out[(Math.random() * out.length) | 0];
     }
 
     enemies() {
@@ -129,7 +148,7 @@ export class World {
             for (let c = Math.floor(n.x1 - R); c <= Math.floor(n.x1 + R); c++) {
                 if (Math.hypot(c + 0.5 - n.x1, r + 0.5 - n.z1) > R) continue;
                 const style = a.obliterate(c, r);
-                if (style) this.events.emit('tileHit', c, r, 'broken', 0xffe600, style);
+                if (style) this.events.emit('tileHit', c, r, 'broken', 0xffe600, style, n.owner);
                 a.burnBush(c, r);
             }
         }
@@ -137,7 +156,7 @@ export class World {
             if (!t.alive) continue;
             const dx = t.x - n.x1, dz = t.z - n.z1, d = Math.hypot(dx, dz);
             if (d > R + t.radius * 0.5) continue;
-            this.hitTank(t, n.owner, n.damage, d > 0.01 ? dx / d : 0, d > 0.01 ? dz / d : 1, t.x, t.z, 0xffe600);
+            this.hitTank(t, n.owner, n.damage, d > 0.01 ? dx / d : 0, d > 0.01 ? dz / d : 1, t.x, t.z, 0xffe600, 'nuke');
         }
     }
 
@@ -161,14 +180,15 @@ export class World {
         }
     }
 
-    hitTank(tank, owner, damage, dirX, dirZ, x, z, color) {
+    // cause: 'bullet' | 'bounce' | 'nuke' (para los logros)
+    hitTank(tank, owner, damage, dirX, dirZ, x, z, color, cause = 'bullet') {
         const dealt = tank.damage(damage, dirX, dirZ, this);
         if (!dealt) {
             this.events.emit('shieldBreak', tank, x, z);
             return;
         }
         this.events.emit('hit', tank, x, z, color, damage);
-        if (!tank.alive) this.events.emit('death', tank, owner);
+        if (!tank.alive) this.events.emit('death', tank, owner, cause);
     }
 
     dispose() {
