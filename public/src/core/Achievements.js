@@ -60,7 +60,7 @@ export class Achievements {
     unlock(id) {
         if (!Profile.unlock(id)) return;
         const a = ACHIEVEMENTS.find((x) => x.id === id);
-        this.game.hud.toast(`LOGRO: ${a.name}`, 'trophy');
+        this.game.hud.achievement(a.name, a.desc);
         this.game.sfx.play('achievement');
     }
 }

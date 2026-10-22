@@ -41,6 +41,64 @@ export class Hud {
         document.getElementById('btn-survival').disabled = false;
     }
 
+    // Ceremonia al ganar: la moneda aparece con un +1, vuela al contador (que muestra la cifra
+    // anterior) y suma. Tocar la pantalla la salta. Devuelve una promesa que se cumple al terminar.
+    coinReward(from, to, { onFly, onLand } = {}) {
+        const reward = document.getElementById('reward');
+        const coin = reward.querySelector('.reward-coin');
+        const counter = document.getElementById('coin-counter');
+        const num = document.getElementById('hud-coins');
+        num.textContent = from;
+        this.achHold = true; // los logros esperan a que termine la ceremonia
+        counter.classList.remove('hidden', 'bump');
+        reward.classList.remove('hidden', 'fly');
+        coin.style.animation = 'none';
+        void coin.offsetWidth;
+        coin.style.animation = '';
+        return new Promise((resolve) => {
+            const timers = [];
+            let finished = false;
+            const land = () => {
+                num.textContent = to;
+                counter.classList.remove('bump');
+                void counter.offsetWidth;
+                counter.classList.add('bump');
+                reward.classList.add('hidden');
+                if (onLand) onLand();
+            };
+            const finish = () => {
+                if (finished) return;
+                finished = true;
+                timers.forEach(clearTimeout);
+                reward.onpointerdown = null;
+                resolve();
+                // Ya con el menú final en pantalla, bajan los logros pendientes
+                this.achHold = false;
+                setTimeout(() => !this.achBusy && this.nextAchievement(), 500);
+            };
+            reward.onpointerdown = () => {
+                if (!reward.classList.contains('hidden')) land();
+                finish();
+            };
+            timers.push(setTimeout(() => {
+                // Vuelo en curva hasta el contador, encogiendo
+                const a = coin.getBoundingClientRect(), b = counter.getBoundingClientRect();
+                const dx = b.left + 22 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2);
+                reward.classList.add('fly');
+                if (onFly) onFly();
+                const anim = coin.animate([
+                    { transform: 'translate(0, 0) scale(1)' },
+                    { transform: `translate(${dx * 0.35}px, ${dy * 0.15 + 40}px) scale(.75)`, offset: 0.35 },
+                    { transform: `translate(${dx}px, ${dy}px) scale(.16)` },
+                ], { duration: 750, easing: 'cubic-bezier(.45, 0, .7, 1)', fill: 'forwards' });
+                anim.onfinish = () => {
+                    land();
+                    timers.push(setTimeout(finish, 750));
+                };
+            }, 1150));
+        });
+    }
+
     setCoins(n) {
         for (const id of ['menu-coins', 'garage-coins']) document.getElementById(id).textContent = n;
     }
@@ -49,7 +107,30 @@ export class Hud {
         document.getElementById('menu-trophies').textContent = `${done}/${total}`;
     }
 
-    // Aviso breve arriba (moneda ganada, logro desbloqueado). Se encolan si llegan varios.
+    // Logro completado: baja desde arriba del todo. Si llegan varios, van saliendo de uno en uno.
+    achievement(name, desc) {
+        this.achQueue = this.achQueue || [];
+        this.achQueue.push({ name, desc });
+        if (!this.achBusy && !this.achHold) this.nextAchievement();
+    }
+
+    nextAchievement() {
+        const a = this.achQueue.shift();
+        const el = document.getElementById('ach');
+        if (!a) {
+            this.achBusy = false;
+            return;
+        }
+        this.achBusy = true;
+        document.getElementById('ach-name').textContent = a.name;
+        document.getElementById('ach-desc').textContent = a.desc;
+        el.classList.remove('show');
+        void el.offsetWidth;
+        el.classList.add('show');
+        setTimeout(() => this.nextAchievement(), 3500);
+    }
+
+    // Aviso breve arriba (p. ej. moneda ganada en supervivencia). Se encolan si llegan varios.
     toast(text, kind = '') {
         this.toasts = this.toasts || [];
         this.toasts.push({ text, kind });
@@ -73,6 +154,7 @@ export class Hud {
     }
 
     screen(name) {
+        if (name !== 'end') document.getElementById('coin-counter').classList.add('hidden');
         this.el.menu.classList.toggle('hidden', name !== 'menu');
         this.el.end.classList.toggle('hidden', name !== 'end');
         this.el.hud.classList.toggle('hidden', name === 'menu');

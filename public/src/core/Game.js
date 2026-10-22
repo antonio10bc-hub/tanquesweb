@@ -62,6 +62,7 @@ export class Game {
         this.result = false;
         this.paused = false;
         this.mode = 'quick';   // 'quick' (partida rápida) | 'survival'
+        this.endToken = 0;     // invalida la ceremonia de la moneda si empieza otra partida
         this.dropping = [];    // enemigos de oleada cayendo del cielo
 
         Settings.load();
@@ -191,6 +192,7 @@ export class Game {
     }
 
     startMatch(levelId, seed, themeId) {
+        this.endToken++;
         this.load(levelId, seed, themeId);
         this.mode = this.def.survival ? 'survival' : 'quick';
         this.wave = 1;
@@ -306,12 +308,23 @@ export class Game {
             this.hud.showEnd(false, sub + coins, `${reached} OLEADA${reached === 1 ? '' : 'S'}`);
         } else {
             st.streak = win ? st.streak + 1 : 0;
+            if (win) st.wins++;
+            Profile.save();
             if (win) {
-                st.wins++;
-                Profile.save();
-                this.giveCoin();
-            } else Profile.save();
-            this.hud.showEnd(win, win ? '+1 MONEDA DE ORO' : '¡A LA PRÓXIMA!');
+                // Primero la ceremonia de la moneda y, después, con calma, el menú final
+                const before = Profile.coins, token = ++this.endToken;
+                Profile.addCoins(1);
+                this.events.emit('coin', Profile.coins);
+                this.sfx.play('coin');
+                this.hud.coinReward(before, Profile.coins, {
+                    onFly: () => this.sfx.play('itemSpawn'),
+                    onLand: () => this.sfx.play('reloaded'),
+                }).then(() => {
+                    if (this.endToken === token && this.state === 'end') this.hud.showEnd(true, '');
+                });
+            } else {
+                this.hud.showEnd(false, '¡A LA PRÓXIMA!');
+            }
         }
         this.events.emit('matchEnd', { win, mode: this.mode, wave: this.wave });
         this.sfx.play(win ? 'win' : 'lose');

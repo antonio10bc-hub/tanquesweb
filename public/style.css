@@ -406,6 +406,116 @@ html, body {
 .t-bar { margin-top: 8px; height: 8px; background: #3b2d6b; border: 2px solid #fff; }
 .t-bar i { display: block; height: 100%; background: var(--cyan); }
 
+/* ---------- RECOMPENSA: MONEDA DE ORO ---------- */
+.reward {
+    position: fixed;
+    inset: 0;
+    z-index: 18;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(27, 11, 51, .35);
+}
+.reward-coin { position: relative; width: 120px; height: 120px; animation: coinPop .7s cubic-bezier(.2, 1.7, .4, 1) both; }
+.rays {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 300px;
+    height: 300px;
+    margin: -150px 0 0 -150px;
+    border-radius: 50%;
+    background: repeating-conic-gradient(rgba(255, 226, 58, .45) 0 9deg, transparent 9deg 22deg);
+    animation: raysSpin 6s linear infinite, raysIn .6s ease both;
+}
+.big-coin {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: #ffd23f;
+    border: 7px solid var(--ink);
+    box-shadow: inset -12px -12px 0 #e6a400, inset 10px 10px 0 #fff4b0, 0 9px 0 var(--ink);
+    animation: coinSpin 1.1s steps(10) infinite;
+}
+.big-coin::after {
+    content: '';
+    position: absolute;
+    inset: 24px;
+    border-radius: 50%;
+    border: 7px solid #e6a400;
+    box-shadow: inset 3px 3px 0 #fff4b0;
+}
+.reward-plus {
+    position: absolute;
+    right: -58px;
+    top: -34px;
+    font-size: 40px;
+    color: var(--yellow);
+    text-shadow: 0 4px 0 var(--orange), 0 8px 0 var(--ink), 4px 0 0 var(--ink), -4px 0 0 var(--ink), 0 -4px 0 var(--ink);
+    animation: plusPop .6s .3s cubic-bezier(.2, 1.8, .4, 1) both;
+}
+.reward.fly .rays, .reward.fly .reward-plus { opacity: 0; transition: opacity .2s; }
+.reward.fly { background: transparent; transition: background .3s; }
+@keyframes coinPop { 0% { transform: scale(0) rotate(-30deg); } 100% { transform: scale(1) rotate(0); } }
+@keyframes coinSpin { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(.15); } }
+@keyframes raysSpin { to { transform: rotate(360deg); } }
+@keyframes raysIn { from { opacity: 0; scale: .3; } }
+@keyframes plusPop { 0% { opacity: 0; transform: scale(0) translateY(20px); } 100% { opacity: 1; transform: scale(1); } }
+
+.coin-counter {
+    position: fixed;
+    left: 50%;
+    top: max(10px, env(safe-area-inset-top));
+    transform: translateX(-50%);
+    z-index: 19;
+}
+.coin-counter.bump { animation: counterBump .45s cubic-bezier(.2, 1.8, .4, 1); }
+@keyframes counterBump {
+    0% { transform: translateX(-50%) scale(1.6); background: #fff; }
+    100% { transform: translateX(-50%) scale(1); }
+}
+
+/* ---------- LOGRO COMPLETADO ---------- */
+.ach {
+    position: fixed;
+    left: 50%;
+    top: 0;
+    z-index: 40;
+    width: min(380px, calc(100vw - 20px));
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: calc(max(10px, env(safe-area-inset-top)) + 8px) 14px 12px;
+    background: var(--ink);
+    border: 4px solid var(--yellow);
+    border-top: none;
+    box-shadow: 0 6px 0 rgba(0, 0, 0, .45);
+    transform: translate(-50%, -110%);
+    pointer-events: none;
+}
+.ach.show { animation: achDrop 3.4s forwards; }
+@keyframes achDrop {
+    0% { transform: translate(-50%, -110%); animation-timing-function: cubic-bezier(.2, 1.4, .4, 1); }
+    12% { transform: translate(-50%, 0); }
+    88% { transform: translate(-50%, 0); animation-timing-function: cubic-bezier(.6, 0, 1, .4); }
+    100% { transform: translate(-50%, -110%); }
+}
+.ach-icon {
+    flex: none;
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    background: var(--yellow);
+    border: 3px solid #fff;
+    animation: achGlow .5s steps(2) infinite;
+}
+.ach-icon .trophy { width: 26px; height: 22px; background: #fff; box-shadow: 0 3px 0 -1px var(--ink); }
+@keyframes achGlow { 50% { background: var(--orange); } }
+.ach-head { font-size: 9px; color: var(--yellow); margin-bottom: 6px; }
+.ach-name { font-size: 13px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 6px; }
+.ach-desc { font-size: 8px; line-height: 1.6; color: #cfc8ea; }
+
 /* ---------- AVISOS (monedas, logros) ---------- */
 .toast {
     position: fixed;

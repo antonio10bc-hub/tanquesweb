@@ -141,6 +141,7 @@ export class TankModel {
         this.barTrail = plane(BAR_W, 0.12, barMat(0xffffff, 21));
         this.barHeal = plane(BAR_W, 0.12, barMat(0x17d65a, 21));
         this.barFill = plane(BAR_W, 0.12, barMat(palette.body, 22));
+        this.barColor = palette.body;
 
         // Munición: una casilla por bala; al recargar, una barra que se llena.
         const ammoY = -0.2;
@@ -240,7 +241,12 @@ export class TankModel {
         this.barHeal.visible = healing;
         if (healing) this.setBar(this.barHeal, ratio);
         else this.setBar(this.barTrail, this.barRatio);
-        this.bar.scale.setScalar(1 + this.healPulse * 0.35);
+        // Última vida: la barra parpadea en rojo y blanco y late, para que se note de lejos
+        const lastLife = tank.alive && tank.hp === 1;
+        const blink = lastLife && Math.floor(this.t * 7) % 2 === 0;
+        this.barFill.material.color.setHex(lastLife ? (blink ? 0xffffff : 0xff2a2a) : this.barColor);
+        const beat = lastLife ? Math.abs(Math.sin(this.t * 7)) * 0.12 : 0;
+        this.bar.scale.setScalar(1 + this.healPulse * 0.35 + beat);
 
         const reloading = tank.reloading > 0;
         this.pips.forEach((pip, i) => (pip.visible = !reloading && i < tank.ammo));
