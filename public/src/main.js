@@ -2,6 +2,7 @@ import { Game } from './core/Game.js';
 import { Input } from './core/Input.js';
 import { Sfx } from './core/Audio.js';
 import { Hud } from './ui/Hud.js';
+import { Glossary } from './ui/Glossary.js';
 
 const canvas = document.getElementById('view');
 const hud = new Hud();
@@ -25,7 +26,14 @@ hud.onAgain = () => {
     game.startMatch();
 };
 
+hud.onMenu = () => {
+    sfx.play('ui');
+    game.music.stop();
+    game.showMenu();
+};
+
 game.showMenu();
+new Glossary(sfx);
 
 // Acceso desde la consola para depurar: window.game
 window.game = game;

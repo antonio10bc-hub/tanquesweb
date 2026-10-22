@@ -17,10 +17,11 @@ export class ReplayRecorder {
         this.time = 0;
     }
 
-    record(dt, world, bullets) {
+    // force: graba ya aunque no toque (el fotograma del golpe final no se puede perder).
+    record(dt, world, bullets, force = false) {
         this.time += dt;
         this.acc += dt;
-        if (this.acc < this.step) return;
+        if (this.acc < this.step && !force) return;
         this.acc = 0;
         const frame = {
             t: this.time,

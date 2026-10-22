@@ -38,6 +38,8 @@ cargado para que lo guarde, así que no hay lista de archivos que mantener a man
 - **Música chiptune** generada según el tema, que se acelera con poca vida. **Repetición** a cámara
   lenta del golpe final. **Vibración** en móviles compatibles. **Pausa** (botón, Esc o P) con ajustes
   de música, sonido y vibración que se recuerdan.
+- **Glosario de objetos**: el botón OBJETOS del menú va rotando los objetos en 3D y abre una lista
+  con cada uno animado igual que en la partida y su explicación (sale de `desc` en `content/pickups.js`).
 - **Instalable y sin conexión**: "Añadir a pantalla de inicio" la abre a pantalla completa con su
   icono, y tras abrirla una vez con internet funciona también sin conexión.
 - La IA juega con **las mismas reglas**: solo sabe dónde estás cuando te ve.

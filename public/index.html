@@ -60,11 +60,22 @@
             <span>T</span><span>A</span><span>N</span><span>Q</span><span>U</span><span>E</span><span>S</span>
         </h1>
         <button id="btn-play" class="btn" disabled>CARGANDO...</button>
+        <button id="btn-items" class="items-btn" aria-label="Objetos">
+            <canvas width="48" height="48"></canvas>
+            <span>OBJETOS</span>
+        </button>
         <p class="help">
             MUÉVETE Y ERES INVISIBLE<br>
             PARA Y DISPARAS SOLO<br>
             <em>PERO DISPARAR TE DELATA</em>
         </p>
+    </div>
+
+    <div id="glossary" class="screen glossary hidden">
+        <h2 class="end-title">OBJETOS</h2>
+        <p class="tag">SALEN DE UNO EN UNO</p>
+        <div id="glossary-list" class="glossary-list"></div>
+        <button id="btn-glossary-close" class="btn btn-small">VOLVER</button>
     </div>
 
     <div id="pause" class="screen hidden">
@@ -82,6 +93,7 @@
         <h2 id="end-title" class="end-title">¡VICTORIA!</h2>
         <p id="end-sub" class="tag"></p>
         <button id="btn-again" class="btn">OTRA VEZ</button>
+        <button id="btn-end-menu" class="btn btn-small">MENÚ PRINCIPAL</button>
     </div>
 
     <script type="module" src="src/main.js"></script>

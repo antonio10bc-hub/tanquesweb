@@ -4,7 +4,7 @@ export class Hud {
         const $ = (id) => document.getElementById(id);
         this.el = {
             hud: $('hud'), menu: $('menu'), end: $('end'), banner: $('banner'),
-            play: $('btn-play'), again: $('btn-again'),
+            play: $('btn-play'), again: $('btn-again'), endMenu: $('btn-end-menu'),
             pause: $('pause'), pauseBtn: $('btn-pause'), resume: $('btn-resume'), quit: $('btn-quit'),
             stage: $('stage'), stageName: $('stage-name'), stageSub: $('stage-sub'), replay: $('replay'),
             endTitle: $('end-title'), endSub: $('end-sub'),
@@ -15,6 +15,7 @@ export class Hud {
         this.cache = { p: { hp: -1, max: -1 }, e: { hp: -1, max: -1 }, visible: null };
         this.onPlay = null;
         this.onAgain = null;
+        this.onMenu = null;
         this.onPause = null;
         this.onResume = null;
         this.onQuit = null;
@@ -26,6 +27,7 @@ export class Hud {
         for (const t of this.toggles) t.addEventListener('click', () => this.onToggle && this.onToggle(t.dataset.key));
         this.el.play.addEventListener('click', () => this.onPlay && this.onPlay());
         this.el.again.addEventListener('click', () => this.onAgain && this.onAgain());
+        this.el.endMenu.addEventListener('click', () => this.onMenu && this.onMenu());
     }
 
     ready() {

@@ -214,6 +214,9 @@ export class Game {
     }
 
     endMatch(win) {
+        // El impacto final puede caer entre dos fotogramas de la grabación: se graba siempre,
+        // si no la repetición acabaría justo antes de que la bala llegue y sin explosión.
+        this.recorder.record(0, this.world, this.bullets, true);
         this.result = win;
         this.setState('outro');
         this.timeScale = CONFIG.match.slowmo;
@@ -240,7 +243,8 @@ export class Game {
             if (this.replayAlive[i] && !tank.alive) this.deathFx(tank, false);
             this.replayAlive[i] = tank.alive;
         });
-        if (this.stateTime * REPLAY.speed > this.replayLen + 0.5) this.showEnd();
+        // Se queda un poco más tras el golpe para ver la explosión entera
+        if (this.stateTime * REPLAY.speed > this.replayLen + 0.8) this.showEnd();
     }
 
     showEnd() {
