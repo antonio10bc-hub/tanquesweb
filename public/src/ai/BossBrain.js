@@ -36,7 +36,7 @@ export class BossBrain extends HunterBrain {
         if (this.rage > 0) {
             this.rage -= dt;
             this.hold(tank);
-            if (this.rage <= 0) this.cd = 0.3;
+            if (this.rage <= 0) this.cd = 1.5; // un respiro tras la escena antes del primer especial furioso
             return;
         }
         if (this.charge) return this.updateCharge(tank, dt, world);
@@ -84,12 +84,11 @@ export class BossBrain extends HunterBrain {
 
     enrage(tank, world) {
         this.phase = 2;
-        this.rage = 1.4;
+        this.rage = 0.4; // la escena de la fase 2 la monta Game (cámara, rugido, cartel)
         this.cast = null;
         this.charge = null;
         this.busy = 0;
         tank.chargeT = 0;
-        tank.angry = true;
         tank.speed *= 1.18;
         tank.reveal = Math.max(tank.reveal, 2);
         this.hold(tank);

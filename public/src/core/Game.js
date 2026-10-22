@@ -27,6 +27,8 @@ const SPARKS = [0xff4fd8, 0xffffff, 0xffb3f0];
 const TURBO = [0x00e5ff, 0xffffff, 0x8af6ff];
 const NUKE = [0xffe600, 0x1b0b33, 0xffffff];
 const REPLAY = { length: 2.2, speed: 0.45 };
+// Escena de la fase 2 (segundos): ruge, estalla con el cartel, la cámara vuelve, sigue la partida
+const PHASE = { roar: 0.55, rage: 1.45, back: 2.6, end: 3.2 };
 
 // Orquesta todo: bucle, estados de partida, cámara, efectos, música y HUD.
 // Estados: menu -> intro -> play -> outro -> replay -> end -> (intro...)
@@ -230,6 +232,7 @@ export class Game {
 
     startMatch(levelId, seed, themeId) {
         this.endToken++;
+        this.cutscene = null;
         this.load(levelId, seed, themeId);
         this.mode = this.def.survival ? 'survival' : this.def.campaign ? 'campaign' : 'quick';
         this.boss = this.mode === 'campaign' ? this.world.enemies()[0] : null;
@@ -288,7 +291,7 @@ export class Game {
         this.paused = false;
         this.hud.showPause(false);
         this.sfx.hold(false);
-        if (!silent) this.input.setEnabled(this.state === 'play', true);
+        if (!silent) this.input.setEnabled(this.state === 'play' && !this.cutscene, true);
         this.last = performance.now();
     }
 
@@ -413,7 +416,7 @@ export class Game {
     stepWorld(simDt, tanksActive) {
         const max = CONFIG.sim.maxStep;
         let left = simDt;
-        while (left > 1e-6) {
+        while (left > 1e-6 && !this.cutscene) {
             const h = Math.min(max, left);
             this.world.step(h, tanksActive);
             left -= h;
@@ -430,6 +433,10 @@ export class Game {
                 this.updateIntro();
                 break;
             case 'play':
+                if (this.cutscene) {
+                    this.updatePhaseScene(dt);
+                    break;
+                }
                 this.stepWorld(simDt, true);
                 this.recorder.record(simDt, w, this.bullets);
                 this.updateDrops(dt);
@@ -614,6 +621,13 @@ export class Game {
         if (this.state === 'menu') {
             this.rig.yawTarget = Math.sin(this.time * 0.25) * 0.35;
             this.rig.focus(w.arena.cols / 2, w.arena.rows / 2 + Math.sin(this.time * 0.18) * 3);
+        } else if (this.cutscene) {
+            // Escena de la fase 2: primer plano del jefe y vuelta a tu tanque al final
+            const c = this.cutscene, back = c.t >= PHASE.back;
+            this.rig.free = !back;
+            this.rig.zoomTarget = back ? 1 : 0.5;
+            this.rig.yawTarget = back ? 0 : 0.25;
+            this.rig.focus(back ? w.player.x : c.boss.x, back ? w.player.z : c.boss.z);
         } else if ((this.state === 'outro' || this.state === 'replay') && this.fallen) {
             this.rig.zoomTarget = this.state === 'replay' ? 0.7 : 0.8;
             this.rig.focus(this.fallen.x, this.fallen.z);
@@ -621,6 +635,7 @@ export class Game {
             this.rig.zoomTarget = 1;
             this.rig.focus(w.player.x, w.player.z);
         }
+        if (!this.cutscene) this.rig.free = false;
     }
 
     // Visibilidad desde el punto de vista del jugador + animación de modelos y sus efectos.
@@ -871,18 +886,7 @@ export class Game {
             if (a.id === 'summon') this.renderer.flash(0x2a6aff, 0.3);
         });
 
-        ev.on('bossPhase', (tank) => {
-            const sc = tank.model.scale;
-            this.hud.banner('¡FASE 2!');
-            this.sfx.play('roar', this.panOf(tank.x));
-            this.rig.shake(1);
-            this.hitStop = 0.15;
-            this.renderer.flash(0xff2a2a, 0.55);
-            vibrate('nuke');
-            this.waves.spawn(tank.x, tank.z, 0xff2a2a, 3 * sc, 0.8);
-            this.waves.spawn(tank.x, tank.z, 0xffffff, 2 * sc, 0.5);
-            this.particles.burst(tank.x, 0.9 * sc, tank.z, 40, [0xff2a2a, 0xffffff, 0xff9a1f], { speed: 5, up: 6, size: 0.18, ttl: 0.9, grav: 10 });
-        });
+        ev.on('bossPhase', (tank) => this.startPhaseScene(tank));
 
         ev.on('hazardBoom', (h) => {
             const cols = h.style === 'meteor' ? FIRE.concat([0x3a2a30]) : [0xffffff, 0x9fefff, 0x6fd0ff];
@@ -911,6 +915,82 @@ export class Game {
                 this.dropping.push({ tank, t: -i * 0.25 });
             }
         });
+    }
+
+    // ---------- Escena de la fase 2 ----------
+    // El combate se congela y no puedes moverte: la cámara se acerca al jefe, tiembla y echa
+    // humo, ruge, se enfada (cejas), salta con una onda expansiva y sale "¡FASE 2!". Luego la
+    // cámara vuelve a tu tanque y se sigue jugando.
+    startPhaseScene(boss) {
+        this.cutscene = { boss, t: 0, prev: 0, puff: 0 };
+        this.input.setEnabled(false);
+        this.hud.showHint(false);
+        // Balas y ataques en curso se borran: al volver, nadie recibe un golpe que no ha visto venir
+        this.bullets.clear();
+        this.world.hazards.clear();
+        this.world.forceReveal = true;
+        this.renderer.flash(0xffffff, 0.6);
+        this.hitStop = 0.12;
+        this.sfx.play('warn');
+        vibrate('hurt');
+    }
+
+    updatePhaseScene(dt) {
+        const c = this.cutscene, b = c.boss, m = b.model, sc = m.scale;
+        const t = (c.t += dt), at = (s) => c.prev < s && t >= s;
+        const pal = b.def.palette;
+        // Tiembla de rabia y echa humo
+        const shaking = t > PHASE.roar && t < PHASE.rage + 0.3;
+        m.root.rotation.z = shaking ? Math.sin(t * 70) * 0.07 : 0;
+        if (shaking) {
+            this.rig.shake(dt * 2);
+            if ((c.puff -= dt) <= 0) {
+                c.puff = 0.06;
+                for (let k = 0; k < 3; k++) {
+                    this.particles.spawn(b.x + (Math.random() - 0.5) * 0.5 * sc, 1 * sc, b.z + (Math.random() - 0.5) * 0.5 * sc,
+                        (Math.random() - 0.5) * 1.5, 2 + Math.random() * 1.5, (Math.random() - 0.5) * 1.5, 0.14 + Math.random() * 0.12, 0.7,
+                        Math.random() < 0.5 ? 0xffffff : 0xff6a6a, -1);
+                }
+                b.flash = Math.floor(t * 8) % 2 ? 0.8 : 0;
+            }
+        }
+        // Se hincha antes del estallido
+        const swell = t > PHASE.roar && t < PHASE.rage ? (t - PHASE.roar) / (PHASE.rage - PHASE.roar) : 0;
+        m.root.scale.setScalar(sc * (1 + swell * 0.18));
+        // Salto con el estallido
+        const hop = (t - PHASE.rage) / 0.5;
+        m.dropY = hop > 0 && hop < 1 ? Math.sin(hop * Math.PI) * 0.9 : 0;
+
+        if (at(PHASE.roar)) {
+            this.sfx.play('roar', this.panOf(b.x));
+            this.waves.spawn(b.x, b.z, 0xffffff, 1.6 * sc, 0.5);
+        }
+        if (at(PHASE.rage)) {
+            b.angry = true;
+            b.flash = 1;
+            this.hud.banner('¡FASE 2!');
+            this.sfx.play('boom', this.panOf(b.x));
+            this.rig.shake(1);
+            this.renderer.flash(0xff2a2a, 0.7);
+            vibrate('nuke');
+            this.waves.spawn(b.x, b.z, 0xff2a2a, 3.4 * sc, 0.8);
+            this.waves.spawn(b.x, b.z, 0xffffff, 2.2 * sc, 0.5);
+            this.waves.spawn(b.x, b.z, pal.accent, 4.4 * sc, 1.1);
+            this.particles.burst(b.x, 0.9 * sc, b.z, 60, [0xff2a2a, 0xffffff, 0xff9a1f, pal.accent], { speed: 6, up: 7, size: 0.2, ttl: 1, grav: 10 });
+        }
+        if (at(PHASE.rage + 0.5)) this.landed(b);
+        if (t >= PHASE.end) {
+            m.root.rotation.z = 0;
+            m.root.scale.setScalar(sc);
+            m.dropY = 0;
+            this.cutscene = null;
+            this.world.updateIntel(0);
+            this.world.forceReveal = false;
+            b.reveal = Math.max(b.reveal, 1.5);
+            if (!this.paused) this.input.setEnabled(true);
+            this.sfx.play('go');
+        }
+        c.prev = t;
     }
 
     // El jefe cae: explosión enorme y sus drones se apagan con él.

@@ -59,13 +59,18 @@ export class CameraRig {
         this.yaw = this.yawTarget;
     }
 
+    // Los límites encogen con el zoom: de cerca se puede centrar algo pegado al borde.
     clampX(x) {
-        const lo = this.halfWidth - 1, hi = this.cols - this.halfWidth + 1;
+        if (this.free) return x; // escenas: la cámara puede centrar cualquier punto
+        const hw = this.halfWidth * this.zoom;
+        const lo = hw - 1, hi = this.cols - hw + 1;
         return lo > hi ? this.cols / 2 : clamp(x, lo, hi);
     }
 
     clampZ(z) {
-        const lo = this.halfDepth - 1.2, hi = this.rows - this.halfDepth + 0.4;
+        if (this.free) return z;
+        const hd = this.halfDepth * this.zoom;
+        const lo = hd - 1.2, hi = this.rows - hd + 0.4;
         return lo > hi ? this.rows / 2 : clamp(z, lo, hi);
     }
 
