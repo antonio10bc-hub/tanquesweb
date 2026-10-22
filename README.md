@@ -40,7 +40,10 @@ cargado para que lo guarde, así que no hay lista de archivos que mantener a man
   **teletransportes** por parejas (caramelo, playa, ciudad, espacio, arcoíris) y **barriles
   explosivos** (desierto, volcán, ciudad, playa, pradera) que revientan de un disparo, dañan a los
   tanques cercanos, rompen muros y estallan en cadena.
-- **Tres modos**: **Partida rápida** (duelo contra un rival), **Campaña** y **Supervivencia** (cada
+- **Cuatro modos**: **Partida rápida** (duelo contra un rival), **Campaña**, **Duelo a dos** (dos
+  personas en el mismo móvil, cada una con su joystick en su mitad de la pantalla; en el ordenador,
+  WASD y flechas; como los dos miran la misma pantalla, escondido se ve solo una sombra tenue) y
+  **Supervivencia** (cada
   oleada trae un enemigo más, hasta 8, de soldados, exploradores y brutos, todos con 2 de vida;
   recuperas 2 de vida al superar cada oleada y se guarda tu récord).
 - **Campaña**: un mapa voxel vertical que se recorre de abajo arriba, un mundo por temática (pradera,

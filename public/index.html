@@ -60,6 +60,17 @@
         <div class="joy-base"></div>
         <div class="joy-thumb"></div>
     </div>
+    <div id="joy2" class="joy joy-p2 hidden">
+        <div class="joy-base"></div>
+        <div class="joy-thumb"></div>
+    </div>
+
+    <!-- Duelo local: cada jugador juega en su mitad de la pantalla -->
+    <div id="duel-labels" class="duel-labels hidden">
+        <div class="duel-label p2">JUGADOR 2 · ARRASTRA EN TU MITAD</div>
+        <div class="duel-line"></div>
+        <div class="duel-label p1">JUGADOR 1 · ARRASTRA EN TU MITAD</div>
+    </div>
 
     <div id="menu" class="screen menu">
         <div class="coins-badge" aria-label="Monedas"><span class="coin"></span><span id="menu-coins">0</span></div>
@@ -89,6 +100,7 @@
             <button id="btn-play" class="btn" disabled>CARGANDO...</button>
             <button id="btn-campaign" class="btn btn-camp" disabled>CAMPAÑA</button>
             <button id="btn-survival" class="btn btn-alt" disabled>SUPERVIVENCIA</button>
+            <button id="btn-duel" class="btn btn-duel" disabled>DUELO A DOS</button>
         </div>
     </div>
 

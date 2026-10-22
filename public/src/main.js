@@ -34,6 +34,11 @@ document.getElementById('btn-campaign').addEventListener('click', () => {
     sfx.play('ui');
     game.showCampaign();
 });
+document.getElementById('btn-duel').addEventListener('click', () => {
+    sfx.unlock();
+    sfx.play('ui');
+    game.startDuel();
+});
 document.getElementById('btn-survival').addEventListener('click', () => {
     sfx.unlock();
     sfx.play('ui');

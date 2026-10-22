@@ -43,6 +43,7 @@ export class Hud {
         this.el.play.textContent = 'PARTIDA RÁPIDA';
         document.getElementById('btn-survival').disabled = false;
         document.getElementById('btn-campaign').disabled = false;
+        document.getElementById('btn-duel').disabled = false;
     }
 
     // Ceremonia al ganar: la moneda aparece con un +1, vuela al contador (que muestra la cifra
@@ -295,6 +296,12 @@ export class Hud {
         void b.offsetWidth; // reinicia la animación CSS
         b.textContent = text;
         b.className = `banner show ${kind}`;
+    }
+
+    // Duelo local: etiquetas de cada jugador en su mitad (la de arriba, girada para el J2)
+    showDuel(on) {
+        document.getElementById('duel-labels').classList.toggle('hidden', !on);
+        this.el.hud.classList.toggle('duel-mode', on);
     }
 
     // ---------- Jefes ----------

@@ -24,6 +24,9 @@ export class Input {
         this.thumb = joyEl.querySelector('.joy-thumb');
         this.base = joyEl.querySelector('.joy-base');
         this.onMove = null;
+        this.region = null;   // duelo: solo acepta dedos en su mitad de la pantalla (y => bool)
+        this.keySet = 'all';  // 'all' | 'wasd' | 'arrows' (duelo en el ordenador)
+        this.top = false;     // el joystick descansa arriba (jugador 2 del duelo)
 
         surface.addEventListener('pointerdown', (e) => this.down(e), { passive: false });
         window.addEventListener('pointermove', (e) => this.drag(e), { passive: false });
@@ -45,6 +48,15 @@ export class Input {
         if (!capture) this.reset();
     }
 
+    // Duelo: mitad de pantalla y teclas de cada jugador (sin argumentos vuelve a lo normal)
+    setSide(side) {
+        const half = () => window.innerHeight / 2;
+        this.region = side === 'bottom' ? (y) => y > half() : side === 'top' ? (y) => y <= half() : null;
+        this.keySet = side === 'bottom' ? 'wasd' : side === 'top' ? 'arrows' : 'all';
+        this.top = side === 'top';
+        this.reset();
+    }
+
     reset() {
         this.pointerId = null;
         this.jx = this.jy = 0;
@@ -54,7 +66,8 @@ export class Input {
 
     rest() {
         this.ox = window.innerWidth / 2;
-        this.oy = window.innerHeight - Math.max(100, window.innerHeight * 0.16);
+        const off = Math.max(100, window.innerHeight * 0.16);
+        this.oy = this.top ? off : window.innerHeight - off;
         this.place(0, 0);
         this.joy.classList.add('idle');
     }
@@ -66,6 +79,7 @@ export class Input {
 
     down(e) {
         if (!this.capture || this.pointerId !== null) return;
+        if (this.region && !this.region(e.clientY)) return;
         e.preventDefault();
         this.pointerId = e.pointerId;
         this.ox = e.clientX;
@@ -110,6 +124,8 @@ export class Input {
     key(e, isDown) {
         const k = KEYS[e.code];
         if (!k) return;
+        const arrow = e.code.startsWith('Arrow');
+        if ((this.keySet === 'wasd' && arrow) || (this.keySet === 'arrows' && !arrow)) return;
         if (e.code.startsWith('Arrow')) e.preventDefault();
         this.keys[k] = isDown;
     }

@@ -324,6 +324,14 @@ html, body {
     box-shadow: 0 7px 0 var(--ink), inset 0 -6px 0 #12a8a0, inset 0 4px 0 #a8fff8;
     animation: none;
 }
+.btn-duel {
+    background: var(--purple);
+    color: #fff;
+    text-shadow: 2px 2px 0 var(--ink);
+    box-shadow: 0 7px 0 var(--ink), inset 0 -6px 0 #5a3ad6, inset 0 4px 0 #b4a0ff;
+    animation: none;
+}
+.play-col .btn-duel { font-size: clamp(11px, 3.6vw, 15px); }
 .trophy-btn { display: flex; align-items: center; gap: 8px; }
 .trophy {
     display: inline-block;
@@ -884,6 +892,23 @@ html, body {
     25%, 35% { background: var(--pink); color: #fff; text-shadow: 2px 2px 0 var(--ink); }
     100% { opacity: 0; }
 }
+
+/* ---------- DUELO LOCAL ---------- */
+.duel-labels { position: fixed; inset: 0; z-index: 11; pointer-events: none; }
+.duel-label {
+    position: absolute;
+    left: 50%;
+    font-size: 9px;
+    padding: 6px 8px;
+    white-space: nowrap;
+    border: 3px solid var(--ink);
+    box-shadow: 0 4px 0 rgba(27, 11, 51, .45);
+}
+.duel-label.p1 { bottom: max(18px, env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--cyan); color: var(--ink); }
+.duel-label.p2 { top: calc(var(--safe-top) + 64px); transform: translateX(-50%) rotate(180deg); background: var(--pink); color: #fff; }
+.duel-line { position: absolute; left: 0; right: 0; top: 50%; border-top: 3px dashed rgba(255, 255, 255, .35); }
+.joy-p2 .joy-thumb { background: var(--pink); }
+.hud.duel-mode .stealth, .hud.duel-mode .hint { display: none; }
 
 /* ---------- RACHAS ---------- */
 .streak {

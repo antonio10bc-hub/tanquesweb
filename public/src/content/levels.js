@@ -93,6 +93,19 @@ LEVELS.supervivencia = {
     enemies: [{ tank: 'grunt', spawn: 'E', brain: 'hunter', hp: 2, params: { dodge: 0.25 } }],
 };
 
+// Duelo local: dos personas en el mismo móvil. No entra en la rotación de partidas rápidas.
+LEVELS.duelo = {
+    name: 'DUELO',
+    tagline: 'UNO CONTRA UNO',
+    duel: true,
+    themes: ['snow', 'desert', 'candy', 'volcano', 'beach', 'meadow', 'city', 'space'],
+    generator: { materials: { '#': 3, B: 2, D: 1 }, bushes: [2, 3] },
+    pickups: { kinds: { heal: 2, power: 2, shield: 1, bounce: 1, triple: 1, turbo: 1, nuke: 1 } },
+    map: FALLBACK_MAP,
+    player: { tank: 'hero', spawn: 'P' },
+    enemies: [{ tank: 'rival', spawn: 'E', brain: 'player2', noSkin: true }],
+};
+
 // Oleadas: cuántos enemigos y de qué tipo. La 1 es la del arquetipo (un soldado).
 // Todos los enemigos de supervivencia tienen 2 de vida: la gracia es destruir a muchos,
 // no un duelo largo. Cada oleada trae uno más, hasta el tope.

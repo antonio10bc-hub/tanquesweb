@@ -16,6 +16,7 @@ import { COMMON_WALLS } from '../world/Arena.js';
 import { BulletSystem, FIRE as FLAMES } from '../world/Bullets.js';
 import { World } from '../world/World.js';
 import { EventBus } from './EventBus.js';
+import { Input } from './Input.js';
 import { Music } from './Music.js';
 import { ReplayRecorder } from './Replay.js';
 import { Settings } from './Settings.js';
@@ -41,6 +42,9 @@ export class Game {
     constructor({ canvas, hud, input, sfx }) {
         this.hud = hud;
         this.input = input;
+        // Jugador 2 del duelo local: su joystick vive en la mitad de arriba
+        this.input2 = new Input(canvas, document.getElementById('joy2'));
+        this.input2.setEnabled(false);
         this.sfx = sfx;
         this.music = new Music(sfx);
         this.events = new EventBus();
@@ -144,7 +148,7 @@ export class Game {
 
     // ---------- Flujo ----------
     randomLevel() {
-        const all = Object.keys(LEVELS).filter((id) => !LEVELS[id].survival && !LEVELS[id].campaign);
+        const all = Object.keys(LEVELS).filter((id) => !LEVELS[id].survival && !LEVELS[id].campaign && !LEVELS[id].duel);
         const ids = all.filter((id) => id !== this.levelId);
         return pick(ids.length ? ids : all);
     }
@@ -174,7 +178,7 @@ export class Game {
         this.hazardView.setOutline(theme.outline);
         this.sfx.setAmbience(theme.sound);
 
-        this.world = new World(def, theme, { events: this.events, bullets: this.bullets, input: this.input, seed, skin: Profile.data.skin, paint: Profile.data.paint, trail: Profile.data.trail });
+        this.world = new World(def, theme, { events: this.events, bullets: this.bullets, input: this.input, input2: this.input2, seed, skin: Profile.data.skin, paint: Profile.data.paint, trail: Profile.data.trail });
         this.scene.add(this.world.root);
         this.levelId = levelId;
         this.rig.setBounds(this.world.arena.cols, this.world.arena.rows);
@@ -190,11 +194,14 @@ export class Game {
         this.load(levelId);
         this.setState('menu');
         this.world.forceReveal = true;
-        this.input.setEnabled(false);
+        this.setInputs(false);
         this.hud.screen('menu');
         this.hud.showReplay(false);
         this.hud.ready();
         this.hud.showBoss(null);
+        this.hud.showDuel(false);
+        this.input.setSide(null);
+        this.input2.setSide(null);
         this.rig.zoomTarget = 1.15;
         this.rig.focus(this.world.arena.cols / 2, this.world.arena.rows / 2);
         this.rig.snap();
@@ -203,6 +210,7 @@ export class Game {
     // "Otra vez": repite el modo de la última partida.
     again() {
         if (this.mode === 'survival') this.startSurvival();
+        else if (this.mode === 'duel') this.startDuel();
         else if (this.mode === 'campaign') this.startBoss(this.worldId);
         else this.startMatch();
     }
@@ -216,7 +224,7 @@ export class Game {
         this.particles.clear();
         this.hazardView.clear();
         this.setState('campaign');
-        this.input.setEnabled(false);
+        this.setInputs(false);
         this.hud.screen('campaign');
         this.hud.showBoss(null);
         this.hud.showReplay(false);
@@ -241,7 +249,12 @@ export class Game {
         this.streak = 0;
         this.lastKill = null;
         this.load(levelId, seed, themeId);
-        this.mode = this.def.survival ? 'survival' : this.def.campaign ? 'campaign' : 'quick';
+        this.mode = this.def.survival ? 'survival' : this.def.campaign ? 'campaign' : this.def.duel ? 'duel' : 'quick';
+        const duel = this.mode === 'duel';
+        this.input.setSide(duel ? 'bottom' : null);
+        this.input2.setSide(duel ? 'top' : null);
+        this.hud.showDuel(duel);
+        if (duel) this.hud.setNames('JUGADOR 1', 'JUGADOR 2');
         this.boss = this.mode === 'campaign' ? this.world.enemies()[0] : null;
         this.hud.showBoss(this.boss ? this.boss.def.name : null);
         this.hud.endButtons('OTRA VEZ', this.mode === 'campaign' ? 'VER EL MAPA' : 'MENÚ PRINCIPAL');
@@ -259,7 +272,7 @@ export class Game {
         this.countdown = 0;
         this.world.forceReveal = true;
         for (const t of this.world.tanks) t.model.dropY = 9;
-        this.input.setEnabled(false, true);
+        this.setInputs(false, true);
         this.hud.screen('play');
         this.hud.showReplay(false);
         this.hud.showHint(true);
@@ -275,6 +288,17 @@ export class Game {
     }
 
     // Los jefes tienen su propio tema (y otro para la fase 2); el resto, la música del escenario.
+    // Activa los mandos: en el duelo, los dos; si no, solo el tuyo.
+    setInputs(on, capture = on) {
+        this.input.setEnabled(on, capture);
+        const duel = this.mode === 'duel' && (this.state === 'intro' || this.state === 'play');
+        this.input2.setEnabled(duel && on, duel && capture);
+    }
+
+    startDuel() {
+        this.startMatch('duelo');
+    }
+
     startMusic() {
         this.music.intensity = 0;
         const w = this.boss && WORLD_BY_ID[this.worldId];
@@ -290,7 +314,7 @@ export class Game {
     pause() {
         if (this.paused || (this.state !== 'play' && this.state !== 'intro')) return;
         this.paused = true;
-        this.input.setEnabled(false);
+        this.setInputs(false);
         drawMinimap(document.getElementById('pause-map'), this.world, this.theme);
         this.hud.showPause(true, Settings);
         this.sfx.play('pause');
@@ -302,7 +326,7 @@ export class Game {
         this.paused = false;
         this.hud.showPause(false);
         this.sfx.hold(false);
-        if (!silent) this.input.setEnabled(this.state === 'play' && !this.cutscene, true);
+        if (!silent) this.setInputs(this.state === 'play' && !this.cutscene, true);
         this.last = performance.now();
     }
 
@@ -313,7 +337,7 @@ export class Game {
         this.result = win;
         this.setState('outro');
         this.timeScale = CONFIG.match.slowmo;
-        this.input.setEnabled(false);
+        this.setInputs(false);
         this.music.stop(1);
     }
 
@@ -358,7 +382,9 @@ export class Game {
         for (const t of this.world.tanks) t.alive = t.hp > 0;
         const p = this.world.player;
         const st = Profile.data.stats;
-        if (this.mode === 'campaign') {
+        if (this.mode === 'duel') {
+            this.hud.showEnd(true, win ? 'EL JUGADOR 2 HA CAÍDO' : 'EL JUGADOR 1 HA CAÍDO', win ? '¡GANA EL J1!' : '¡GANA EL J2!');
+        } else if (this.mode === 'campaign') {
             const w = WORLD_BY_ID[this.worldId];
             if (win) {
                 const first = Profile.beat(w.id);
@@ -438,6 +464,7 @@ export class Game {
         const w = this.world;
         this.stateTime += dt;
         this.input.update();
+        this.input2.update();
 
         switch (this.state) {
             case 'intro':
@@ -573,7 +600,7 @@ export class Game {
                 // Durante la cuenta atrás os veis: cada uno arranca sabiendo dónde está el otro.
                 this.world.updateIntel(0);
                 this.world.forceReveal = false;
-                this.input.setEnabled(true);
+                this.setInputs(true);
                 this.setState('play');
             }
         }
@@ -632,6 +659,12 @@ export class Game {
         if (this.state === 'menu') {
             this.rig.yawTarget = Math.sin(this.time * 0.25) * 0.35;
             this.rig.focus(w.arena.cols / 2, w.arena.rows / 2 + Math.sin(this.time * 0.18) * 3);
+        } else if (this.mode === 'duel' && this.state !== 'outro' && this.state !== 'replay') {
+            // Duelo: los dos miran la misma pantalla, así que se ve la arena entera
+            this.rig.free = true;
+            this.rig.yawTarget = 0;
+            this.rig.zoomTarget = Math.max(1, (w.arena.rows + 1.5) / (2 * this.rig.halfDepth)); // ancho y alto enteros
+            this.rig.focus(w.arena.cols / 2, w.arena.rows / 2);
         } else if (this.cutscene) {
             // Escena de la fase 2: primer plano del jefe y vuelta a tu tanque al final
             const c = this.cutscene, back = c.t >= PHASE.back;
@@ -646,7 +679,7 @@ export class Game {
             this.rig.zoomTarget = 1;
             this.rig.focus(w.player.x, w.player.z);
         }
-        if (!this.cutscene) this.rig.free = false;
+        if (!this.cutscene && this.mode !== 'duel') this.rig.free = false;
     }
 
     // Visibilidad desde el punto de vista del jugador + animación de modelos y sus efectos.
@@ -657,7 +690,10 @@ export class Game {
             let target;
             if (!playing || w.forceReveal) target = 1;
             else if (tank === player) target = tank.exposed ? 1 : tank.cloak > 0 ? 0.22 : stealth.playerGhost;
-            else if (tank.decoy && tank.team === player.team) target = 0.8; // tu señuelo: lo ves siempre
+            else if (this.mode === 'duel') {
+                // Duelo en un móvil: escondido se ve solo como una sombra tenue; disparar te delata
+                target = tank.exposed ? 1 : tank.cloak > 0 ? 0.08 : tank.inBush ? 0.14 : 0.28;
+            } else if (tank.decoy && tank.team === player.team) target = 0.8; // tu señuelo: lo ves siempre
             else target = player.intel.get(tank)?.visible ? 1 : 0;
             tank.viewFade = approach(tank.viewFade, target, stealth.fadeSpeed * dt);
             tank.model.sync(dt, tank, tank.viewFade, this.rig.camera);
@@ -736,7 +772,7 @@ export class Game {
                 }
             }
 
-            if (tank === player || (tank.decoy && tank.team === player.team)) continue;
+            if (tank === player || (tank.decoy && tank.team === player.team) || this.mode === 'duel') continue;
             const info = player.intel.get(tank);
             const seen = !!info?.visible;
             if (playing && seen && !tank.wasSeen) {
@@ -1000,7 +1036,7 @@ export class Game {
     // cámara vuelve a tu tanque y se sigue jugando.
     startPhaseScene(boss) {
         this.cutscene = { boss, t: 0, prev: 0, puff: 0 };
-        this.input.setEnabled(false);
+        this.setInputs(false);
         this.hud.showHint(false);
         // Balas y ataques en curso se borran: al volver, nadie recibe un golpe que no ha visto venir
         this.bullets.clear();
@@ -1066,7 +1102,7 @@ export class Game {
             this.world.updateIntel(0);
             this.world.forceReveal = false;
             b.reveal = Math.max(b.reveal, 1.5);
-            if (!this.paused) this.input.setEnabled(true);
+            if (!this.paused) this.setInputs(true);
             this.sfx.play('go');
         }
         c.prev = t;

@@ -7,6 +7,7 @@ import { BossBrain } from './BossBrain.js';
 // Para una IA nueva: crea la clase y regístrala aquí; luego úsala en un nivel por id.
 export const BRAINS = {
     player: (params, ctx) => new PlayerBrain(ctx.input),
+    player2: (params, ctx) => new PlayerBrain(ctx.input2), // duelo en un móvil
     hunter: (params) => new HunterBrain(params),
     boss: (params) => new BossBrain(params),
     // Señuelo: quieto, sin disparar y delatándose hasta que se deshace
