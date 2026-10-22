@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CONFIG } from '../config.js';
-import { TANKS, SKIN_BY_ID, getDef } from '../content/index.js';
+import { TANKS, SKIN_BY_ID, PAINT_BY_ID, TRAIL_BY_ID, getDef } from '../content/index.js';
 import { createBrain } from '../ai/brains.js';
 import { TankModel } from '../render/TankModel.js';
 import { Arena } from './Arena.js';
@@ -41,12 +41,16 @@ export class World {
     spawn(spec, team, brainId, at) {
         let def = getDef(TANKS, spec.tank, 'tanque');
         // La skin equipada solo la lleva el jugador; el dorado también tiñe sus balas
-        const skin = team === 'player' ? SKIN_BY_ID[this.ctx.skin] || null : null;
+        const mine = team === 'player' && !spec.noSkin;
+        const skin = mine ? SKIN_BY_ID[this.ctx.skin] || null : null;
+        const paint = mine ? PAINT_BY_ID[this.ctx.paint] : null;
+        if (paint && paint.palette) def = { ...def, palette: { ...def.palette, ...paint.palette } };
         if (skin && skin.palette) def = { ...def, palette: { ...def.palette, ...skin.palette } };
         if (spec.hp) def = { ...def, hp: spec.hp };
         if (spec.speed) def = { ...def, speed: spec.speed };
         at = at || this.arena.takeSpawn(spec.spawn);
         const tank = new Tank(def, team, at.x, at.z, createBrain(brainId, spec.params, this.ctx));
+        if (mine) tank.trail = (TRAIL_BY_ID[this.ctx.trail] || {}).style || null;
         const opts = def.boss ? { scale: def.scale, deco: def.deco, rainbow: def.rainbow, noBar: true } : {};
         tank.model = new TankModel(def.palette, this.theme.outline, tank.weapon.magazine, skin, opts);
         tank.model.addTo(this.root);

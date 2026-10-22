@@ -1,12 +1,19 @@
 import * as THREE from 'three';
-import { SKINS, SKIN_BY_ID, GOLD_SPARKS, TANKS } from '../content/index.js';
+import { SKINS, SKIN_BY_ID, GOLD_SPARKS, TANKS, PAINTS, TRAILS, PAINT_BY_ID, TRAIL_BY_ID } from '../content/index.js';
+import { trailParticle, TRAIL_RATE } from '../render/trails.js';
 import { TankModel } from '../render/TankModel.js';
 import { Particles } from '../render/Particles.js';
 import { box, toon, outline, OUTLINE } from '../render/materials.js';
 import { Profile } from '../core/Profile.js';
 
-// "Mi Tanque": tu tanque en 3D sobre un pedestal; flechas para pasar de skin, comprar y usar.
-// El botón del menú enseña en pequeño el tanque con la skin equipada.
+// "Mi Tanque": tu tanque en 3D sobre un pedestal. Tres pestañas (gorros, pinturas y estelas de
+// bala); flechas para pasar, comprar y usar. La vista previa combina lo que llevas puesto con
+// lo que estás mirando. El botón del menú enseña en pequeño el tanque equipado.
+const CATS = [
+    { key: 'skin', items: SKINS },
+    { key: 'paint', items: PAINTS },
+    { key: 'trail', items: TRAILS },
+];
 export class Garage {
     constructor(sfx, px = 112) {
         const $ = (id) => document.getElementById(id);
@@ -42,7 +49,15 @@ export class Garage {
         };
         this.models = new Map();
 
-        this.index = Math.max(0, SKINS.findIndex((s) => s.id === Profile.data.skin));
+        this.cat = 0;
+        this.index = 0;
+        this.tabs = [...document.querySelectorAll('.garage-tabs .tab')];
+        this.tabs.forEach((t, i) => t.addEventListener('click', () => this.setCat(i)));
+        // Bala de muestra para enseñar la estela
+        this.shot = new THREE.Mesh(box(0.2, 0.2, 0.2), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+        this.shot.visible = false;
+        this.scene.add(this.shot);
+        this.shotT = 0;
         $('btn-garage').addEventListener('click', () => this.open());
         $('btn-garage-close').addEventListener('click', () => this.close());
         $('garage-prev').addEventListener('click', () => this.step(-1));
@@ -86,27 +101,54 @@ export class Garage {
         this.scene.add(base);
     }
 
-    model(skin) {
-        let m = this.models.get(skin.id);
+    model(skin, paint) {
+        const key = `${skin.id}|${paint.id}`;
+        let m = this.models.get(key);
         if (!m) {
-            m = new TankModel(TANKS.hero.palette, 0x1b0b33, 3, skin);
+            m = new TankModel({ ...TANKS.hero.palette, ...paint.palette }, 0x1b0b33, 3, skin);
             m.addTo(this.scene);
-            this.models.set(skin.id, m);
+            this.models.set(key, m);
         }
         return m;
     }
 
+    get items() {
+        return CATS[this.cat].items;
+    }
+
+    // Lo que se está mirando ahora en la pestaña abierta
     get skin() {
-        return SKINS[this.index];
+        return this.items[this.index];
+    }
+
+    // Lo que enseña el pedestal: lo equipado, cambiando solo la categoría que se mira
+    preview(browsing) {
+        const d = Profile.data;
+        const look = {
+            skin: SKIN_BY_ID[d.skin] || SKINS[0],
+            paint: PAINT_BY_ID[d.paint] || PAINTS[0],
+            trail: TRAIL_BY_ID[d.trail] || TRAILS[0],
+        };
+        if (browsing) look[CATS[this.cat].key] = this.skin;
+        return look;
+    }
+
+    setCat(i) {
+        this.cat = i;
+        const key = CATS[i].key;
+        this.index = Math.max(0, this.items.findIndex((s) => s.id === Profile.data[key]));
+        this.tabs.forEach((t, k) => t.classList.toggle('on', k === i));
+        this.sfx.play('tick');
+        this.particles.clear();
+        this.refresh();
     }
 
     open() {
         this.sfx.unlock();
         this.sfx.play('ui');
-        this.index = Math.max(0, SKINS.findIndex((s) => s.id === Profile.data.skin));
         this.isOpen = true;
         this.el.screen.classList.remove('hidden');
-        this.refresh();
+        this.setCat(this.cat);
     }
 
     close() {
@@ -116,7 +158,7 @@ export class Garage {
     }
 
     step(d) {
-        this.index = (this.index + d + SKINS.length) % SKINS.length;
+        this.index = (this.index + d + this.items.length) % this.items.length;
         this.sfx.play('tick');
         this.particles.clear();
         this.pop = 0;
@@ -125,11 +167,11 @@ export class Garage {
 
     // Comprar (si no la tienes) o equipar.
     act() {
-        const s = this.skin;
+        const s = this.skin, key = CATS[this.cat].key;
         if (Profile.owns(s.id)) {
-            if (Profile.data.skin !== s.id && Profile.equip(s.id)) this.sfx.play('reloaded');
+            if (Profile.data[key] !== s.id && Profile.equip(s.id, key)) this.sfx.play('reloaded');
         } else if (Profile.buy(s.id, s.price)) {
-            Profile.equip(s.id);
+            Profile.equip(s.id, key);
             this.sfx.play('win');
             this.burst = 1;
             if (this.onBuy) this.onBuy(s);
@@ -143,19 +185,20 @@ export class Garage {
     refresh() {
         const s = this.skin, el = this.el;
         el.name.textContent = s.name;
-        el.count.textContent = `${this.index + 1} / ${SKINS.length}`;
+        el.count.textContent = `${this.index + 1} / ${this.items.length}`;
         el.coins.textContent = Profile.coins;
-        const owned = Profile.owns(s.id), equipped = Profile.data.skin === s.id;
+        const owned = Profile.owns(s.id), equipped = Profile.data[CATS[this.cat].key] === s.id;
         el.action.disabled = equipped || (!owned && Profile.coins < s.price);
         el.action.className = `btn ${owned ? '' : 'buy'}`;
         el.action.innerHTML = equipped ? 'EQUIPADO' : owned ? 'USAR'
             : Profile.coins >= s.price ? `COMPRAR <span class="coin"></span> ${s.price}` : `<span class="coin"></span> ${s.price} · SIN MONEDAS`;
-        el.screen.classList.toggle('golden', !!s.gold);
+        el.screen.classList.toggle('golden', !!this.preview(true).skin.gold);
     }
 
-    draw(skin, dt, ctx) {
-        for (const [id, m] of this.models) m.root.visible = m.shadow.visible = id === skin.id;
-        const m = this.model(skin);
+    draw(look, dt, ctx) {
+        const skin = look.skin;
+        const m = this.model(skin, look.paint);
+        for (const other of this.models.values()) other.root.visible = other.shadow.visible = other === m;
         const f = this.fake;
         f.yaw = f.aimYaw = 0.6 + Math.sin(performance.now() / 1400) * 0.5;
         m.sync(dt, f, 1, this.camera);
@@ -168,6 +211,30 @@ export class Garage {
                 this.particles.spawn(Math.sin(a) * r, 0.1 + Math.random() * 0.6, Math.cos(a) * r, 0, 0.8 + Math.random(), 0,
                     0.05 + Math.random() * 0.06, 0.7, GOLD_SPARKS[(Math.random() * GOLD_SPARKS.length) | 0], -0.5);
             }
+        }
+        // Escaparate de la estela: dispara cada poco una bala con ella
+        const trail = look.trail.style;
+        if (trail && ctx === this.ctx) {
+            this.shotT += dt;
+            if (this.shotT > 1.3) {
+                this.shotT = 0;
+                m.root.visible && (f.recoil = 1);
+            }
+            const k = this.shotT / 0.55;
+            this.shot.visible = k < 1;
+            if (k < 1) {
+                const a = f.aimYaw, d = 0.6 + k * 2.6;
+                this.shot.position.set(Math.sin(a) * d, 0.48, Math.cos(a) * d);
+                this.shot.material.color.setHex({ ...TANKS.hero.palette, ...look.paint.palette }.bullet);
+                this.trailAcc = (this.trailAcc || 0) - dt;
+                while (this.trailAcc <= 0) {
+                    this.trailAcc += TRAIL_RATE[trail] || 0.03;
+                    trailParticle(this.particles, trail, this.shot.position.x, 0.48, this.shot.position.z, Math.sin(a) * 4, Math.cos(a) * 4, 0.24, this.shotT);
+                }
+            }
+            f.recoil = Math.max(0, f.recoil - dt * 5);
+        } else {
+            this.shot.visible = false;
         }
         if (this.burst) {
             this.particles.burst(0, 0.6, 0, 50, [0xffe03a, 0xff3e8e, 0x23e0d6, 0xffffff], { speed: 3, up: 5, size: 0.1, ttl: 1, grav: 8 });
@@ -184,7 +251,7 @@ export class Garage {
         requestAnimationFrame(this.tick);
         const dt = Math.min(0.05, (now - this.last) / 1000);
         this.last = now;
-        if (this.isOpen) this.draw(this.skin, dt, this.ctx);
-        else if (!this.el.menu.classList.contains('hidden')) this.draw(SKIN_BY_ID[Profile.data.skin] || SKINS[0], dt, this.btnCtx);
+        if (this.isOpen) this.draw(this.preview(true), dt, this.ctx);
+        else if (!this.el.menu.classList.contains('hidden')) this.draw(this.preview(false), dt, this.btnCtx);
     }
 }

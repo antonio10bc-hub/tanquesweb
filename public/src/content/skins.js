@@ -113,3 +113,28 @@ export const SKINS = [
 
 export const SKIN_BY_ID = Object.fromEntries(SKINS.map((s) => [s.id, s]));
 export const GOLD_SPARKS = [0xffe680, 0xffffff, 0xffc21a, 0xfff2a0];
+
+// Pinturas: colores del tanque (el tanque dorado las tapa con su oro).
+export const PAINTS = [
+    { id: 'p_default', name: 'CHISPA', price: 0, palette: null },
+    { id: 'p_fire', name: 'FUEGO', price: 1, palette: { body: 0xff3e3e, accent: 0xffd23f, tread: 0x3a1010, bullet: 0xffb08a } },
+    { id: 'p_forest', name: 'BOSQUE', price: 1, palette: { body: 0x5a9a3a, accent: 0xd8c46a, tread: 0x2a3a1a, bullet: 0xd8ff8a } },
+    { id: 'p_night', name: 'NOCHE', price: 1, palette: { body: 0x3a2a6a, accent: 0xb46bff, tread: 0x0e0a1c, barrel: 0xd0dcff, bullet: 0xd6b0ff } },
+    { id: 'p_bubble', name: 'CHICLE', price: 1, palette: { body: 0xff8fd8, accent: 0x6ff6ff, tread: 0x6a2a5a, bullet: 0xffc6ec } },
+    { id: 'p_mint', name: 'MENTA', price: 1, palette: { body: 0x7dffc8, accent: 0xffffff, tread: 0x1f6a5a, bullet: 0xc8fff0 } },
+    { id: 'p_snow', name: 'GLACIAR', price: 1, palette: { body: 0xf4f8ff, accent: 0x2a8bff, tread: 0x3a4a6a, bullet: 0x9af6ff } },
+    { id: 'p_lemon', name: 'LIMÓN', price: 1, palette: { body: 0xffe03a, accent: 0x2a2a40, tread: 0x3a3a1a, bullet: 0xfff6a0 } },
+];
+
+// Estelas: el rastro que dejan tus balas (las de fuego y rebote mantienen el suyo).
+export const TRAILS = [
+    { id: 't_default', name: 'NORMAL', price: 0, style: null },
+    { id: 't_rainbow', name: 'ARCOÍRIS', price: 2, style: 'rainbow' },
+    { id: 't_fire', name: 'LLAMARADA', price: 2, style: 'fire' },
+    { id: 't_stars', name: 'ESTRELLAS', price: 2, style: 'stars' },
+    { id: 't_bubbles', name: 'BURBUJAS', price: 2, style: 'bubbles' },
+    { id: 't_confetti', name: 'CONFETI', price: 2, style: 'confetti' },
+];
+
+export const PAINT_BY_ID = Object.fromEntries(PAINTS.map((p) => [p.id, p]));
+export const TRAIL_BY_ID = Object.fromEntries(TRAILS.map((t) => [t.id, t]));

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { THEMES, WORLDS, TANKS, SKIN_BY_ID } from '../content/index.js';
+import { THEMES, WORLDS, TANKS, SKIN_BY_ID, PAINT_BY_ID } from '../content/index.js';
 import { TankModel } from '../render/TankModel.js';
 import { Particles } from '../render/Particles.js';
 import { Markers } from '../render/Markers.js';
@@ -392,7 +392,8 @@ export class CampaignMap {
     makePlayer() {
         if (this.player) this.player.model.dispose();
         const skin = SKIN_BY_ID[Profile.data.skin] || null;
-        const model = new TankModel(TANKS.hero.palette, 0x1b0b33, 3, skin, { noBar: true });
+        const paint = PAINT_BY_ID[Profile.data.paint];
+        const model = new TankModel({ ...TANKS.hero.palette, ...(paint && paint.palette) }, 0x1b0b33, 3, skin, { noBar: true });
         model.addTo(this.scene);
         const s = this.stand(this.at);
         this.player = { model, fake: fakeTank(s.x, s.z, Math.PI), skin };

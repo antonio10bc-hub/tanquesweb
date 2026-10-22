@@ -53,8 +53,9 @@ cargado para que lo guarde, así que no hay lista de archivos que mantener a man
   de lo alto del mapa y aparece el **mundo arcoíris** con el jefe secreto, PRISMA, que usa los
   ataques de todos.
 - **Monedas y skins**: ganar una partida rápida da una moneda de oro (en supervivencia, una cada 3
-  oleadas). En **Mi Tanque** se compran y equipan: 8 gorros voxel y el **tanque dorado** (aura,
-  pilar de luz, chispas y balas de oro).
+  oleadas). En **Mi Tanque** se compran y equipan, en tres pestañas: 8 gorros voxel y el **tanque
+  dorado** (aura, pilar de luz, chispas y balas de oro), 7 **pinturas** y 5 **estelas de bala**
+  (arcoíris, llamarada, estrellas, burbujas, confeti), con una bala de muestra en el escaparate.
 - **Logros**: 17, con aviso al conseguirlos y pantalla propia con barras de progreso.
 - **Arquetipos de escenario**: cada partida elige uno (Arena clásica, Emboscada, Demolición, Fortaleza,
   Carreras, Fantasmas) que decide cuánto muro, qué materiales, cuánta hierba y qué objetos salen,

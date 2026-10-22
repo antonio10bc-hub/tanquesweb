@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { box, OUTLINE } from '../render/materials.js';
+import { trailParticle, TRAIL_RATE } from '../render/trails.js';
 
 const FIELDS = ['x', 'z', 'vx', 'vz', 'life', 'ttl', 'size', 'dmg', 'trail', 'power', 'bounce', 'bounced'];
 const _d = new THREE.Object3D();
@@ -128,6 +129,10 @@ export class BulletSystem {
                 this.trail[i] = 0.02;
                 this.particles.spawn(nx, HEIGHT, nz, (Math.random() - 0.5), (Math.random() - 0.5), (Math.random() - 0.5),
                     this.size[i] * 0.45, 0.22, SPARKS[(Math.random() * SPARKS.length) | 0], 0);
+            } else if (owner.trail && this.trail[i] <= 0) {
+                // Estela comprada en la tienda
+                this.trail[i] = TRAIL_RATE[owner.trail] || 0.03;
+                trailParticle(this.particles, owner.trail, nx, HEIGHT, nz, this.vx[i], this.vz[i], this.size[i], this.life[i]);
             } else if (this.trail[i] <= 0) {
                 this.trail[i] = 0.03;
                 this.particles.spawn(nx, HEIGHT, nz, 0, 0, 0, this.size[i] * 0.55, 0.16, this.color[i], 0);

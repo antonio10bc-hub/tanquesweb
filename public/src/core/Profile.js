@@ -5,7 +5,9 @@ const KEY = 'tankless.profile';
 const fresh = () => ({
     coins: 0,
     owned: ['none'],     // skins compradas
-    skin: 'none',        // skin equipada
+    skin: 'none',        // gorro equipado (o el tanque dorado)
+    paint: 'p_default',  // pintura equipada
+    trail: 't_default',  // estela de bala equipada
     achievements: {},    // id -> fecha de desbloqueo
     campaign: { beaten: [] }, // mundos de la campaña con el jefe derrotado
     stats: {
@@ -75,7 +77,7 @@ export const Profile = {
     },
 
     owns(id) {
-        return this.data.owned.includes(id);
+        return this.data.owned.includes(id) || id === 'p_default' || id === 't_default';
     },
 
     // Compra una skin si hay monedas. Devuelve true si se ha comprado.
@@ -87,9 +89,10 @@ export const Profile = {
         return true;
     },
 
-    equip(id) {
+    // key: 'skin' (gorros), 'paint' o 'trail'
+    equip(id, key = 'skin') {
         if (!this.owns(id)) return false;
-        this.data.skin = id;
+        this.data[key] = id;
         this.save();
         return true;
     },

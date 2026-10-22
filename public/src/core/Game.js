@@ -174,7 +174,7 @@ export class Game {
         this.hazardView.setOutline(theme.outline);
         this.sfx.setAmbience(theme.sound);
 
-        this.world = new World(def, theme, { events: this.events, bullets: this.bullets, input: this.input, seed, skin: Profile.data.skin });
+        this.world = new World(def, theme, { events: this.events, bullets: this.bullets, input: this.input, seed, skin: Profile.data.skin, paint: Profile.data.paint, trail: Profile.data.trail });
         this.scene.add(this.world.root);
         this.levelId = levelId;
         this.rig.setBounds(this.world.arena.cols, this.world.arena.rows);
