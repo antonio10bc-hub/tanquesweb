@@ -411,6 +411,7 @@ html, body {
 .garage-name { font-size: 16px; color: #fff; text-shadow: 3px 3px 0 var(--ink); }
 .garage.golden .garage-name { color: #ffd23f; }
 .garage-count { font-size: 9px; color: #b9b0d8; }
+.garage-hint { font-size: 8px; line-height: 1.8; color: var(--yellow); text-align: center; text-shadow: 2px 2px 0 var(--ink); }
 .btn.buy { background: #ffd23f; }
 #garage-action { display: flex; align-items: center; gap: 10px; font-size: 15px; }
 #garage-action:disabled { opacity: .55; cursor: default; }

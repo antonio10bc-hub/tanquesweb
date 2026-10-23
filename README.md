@@ -62,8 +62,8 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
   ganar en menos de 75 s. Al terminar la campaña aparece una **calavera** en el mapa: el **modo
   difícil**, con todo teñido de rojo y negro y los jefes con aura maligna, más vida, más velocidad
   y especiales más seguidos (con su propio progreso y estrellas).
-- **Monedas y skins**: ganar una partida rápida da una moneda de oro (en supervivencia, una cada 3
-  oleadas). En **Mi Tanque** se compran y equipan, en tres pestañas: 8 gorros voxel y el **tanque
+- **Monedas y skins**: las monedas de oro solo se ganan en la campaña, una por cada estrella nueva
+  de un jefe (normal o difícil). En **Mi Tanque** se compran y equipan, en tres pestañas: 8 gorros voxel y el **tanque
   dorado** (aura, pilar de luz, chispas y balas de oro), 7 **pinturas** y 5 **estelas de bala**
   (arcoíris, llamarada, estrellas, burbujas, confeti), con una bala de muestra en el escaparate.
 - **Logros**: 19, con aviso al conseguirlos y pantalla propia con barras de progreso.

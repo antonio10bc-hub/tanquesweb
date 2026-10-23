@@ -69,6 +69,7 @@ export class Hud {
         const num = document.getElementById('hud-coins');
         const ctx = coin.getContext('2d');
         num.textContent = from;
+        reward.querySelector('.reward-plus').textContent = `+${to - from}`;
         this.achHold = true; // los logros esperan a que termine la ceremonia
         counter.classList.remove('hidden', 'bump');
         reward.classList.remove('hidden', 'fly');

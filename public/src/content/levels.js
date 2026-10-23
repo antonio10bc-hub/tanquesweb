@@ -136,7 +136,6 @@ LEVELS.duelo = {
 // no un duelo largo. Cada oleada trae uno más, hasta el tope.
 export const SURVIVAL = {
     heal: 2,          // vida que recuperas al superar una oleada
-    coinEvery: 3,     // una moneda de oro cada 3 oleadas superadas
     pause: 2.4,       // segundos de respiro entre oleadas
     minSpawnDist: 6,  // los nuevos enemigos aparecen lejos de ti
     enemyHp: 2,       // vida de cada enemigo, sea del tipo que sea

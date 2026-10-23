@@ -446,41 +446,50 @@ export class Game {
                 const par = hard ? STARS.parHard : STARS.par;
                 const got = [true, this.damageTaken <= STARS.maxDamage, this.playTime < par];
                 const stars = got.filter(Boolean).length;
+                const prevBest = Profile.stars(w.id, hard);
                 const best = Profile.setStars(w.id, stars, hard);
                 this.lastStars = stars;
+                // Las monedas solo se ganan aquí: una por cada estrella nueva de este jefe
+                const reward = Math.max(0, best - prevBest);
                 st.bosses = Profile.data.campaign.beaten.filter((id) => !WORLD_BY_ID[id].secret).length;
                 st.stars = Object.values(Profile.data.campaign.stars).reduce((a, b) => a + b, 0);
                 st.hardBosses = Profile.data.campaign.hard.beaten.length;
                 Profile.save();
                 const sub = w.secret && !hard ? '¡HAS COMPLETADO LA CAMPAÑA!' : `${w.tank.name} HA CAÍDO`;
-                this.hud.showEnd(true, sub, hard ? '¡PESADILLA SUPERADA!' : '¡JEFE DERROTADO!');
-                // Al ganar, solo se vuelve al mapa (allí se ve cómo se abre el siguiente mundo)
-                this.hud.endButtons(null, 'VOLVER AL MAPA');
-                this.hud.showStars(got, best, par, (k) => this.sfx.play(k < stars ? 'coin' : 'tick'));
+                const end = () => {
+                    this.hud.showEnd(true, sub, hard ? '¡PESADILLA SUPERADA!' : '¡JEFE DERROTADO!');
+                    // Al ganar, solo se vuelve al mapa (allí se ve cómo se abre el siguiente mundo)
+                    this.hud.endButtons(null, 'VOLVER AL MAPA');
+                    this.hud.showStars(got, best, par, (k) => this.sfx.play(k < stars ? 'coin' : 'tick'));
+                };
+                if (reward > 0) {
+                    // Primero las monedas vuelan al contador; después, con calma, el final con las estrellas
+                    const before = Profile.coins, token = ++this.endToken;
+                    Profile.addCoins(reward);
+                    this.events.emit('coin', Profile.coins);
+                    this.sfx.play('coin');
+                    this.hud.coinReward(before, Profile.coins, {
+                        onFly: () => this.sfx.play('itemSpawn'),
+                        onLand: () => this.sfx.play('reloaded'),
+                    }).then(() => {
+                        if (this.endToken === token && this.state === 'end') end();
+                    });
+                } else {
+                    end();
+                }
             } else {
                 this.hud.showEnd(false, '¡INTÉNTALO OTRA VEZ!');
             }
         } else if (this.mode === 'survival') {
             const reached = this.wave - (this.waveClear ? 0 : 1);
             const sub = this.newRecord ? '¡NUEVO RÉCORD!' : `RÉCORD: ${st.bestWave} OLEADAS`;
-            const coins = this.runCoins ? ` · +${this.runCoins} MONEDA${this.runCoins > 1 ? 'S' : ''}` : '';
-            this.hud.showEnd(false, sub + coins, `${reached} OLEADA${reached === 1 ? '' : 'S'}`);
+            this.hud.showEnd(false, sub, `${reached} OLEADA${reached === 1 ? '' : 'S'}`);
         } else {
             st.streak = win ? st.streak + 1 : 0;
             if (win) st.wins++;
             Profile.save();
             if (win) {
-                // Primero la ceremonia de la moneda y, después, con calma, el menú final
-                const before = Profile.coins, token = ++this.endToken;
-                Profile.addCoins(1);
-                this.events.emit('coin', Profile.coins);
-                this.sfx.play('coin');
-                this.hud.coinReward(before, Profile.coins, {
-                    onFly: () => this.sfx.play('itemSpawn'),
-                    onLand: () => this.sfx.play('reloaded'),
-                }).then(() => {
-                    if (this.endToken === token && this.state === 'end') this.hud.showEnd(true, '');
-                });
+                this.hud.showEnd(true, '');
             } else {
                 this.hud.showEnd(false, '¡A LA PRÓXIMA!');
             }
@@ -594,7 +603,6 @@ export class Game {
                 p.hp = healed;
                 this.markers.sprinkle(p.x, p.z, '+', 0x17d65a, this.theme.outline, 10);
             }
-            if (this.wave % SURVIVAL.coinEvery === 0) this.giveCoin();
             if (this.wave > Profile.data.stats.bestWave) {
                 Profile.data.stats.bestWave = this.wave;
                 this.newRecord = true;
@@ -637,13 +645,6 @@ export class Game {
         }
     }
 
-    giveCoin() {
-        Profile.addCoins(1);
-        this.runCoins++;
-        this.sfx.play('coin');
-        this.hud.toast('+1 MONEDA DE ORO', 'coin');
-        this.events.emit('coin', Profile.coins);
-    }
 
     updateIntro() {
         const m = CONFIG.match;

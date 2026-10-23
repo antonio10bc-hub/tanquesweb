@@ -21,7 +21,7 @@ export class Garage {
         this.px = px;
         this.el = {
             screen: $('garage'), view: $('garage-view'), name: $('garage-name'), count: $('garage-count'),
-            action: $('garage-action'), coins: $('garage-coins'), menu: $('menu'),
+            action: $('garage-action'), coins: $('garage-coins'), menu: $('menu'), hint: $('garage-hint'),
             btnCanvas: $('btn-garage').querySelector('canvas'),
         };
         this.ctx = this.el.view.getContext('2d');
@@ -196,6 +196,8 @@ export class Garage {
         el.action.className = `btn ${owned ? '' : 'buy'}`;
         el.action.innerHTML = equipped ? 'EQUIPADO' : owned ? 'USAR'
             : Profile.coins >= s.price ? `COMPRAR <span class="coin"></span> ${s.price}` : `<span class="coin"></span> ${s.price} · SIN MONEDAS`;
+        // Recordatorio de dónde salen las monedas
+        el.hint.classList.toggle('hidden', owned || Profile.coins >= s.price);
         el.screen.classList.toggle('golden', !!this.preview(true).skin.gold);
     }
 
