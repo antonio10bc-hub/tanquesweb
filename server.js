@@ -5,7 +5,8 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static(path.join(__dirname, 'public')));
+// SITE_DIR=dist sirve la versión empaquetada (npm run build) para probarla en local
+app.use(express.static(path.join(__dirname, process.env.SITE_DIR || 'public')));
 
 app.listen(PORT, () => {
     console.log(`Tanques listo en http://localhost:${PORT}`);

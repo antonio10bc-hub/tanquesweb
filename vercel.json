@@ -1,9 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "installCommand": "echo 'sin dependencias de build'",
-  "buildCommand": "echo 'sitio estático'",
-  "outputDirectory": "public",
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
     { "source": "/ingest/static/:path*", "destination": "https://eu-assets.i.posthog.com/static/:path*" },
     { "source": "/ingest/:path*", "destination": "https://eu.i.posthog.com/:path*" }

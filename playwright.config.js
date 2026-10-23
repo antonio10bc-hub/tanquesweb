@@ -2,7 +2,8 @@
 // partidas cortas usando window.game (y el botón secreto, que en localhost siempre está).
 const { defineConfig } = require('@playwright/test');
 
-const PORT = 3199;
+// SITE_DIR=dist: las pruebas van contra la versión empaquetada (npm run build)
+const PORT = process.env.SITE_DIR ? 3198 : 3199;
 
 module.exports = defineConfig({
     testDir: './tests',
@@ -23,7 +24,7 @@ module.exports = defineConfig({
         launchOptions: { args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] },
     },
     webServer: {
-        command: `PORT=${PORT} node server.js`,
+        command: `PORT=${PORT} SITE_DIR=${process.env.SITE_DIR || 'public'} node server.js`,
         url: `http://localhost:${PORT}`,
         reuseExistingServer: !process.env.CI,
     },

@@ -20,6 +20,9 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm test
+      # La versión publicada va empaquetada: también se prueba (menú y partidas)
+      - run: npm run build
+      - run: SITE_DIR=dist npx playwright test tests/menu.spec.js tests/match.spec.js
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

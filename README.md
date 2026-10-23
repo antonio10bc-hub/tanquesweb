@@ -15,7 +15,10 @@ cortas con `window.game` y el botón secreto (tutorial, menús, partida rápida,
 monedas, duelo, repetición con ataques de jefe, supervivencia con mini jefe y escudo del
 acorazado). GitHub Actions las pasa en cada push a `main` (`.github/workflows/tests.yml`).
 
-No hay paso de compilación: módulos ES nativos. Three.js (`public/vendor/`, MIT) y la fuente
+En local no hay paso de compilación: módulos ES nativos. La web publicada sí se empaqueta:
+Vercel ejecuta `npm run build` (`scripts/build.mjs`, esbuild), que copia `public/` en `dist/` y
+junta los ~70 módulos de `src/` en un único `src/main.js` minificado (la primera carga pasa de
+unas 70 peticiones a 5). Para probarla en local: `npm run build && SITE_DIR=dist npm start`. Three.js (`public/vendor/`, MIT) y la fuente
 Press Start 2P (`public/fonts/`, SIL OFL) se sirven desde la propia web, sin dependencias externas.
 
 **Sin conexión**: `public/sw.js` es un service worker de "primero la red": con conexión siempre
