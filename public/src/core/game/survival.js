@@ -90,6 +90,8 @@ export const SurvivalPart = {
         }
         let intro = 0;
         this.events.emit('waveStart', this.wave, specs);
+        // Mejora de escudo: cada oleada empieza con él puesto
+        if (w.player.waveShield) w.player.shield = Math.max(w.player.shield, w.player.waveShield);
         specs.forEach((spec, i) => {
             const tank = w.spawn(spec, 'enemy', spec.brain, w.farSpot(spec.def.miniBoss ? SURVIVAL.minSpawnDist + 1 : SURVIVAL.minSpawnDist));
             tank.model.dropY = 9;

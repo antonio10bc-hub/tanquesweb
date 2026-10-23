@@ -83,6 +83,14 @@ const SPRITES = {
         rows: ['.....K......', '....KOK.....', '....KOOK.K..', '...KOOYOKOK.', '..KOOYYOOOK.', '.KOOYYWYOOK.', '.KOYYWWYYOK.', '.KOYYWWYYOK.', '.KOOYYYYOOK.', '..KOOOOOOK..', '...KKKKKK...', '............'],
         pal: { K: INK, O: '#ff6a00', Y: '#ffd23f', W: '#ffffff' },
     },
+    upShield: {
+        rows: ['..KKKKKKKK..', '.KBBBBBBBBK.', '.KBWWBBBBBK.', '.KBWBBBBBBK.', '.KBBBBBBBBK.', '.KBBBBBBBBK.', '..KBBBBBBK..', '..KBBBBBBK..', '...KBBBBK...', '....KBBK....', '.....KK.....', '............'],
+        pal: { K: INK, B: '#6ff6ff', W: '#ffffff' },
+    },
+    upMagnet: {
+        rows: ['............', '.KKKK..KKKK.', '.KRRK..KBBK.', '.KRRK..KBBK.', '.KRRK..KBBK.', '.KRRK..KBBK.', '.KRRKKKKBBK.', '.KRRRRRRRRK.', '..KRRRRRRK..', '...KKKKKK...', '.W.......W..', '..W.....W...'],
+        pal: { K: INK, R: '#ff3e5e', B: '#d0dcff', W: '#ffe03a' },
+    },
     upSpeed: {
         rows: ['............', '.KK...KK....', '.KCK..KCK...', '..KCK..KCK..', '...KCK..KCK.', '....KCK..KCK', '....KCK..KCK', '...KCK..KCK.', '..KCK..KCK..', '.KCK..KCK...', '.KK...KK....', '............'],
         pal: { K: INK, C: '#23e0d6' },

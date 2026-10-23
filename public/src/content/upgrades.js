@@ -1,4 +1,5 @@
-// Mejoras de supervivencia: tras cada oleada, el avión de suministros trae tres para elegir.
+// Mejoras de supervivencia: tras cada oleada, el avión de suministros trae tres para elegir
+// (entre vida, recarga, daño, escudo de oleada, imán y velocidad).
 // Cada una sube un nivel (una estrella) y como mucho llega a 3. Duran toda la partida.
 //   apply(tank, nivel, base): base son los valores del tanque al empezar la partida
 import { L } from '../core/I18n.js';
@@ -30,6 +31,23 @@ export const UPGRADES = {
         icon: 'up-damage',
         apply(t, lvl, base) {
             t.weapon.damage = base.damage * (1 + 0.34 * lvl);
+        },
+    },
+    shield: {
+        name: L('WAVE SHIELD', 'ESCUDO DE OLEADA'),
+        desc: L('Start every wave with a shield that blocks hits.', 'Empiezas cada oleada con un escudo que para impactos.'),
+        icon: 'up-shield',
+        // El escudo se pone al empezar cada oleada (core/game/survival.js): para tantos golpes como nivel
+        apply(t, lvl) {
+            t.waveShield = lvl;
+        },
+    },
+    magnet: {
+        name: L('MAGNET', 'IMÁN'),
+        desc: L('Items fly to you from further away.', 'Los objetos vuelan hacia ti desde más lejos.'),
+        icon: 'up-magnet',
+        apply(t, lvl) {
+            t.magnet = 1.5 + lvl * 1.2; // radio de atracción (casillas)
         },
     },
     speed: {

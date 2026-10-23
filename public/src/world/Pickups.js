@@ -23,6 +23,16 @@ export class PickupSpawner {
             return;
         }
         cur.life += dt;
+        // Imán (mejora de supervivencia): el objeto vuela hacia quien lo tenga si está cerca
+        for (const t of world.tanks) {
+            if (!t.alive || !t.magnet) continue;
+            const dx = t.x - cur.x, dz = t.z - cur.z, d = Math.hypot(dx, dz);
+            if (d > t.magnet || d < 0.01) continue;
+            const step = Math.min(d, (3 + (t.magnet - d) * 2) * dt);
+            cur.x += (dx / d) * step;
+            cur.z += (dz / d) * step;
+            break;
+        }
         for (const t of world.tanks) {
             if (!t.alive || t.decoy) continue;
             const r = t.radius + this.rules.radius;
