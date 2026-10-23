@@ -67,7 +67,10 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
   secreto**: PRISMA en pequeño, con los ataques de todos los jefes, su música y un logro propio.
 - **Campaña**: un mapa voxel vertical que se recorre de abajo arriba, un mundo por temática (pradera,
   playa, desierto, caramelo, nieve, ciudad, volcán, espacio), cada uno sobre su propio mar y unidos
-  por un camino de piedras. En cada mundo espera un **jefe**: un tanque gigante tematizado con su
+  por un camino de piedras. Cada isla tiene su forma y su pieza (`ui/islands.js`): pradera con
+  molino e islote, archipiélago de islotes con palmeras, duna alargada con pirámide y oasis,
+  lóbulos de gominola con una piruleta gigante, montaña nevada, manzana de rascacielos con muelle,
+  volcán con río de lava, asteroide con cráteres y rocas flotando, y una nube para el arcoíris. En cada mundo espera un **jefe**: un tanque gigante tematizado con su
   ataque especial, que anuncia antes de lanzarlo (embestida, ola gigante que se esquiva detrás de un
   muro, tormenta de arena con remolinos, lluvia de caramelos, carámbanos, drones, lluvia de lava,
   láser que cortan los muros). A mitad de vida pasa a la **fase 2**: ruge, se enfada, va más rápido
@@ -76,7 +79,7 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
   ataques de todos. Cada jefe se **presenta** antes de la cuenta atrás (primer plano, gesto y su
   nombre en grande con franjas) y da hasta **3 estrellas**: ganar, perder 2 de vida como mucho y
   ganar en menos de 75 s. Al terminar la campaña aparece una **calavera** en el mapa: el **modo
-  difícil**, con todo teñido de rojo y negro y los jefes con aura maligna, más vida, más velocidad
+  difícil**, con calaveras que brotan en los bordes de la arena y los jefes con aura maligna, más vida, más velocidad
   y especiales más seguidos (con su propio progreso y estrellas).
 - **Monedas y skins**: las monedas de oro solo se ganan en la campaña, una por cada estrella nueva
   de un jefe (normal o difícil). En **Mi Tanque** se compran y equipan, en tres pestañas: 8 gorros voxel y el **tanque

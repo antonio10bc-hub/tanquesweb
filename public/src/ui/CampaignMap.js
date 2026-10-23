@@ -6,6 +6,7 @@ import { Markers } from '../render/Markers.js';
 import { box, toon, outline, OUTLINE } from '../render/materials.js';
 import { weatherParticle } from '../render/weather.js';
 import { makeRng } from '../world/MapGen.js';
+import { ISLANDS, core } from './islands.js';
 import { Profile } from '../core/Profile.js';
 import { clamp } from '../core/math.js';
 import { L as tr } from '../core/I18n.js';
@@ -200,14 +201,16 @@ export class CampaignMap {
         this.scene.add(sea);
         if (i < N - 1) for (let x = -20; x < W + 20; x += 0.7) this.foamPts.push({ x, z: zc - H / 2, color: 0xffffff, s: 0.1 + rng() * 0.1, ph: rng() * 6 });
 
-        // Isla: una mancha de casillas alrededor del pedestal
-        const rx = w.secret ? 4.4 : 4.6, rz = 3.9;
+        // Isla: cada mundo con su forma (ui/islands.js), sin pasarse de su franja de mar
+        const shape = ISLANDS[w.theme];
+        const s = n.x < W / 2 ? 1 : -1;
+        const k = { n, zc, s, x: (d) => n.x + s * d };
         const set = new Set();
         const tiles = [];
         for (let r = Math.floor(zc - 5); r <= Math.ceil(zc + 5); r++) {
+            if (Math.abs(r + 0.5 - zc) > 4.6) continue;
             for (let c = 0; c < W; c++) {
-                const dx = (c + 0.5 - n.x) / (rx + (rng() - 0.5) * 0.8), dz = (r + 0.5 - zc) / (rz + (rng() - 0.5) * 0.8);
-                if (dx * dx + dz * dz > 1) continue;
+                if (!core(c, r, k) && !shape.land(c, r, k)) continue;
                 set.add(`${c},${r}`);
                 tiles.push({ c, r });
             }
@@ -255,6 +258,13 @@ export class CampaignMap {
             return null;
         };
         const add = (w2, h, d, color, x, y, z, o = {}) => this.cube(w2, h, d, color, x, y, z, { ink, ...o });
+        // La pieza que identifica al mundo (montaña, rascacielos, oasis...), antes que el resto
+        const reserve = (x, z, rad) => {
+            for (let dr = -Math.ceil(rad); dr <= Math.ceil(rad); dr++) {
+                for (let dc = -Math.ceil(rad); dc <= Math.ceil(rad); dc++) used.add(`${Math.floor(x) + dc},${Math.floor(z) + dr}`);
+            }
+        };
+        if (shape.landmark) shape.landmark(add, k, reserve, this);
         const props = PROPS[w.theme];
         const big = props.big && take();
         if (big) props.big(add, big.x, big.z, rng, this);
@@ -1002,7 +1012,8 @@ export class CampaignMap {
 }
 
 // ---------- Decorado de cada mundo ----------
-// big: una pieza grande por isla (pirámide, volcán...); small: adornos que se reparten.
+// big: una pieza grande al azar (el arcoíris); small: adornos que se reparten. Las piezas que
+// identifican cada mundo (montaña, rascacielos...) están en ui/islands.js.
 const tree = (add, x, z) => {
     add(0.22, 0.5, 0.22, 0x8a5a34, x, 0.25, z);
     add(0.86, 0.6, 0.86, 0x3fbf4a, x, 0.78, z);
@@ -1034,9 +1045,6 @@ const PROPS = {
         ],
     },
     desert: {
-        big: (add, x, z) => {                                                                             // pirámide
-            [[1.9, 0.0], [1.4, 0.35], [0.9, 0.7], [0.45, 1.05]].forEach(([s, y]) => add(s, 0.35, s, 0xf4bb70, x, y + 0.17, z));
-        },
         small: [
             (add, x, z) => {                                                                              // cactus
                 add(0.3, 0.95, 0.3, 0x63d25d, x, 0.48, z);
@@ -1094,12 +1102,6 @@ const PROPS = {
         ],
     },
     volcano: {
-        big: (add, x, z, rng, map) => {                                                                  // volcán humeante
-            [[2.2, 0.25, 0x544350], [1.6, 0.75, 0x544350], [1.0, 1.25, 0x6e5a6c]].forEach(([s, y, c]) => add(s, 0.5, s, c, x, y, z));
-            add(0.6, 0.06, 0.6, 0xffd23f, x, 1.52, z, { outlined: false });
-            add(0.16, 0.9, 0.06, 0xff5a1f, x + 0.3, 0.9, z + 0.52, { outlined: false });
-            map.emitters.push({ x, y: 1.6, z, colors: [0x6a5a6a, 0x8a7a8a, 0xff9a1f] });
-        },
         small: [
             (add, x, z, rng) => { add(0.5, 0.36, 0.5, 0x3a2a30, x, 0.18, z, { ry: rng() }); add(0.04, 0.2, 0.3, 0xff5a1f, x + 0.2, 0.2, z, { outlined: false }); },
             (add, x, z) => add(0.8, 0.04, 0.8, 0xff5a1f, x, 0.02, z, { outlined: false }),
