@@ -266,7 +266,7 @@ export class World {
             this.events.emit('shieldBreak', tank, x, z);
             return;
         }
-        this.events.emit('hit', tank, x, z, color, damage);
+        this.events.emit('hit', tank, x, z, color, damage, owner, cause);
         if (!tank.alive) this.events.emit('death', tank, owner, cause);
     }
 

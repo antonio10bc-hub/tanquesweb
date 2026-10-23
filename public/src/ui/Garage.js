@@ -52,7 +52,7 @@ export class Garage {
 
         this.cat = 0;
         this.index = 0;
-        this.tabs = [...document.querySelectorAll('.garage-tabs .tab')];
+        this.tabs = [...document.querySelectorAll('#garage .garage-tabs .tab')];
         this.tabs.forEach((t, i) => t.addEventListener('click', () => this.setCat(i)));
         // Bala de muestra para enseñar la estela
         this.shot = new THREE.Mesh(box(0.2, 0.2, 0.2), new THREE.MeshBasicMaterial({ color: 0xffffff }));

@@ -426,6 +426,21 @@ html, body {
 }
 .t-pips i.on { background: var(--yellow); box-shadow: inset -3px -3px 0 rgba(0, 0, 0, .25), inset 2px 2px 0 rgba(255, 255, 255, .55); }
 #trophies-list { gap: 12px; padding: 4px 6px 10px; }
+.trophy-tabs .tab { font-size: 9px; }
+
+/* ---------- ESTADÍSTICAS ---------- */
+#stats-list { gap: 12px; padding: 4px 6px 10px; }
+.s-card { padding: 10px 10px 12px; background: var(--ink); border: 3px solid #fff; box-shadow: 0 5px 0 #000; }
+.s-card h3 {
+    display: flex; align-items: center; gap: 8px;
+    margin: 0 0 10px; font-size: 11px; color: var(--yellow); text-shadow: 2px 2px 0 #000; text-align: left;
+}
+.s-card h3 i { width: 20px; height: 20px; background: center / contain no-repeat; image-rendering: pixelated; }
+.s-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; }
+.s-cell { padding: 8px 6px; background: #2a1f4f; box-shadow: inset 2px 2px 0 rgba(0, 0, 0, .4); text-align: left; }
+.s-cell b { display: block; font-size: 15px; color: #fff; text-shadow: 2px 2px 0 #000; font-weight: normal; }
+.s-cell span { display: block; margin-top: 6px; font-size: 7px; line-height: 1.5; color: #cfc8ea; }
+.s-cell.big b { color: var(--yellow); }
 .t-row {
     position: relative;
     display: flex;
