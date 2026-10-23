@@ -65,10 +65,33 @@ export const ACHIEVEMENT_ICONS = {
     pocket_prism: { bg: '#12d6e6', rows: [
         '.....KK.....', '....KWBK....', '...KWBBPK...', '..KWBBPPPK..', '.KWBBBPPPPK.', 'KWBBBBPPPPPK',
         'KBBBBBPPPPPK', '.KBBBBPPPPK.', '..KBBBPPPK..', '...KBBPPK...', '....KBPK....', '.....KK.....'] },
+    flanker: { bg: '#ffd86b', rows: [
+        '..KKKKKKKK..', '.KDDDDDDDDK.', '.KDWDDKDDDK.', '.KDDDKDDDDK.', '.KDDDDKDDDK.', '.KDDDKDDDDK.',
+        '..KDDDKDDK..', '..KDDKDDDK..', '...KDDDDK...', '....KDDK....', '.....KK.....', '............'] },
+    sniper_hunter: { bg: '#9af6ff', rows: [
+        '.....KK.....', '....KRRK....', '..KKKRRKKK..', '.KRK.KK.KRK.', '.KK......KK.', 'KRRK.KK.KRRK',
+        'KRRK.KK.KRRK', '.KK......KK.', '.KRK.KK.KRK.', '..KKKRRKKK..', '....KRRK....', '.....KK.....'] },
+    deminer: { bg: '#8af06a', rows: [
+        '............', '.....KK.....', '....KRRK....', '...KKKKKK...', '..KDDDDDDK..', '.KDDdDDdDDK.',
+        '.KDDDDDDDDK.', '..KKKKKKKK..', '............', '..KK....KK..', '...KK..KK...', '....KKKK....'] },
+    graduate: { bg: '#ffe03a', rows: [
+        '............', '............', '.....KK.....', '...KKDDKK...', '.KKDDDDDDKK.', 'KDDDDDDDDDDK',
+        '.KKDDDDDDKKY', '..KDKKKKDK.Y', '..KDDDDDDK.Y', '...KKKKKK.KY', '..........KK', '............'] },
+    duelist: { bg: '#ff8fd8', rows: [
+        'K..........K', 'KWK......KWK', '.KWK....KWK.', '..KWK..KWK..', '...KWKKWK...', '....KWWK....',
+        '....KWWK....', '...KWKKWK...', '..KRK..KCK..', '.KRRK..KCCK.', '.KKK....KKK.', '............'] },
+    rivals: { bg: '#7b5cff', rows: null }, // mismas figuras que DUELISTA
+    wave20: { bg: '#ff3e5e', rows: null },  // mismas que IMPARABLE
+    giant_slayer: { bg: '#7b5cff', rows: null }, // mismas que CAZAJEFES
     prisma: { bg: 'rainbow', rows: [
         '............', '............', '...KKKKKK...', '..KRRRRRRK..', '.KRROOOORRK.', 'KROOYYYYOORK',
         'KROYGGGGYORK', 'KOYGBBBBGYOK', 'KOYGBKKBGYOK', 'KYGBK..KBGYK', 'KKKK....KKKK', '............'] },
 };
+
+// Los que comparten dibujo con otro (cambia solo el color de la placa)
+ACHIEVEMENT_ICONS.rivals.rows = ACHIEVEMENT_ICONS.duelist.rows;
+ACHIEVEMENT_ICONS.wave20.rows = ACHIEVEMENT_ICONS.wave10.rows;
+ACHIEVEMENT_ICONS.giant_slayer.rows = ACHIEVEMENT_ICONS.boss1.rows;
 
 const cache = new Map();
 

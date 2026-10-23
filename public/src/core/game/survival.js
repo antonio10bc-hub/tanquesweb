@@ -76,6 +76,7 @@ export const SurvivalPart = {
             this.sfx.play('go');
         }
         let intro = 0;
+        this.events.emit('waveStart', this.wave, specs);
         specs.forEach((spec, i) => {
             const tank = w.spawn(spec, 'enemy', spec.brain, w.farSpot(spec.def.miniBoss ? SURVIVAL.minSpawnDist + 1 : SURVIVAL.minSpawnDist));
             tank.model.dropY = 9;

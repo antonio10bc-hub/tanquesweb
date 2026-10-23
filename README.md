@@ -90,7 +90,7 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
   pintura (sombrero de paja, gorro cangrejo, aguijón, magdalena, muñeco de nieve, gorra de
   policía, minivolcán, antenas marcianas y corona prismática): no se compran, y en Mi Tanque
   dicen a quién hay que vencer.
-- **Logros**: 20, con aviso al conseguirlos y pantalla propia con barras de progreso.
+- **Logros**: 28 (todos los modos tienen alguno, también el tutorial y el duelo), con aviso al conseguirlos y pantalla propia con barras de progreso.
 - **Arquetipos de escenario**: cada partida elige uno (Arena clásica, Emboscada, Demolición, Fortaleza,
   Carreras, Fantasmas) que decide cuánto muro, qué materiales, cuánta hierba y qué objetos salen,
   y lo viste con uno de sus temas visuales (nieve, desierto, caramelo, volcán, playa, pradera,

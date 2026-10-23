@@ -183,6 +183,7 @@ export function enemyDef(typeId, themeId) {
     return {
         ...type.tank,
         name: type.name,
+        type: typeId,
         palette: { body: c[type.tone], accent: c.accent, tread: c.tread, barrel: c.barrel, bullet: c.bullet },
         // La pieza puede apagarse en la animación (la sirena), así que part devuelve la malla
         deco: (part) => {

@@ -15,10 +15,28 @@ export class Achievements {
         // Las estadísticas son de tus partidas: ni el tutorial ni los duelos a dos
         const counts = () => game.mode !== 'tutorial' && game.mode !== 'duel';
 
-        ev.on('matchStart', () => (this.match = { damaged: false }));
+        ev.on('matchStart', () => {
+            this.match = { damaged: false };
+            this.wave = null;
+        });
+        // Supervivencia: lo que pasa en cada oleada (para los logros de minador y mini jefe)
+        ev.on('waveStart', (n, specs) => {
+            this.wave = {
+                miner: specs.some((s) => s.type === 'miner'),
+                boss: specs.some((s) => s.def.miniBoss),
+                mineHurt: false,
+                hurt: false,
+            };
+        });
         ev.on('shot', (tank) => tank === player() && counts() && st().shots++);
-        ev.on('hit', (tank, x, z, color, damage, owner) => {
-            if (tank === player()) this.match.damaged = true;
+        ev.on('hit', (tank, x, z, color, damage, owner, cause) => {
+            if (tank === player()) {
+                this.match.damaged = true;
+                if (this.wave) {
+                    this.wave.hurt = true;
+                    if (cause === 'hazard' && owner && owner.def.type === 'miner') this.wave.mineHurt = true;
+                }
+            }
             else if (owner === player() && tank.team !== 'player' && counts()) st().hits++;
         });
         ev.on('death', (tank, owner, cause) => {
@@ -26,6 +44,9 @@ export class Achievements {
             if (tank === player()) st().deaths++;
             if (owner !== player() || tank.team === 'player') return;
             st().kills++;
+            if (tank.def.frontArmor) this.unlock('flanker');
+            if (tank.def.type === 'sniper') st().snipers++;
+            if (tank.def.miniBoss && this.wave && this.wave.boss && !this.wave.hurt) this.unlock('giant_slayer');
             if (tank.def.secretBoss) this.unlock('pocket_prism');
             if (cause === 'nuke') this.unlock('nuke_kill');
             if (cause === 'bounce') this.unlock('bounce_kill');
@@ -44,6 +65,8 @@ export class Achievements {
         });
         ev.on('matchEnd', ({ win, mode, world }) => {
             const s = st();
+            if (mode === 'tutorial') this.unlock('graduate');
+            if (mode === 'duel') this.unlock('duelist');
             if (mode === 'duel') s.duels++;
             else if (mode !== 'tutorial') {
                 s.matches++;
@@ -66,6 +89,7 @@ export class Achievements {
         });
         ev.on('waveCleared', () => {
             st().wavesCleared++;
+            if (this.wave && this.wave.miner && !this.wave.mineHurt) this.unlock('deminer');
             this.check();
         });
         ev.on('coin', () => this.check());

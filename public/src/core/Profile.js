@@ -28,6 +28,7 @@ const fresh = () => ({
         matches: 0, victories: 0, losses: 0, bestStreak: 0, playTime: 0, // segundos
         shots: 0, hits: 0, kills: 0, deaths: 0, pickups: 0,
         wavesCleared: 0, bossTries: 0, duels: 0,
+        snipers: 0,         // francotiradores derribados (logro)
     },
 });
 
