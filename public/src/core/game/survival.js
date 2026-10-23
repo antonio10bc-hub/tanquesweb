@@ -20,6 +20,7 @@ export const SurvivalPart = {
             this.waveClear = true;
             w.hazards.list = w.hazards.list.filter((h) => h.kind !== 'mine');
             if (this.miniBoss) {
+                if (this.miniBoss.def.secretBoss) this.startMusic(); // vuelve la música del escenario
                 this.miniBoss = null;
                 this.hud.showBoss(null);
             }
@@ -48,7 +49,16 @@ export const SurvivalPart = {
         this.waveSize = specs.length;
         this.hud.setNames(w.player.def.name, L(`WAVE ${this.wave}`, `OLEADA ${this.wave}`));
         const boss = specs.find((s) => s.def.miniBoss);
-        if (boss) {
+        if (boss && boss.def.secretBoss) {
+            // Oleada 25: el jefe secreto, con fogonazo de colores y su música
+            this.hud.banner(L(`WAVE ${this.wave}`, `OLEADA ${this.wave}`));
+            this.hud.showBoss(boss.def.name);
+            this.renderer.flash(0xff8fd8, 0.6);
+            this.rig.shake(0.6);
+            this.sfx.play('roar');
+            setTimeout(() => this.state === 'play' && this.hud.callout(L('SECRET BOSS!', '¡JEFE SECRETO!')), 900);
+            this.music.start(boss.world.music, 7);
+        } else if (boss) {
             // Cada 5 oleadas, el jefe del escenario en pequeño, con su barra de vida
             this.hud.banner(L(`WAVE ${this.wave}`, `OLEADA ${this.wave}`));
             this.hud.showBoss(boss.def.name);

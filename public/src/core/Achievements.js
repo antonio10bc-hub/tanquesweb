@@ -26,6 +26,7 @@ export class Achievements {
             if (tank === player()) st().deaths++;
             if (owner !== player() || tank.team === 'player') return;
             st().kills++;
+            if (tank.def.secretBoss) this.unlock('pocket_prism');
             if (cause === 'nuke') this.unlock('nuke_kill');
             if (cause === 'bounce') this.unlock('bounce_kill');
             if (owner.inBush) this.unlock('bush_kill');

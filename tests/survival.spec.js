@@ -54,3 +54,19 @@ test('el acorazado para las balas de frente pero no las de lado', async ({ page 
     expect(r[2]).toBe(r[0] - 1);
     noErrors(errors);
 });
+
+test('en la oleada 25 llega el jefe secreto y vencerlo da su logro', async ({ page }) => {
+    const errors = await openGame(page);
+    await page.evaluate(() => game.startSurvival(undefined, 'space'));
+    await waitState(page, 'play');
+    await page.evaluate(() => (game.world.player.immortal = true));
+    await jumpToWave(page, 25);
+    expect(await page.evaluate(() => game.miniBoss && game.miniBoss.def.secretBoss)).toBe(true);
+    await expect(page.locator('#bb-name')).toHaveText('PRISMA');
+    await page.evaluate(() => {
+        const b = game.miniBoss;
+        game.world.hitTank(b, game.world.player, 99, 0, 1, b.x, b.z, 0xffffff, 'nuke');
+    });
+    await page.waitForFunction(() => JSON.parse(localStorage.getItem('tankless.profile')).achievements.pocket_prism);
+    noErrors(errors);
+});

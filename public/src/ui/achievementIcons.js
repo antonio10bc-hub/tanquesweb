@@ -62,6 +62,9 @@ export const ACHIEVEMENT_ICONS = {
     nightmare: { bg: '#ff2a3a', rows: [
         '..KKKKKKKK..', '.KWWWWWWWWK.', 'KWWWWWWWWWWK', 'KWKKKWWKKKWK', 'KWKKKWWKKKWK', 'KWWKWWWWKWWK',
         'KWWWWKKWWWWK', '.KWWWWWWWWK.', '..KWKWKWKK..', '..KWKWKWKK..', '...KKKKKK...', '............'] },
+    pocket_prism: { bg: '#12d6e6', rows: [
+        '.....KK.....', '....KWBK....', '...KWBBPK...', '..KWBBPPPK..', '.KWBBBPPPPK.', 'KWBBBBPPPPPK',
+        'KBBBBBPPPPPK', '.KBBBBPPPPK.', '..KBBBPPPK..', '...KBBPPK...', '....KBPK....', '.....KK.....'] },
     prisma: { bg: 'rainbow', rows: [
         '............', '............', '...KKKKKK...', '..KRRRRRRK..', '.KRROOOORRK.', 'KROOYYYYOORK',
         'KROYGGGGYORK', 'KOYGBBBBGYOK', 'KOYGBKKBGYOK', 'KYGBK..KBGYK', 'KKKK....KKKK', '............'] },

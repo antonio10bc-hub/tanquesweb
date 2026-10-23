@@ -209,10 +209,20 @@ export function miniBossSpec(themeId, k) {
     return { def, brain: 'boss', params: { attack: w.attack, ...skill }, world: w };
 }
 
+// Jefe secreto de supervivencia (oleada 25): PRISMA, el jefe final de la campaña, en pequeño
+// pero con todos sus ataques prestados, y una escolta.
+export const SECRET_WAVE = 25;
+export function secretBossSpec() {
+    const w = WORLDS.find((x) => x.secret);
+    const def = { ...w.tank, hp: 22, radius: 0.52, scale: 1.4, weapon: 'miniBossCannon', miniBoss: true, secretBoss: true };
+    return { def, brain: 'boss', params: { attack: w.attack, dodge: 0.35, burst: [2, 3], every: 1.05 }, world: w };
+}
+
 // Composición de la oleada n en el escenario themeId.
 export function waveSpecs(n, themeId, max) {
     const dodge = Math.min(0.2 + n * 0.05, 0.7);
     const spec = (type) => ({ type, def: enemyDef(type, themeId), brain: ENEMY_TYPES[type].brain, params: { dodge, ...ENEMY_TYPES[type].params } });
+    if (n === SECRET_WAVE) return [secretBossSpec(), spec('armored'), spec('sniper'), spec('scout'), spec('scout')];
     // Cada 5 oleadas, el mini jefe (y, a partir de la 10, algo de escolta)
     if (n % 5 === 0) {
         const k = n / 5;

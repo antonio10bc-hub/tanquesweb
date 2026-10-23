@@ -22,6 +22,7 @@ export const ACHIEVEMENTS = [
     { id: 'golden', name: L('ALL GOLD', 'TODO ORO'), desc: L('Equip the golden tank.', 'Equipa el tanque dorado.') },
     { id: 'boss1', name: L('BOSS HUNTER', 'CAZAJEFES'), desc: L('Defeat your first campaign boss.', 'Derrota a tu primer jefe de la campaña.') },
     { id: 'bosses', name: L('LEGEND', 'LEYENDA'), desc: L('Defeat all 8 campaign bosses.', 'Derrota a los 8 jefes de la campaña.'), progress: (s) => [s.bosses, 8] },
+    { id: 'pocket_prism', name: L('POCKET PRISM', 'PRISMA DE BOLSILLO'), desc: L('Defeat the secret boss of survival (wave 25).', 'Derrota al jefe secreto de supervivencia (oleada 25).') },
     { id: 'prisma', name: L('BEYOND THE RAINBOW', 'MÁS ALLÁ DEL ARCOÍRIS'), desc: L('Defeat the secret boss.', 'Derrota al jefe secreto.') },
     { id: 'stars_all', name: L('PERFECTIONIST', 'PERFECCIONISTA'), desc: L('Earn all 27 campaign stars.', 'Consigue las 27 estrellas de la campaña.'), progress: (s) => [s.stars, 27] },
     { id: 'nightmare', name: L('NIGHTMARE', 'PESADILLA'), desc: L('Defeat all 9 bosses in hard mode.', 'Derrota a los 9 jefes en modo difícil.'), progress: (s) => [s.hardBosses, 9] },
