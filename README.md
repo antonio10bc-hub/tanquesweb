@@ -182,6 +182,13 @@ y regístrala en `ai/brains.js`.
 
 Para depurar: `window.game` está expuesto en la consola (`game.startMatch('base')`, `game.world`...).
 
+## Idioma
+
+Inglés por defecto; español si el navegador está en español (cualquiera de sus idiomas preferidos)
+o la zona horaria es de España. `public/src/core/I18n.js` lo decide una vez al cargar. En el código
+cada texto es `L('ENGLISH', 'ESPAÑOL')`; en `index.html` el texto escrito es el inglés y el español
+va en `data-es` (o `data-es-aria` para las etiquetas accesibles).
+
 ## Analíticas
 
 PostHog (región EU), solo en la web publicada (https, nunca en `localhost`). Eventos anónimos,

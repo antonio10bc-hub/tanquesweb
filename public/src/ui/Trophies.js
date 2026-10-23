@@ -1,6 +1,7 @@
 import { ACHIEVEMENTS } from '../content/index.js';
 import { Profile } from '../core/Profile.js';
 import { achievementIcon, achievementBg } from './achievementIcons.js';
+import { L } from '../core/I18n.js';
 
 // Pantalla de logros: conseguidos a color, pendientes en gris y con su barra de progreso.
 export class Trophies {
@@ -32,7 +33,7 @@ export class Trophies {
     render() {
         const s = Profile.data.stats;
         const done = ACHIEVEMENTS.filter((a) => Profile.unlocked(a.id));
-        this.count.textContent = `${done.length} DE ${ACHIEVEMENTS.length}`;
+        this.count.textContent = L(`${done.length} OF ${ACHIEVEMENTS.length}`, `${done.length} DE ${ACHIEVEMENTS.length}`);
         // Una casilla por logro, como la vida en la partida
         const pips = document.getElementById('trophies-pips');
         pips.innerHTML = ACHIEVEMENTS.map((a, i) => `<i class="${i < done.length ? 'on' : ''}"></i>`).join('');
@@ -51,7 +52,7 @@ export class Trophies {
             }
             const bg = achievementBg(a.id);
             row.innerHTML = `<div class="t-badge${bg === 'rainbow' ? ' rainbow' : ''}" style="--bg:${bg}"><i class="t-ico" style="background-image:${achievementIcon(a.id)}"></i></div>
-                <div class="t-text"><h3>${a.name}</h3><p>${a.desc}</p>${bar}</div>${ok ? '<span class="t-stamp">¡HECHO!</span>' : ''}`;
+                <div class="t-text"><h3>${a.name}</h3><p>${a.desc}</p>${bar}</div>${ok ? `<span class="t-stamp">${L('DONE!', '¡HECHO!')}</span>` : ''}`;
             this.list.appendChild(row);
         }
     }

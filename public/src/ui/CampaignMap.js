@@ -8,6 +8,7 @@ import { weatherParticle } from '../render/weather.js';
 import { makeRng } from '../world/MapGen.js';
 import { Profile } from '../core/Profile.js';
 import { clamp } from '../core/math.js';
+import { L as tr } from '../core/I18n.js';
 
 // Mapa de la campaña: un diorama voxel vertical, como los mapas de mundos de los plataformas
 // clásicos. Se recorre de abajo arriba: una isla por mundo (cada una sobre su propio mar),
@@ -540,7 +541,7 @@ export class CampaignMap {
                 steps.push([1.9, () => {
                     this.secretAnim = 0;
                     this.game.sfx.play('secret');
-                    this.game.hud.banner('¡MUNDO SECRETO!', 'go');
+                    this.game.hud.banner(tr('SECRET WORLD!', '¡MUNDO SECRETO!'), 'go');
                 }]);
             }
             steps.push([2.8, () => {
@@ -658,15 +659,15 @@ export class CampaignMap {
         this.selected = i;
         const w = WORLDS[i], open = this.unlocked(i), beaten = this.isBeaten(w.id);
         this.el.card.classList.remove('hidden');
-        this.el.world.textContent = w.secret ? `MUNDO SECRETO · ${w.name}` : `MUNDO ${i + 1} · ${w.name}`;
+        this.el.world.textContent = w.secret ? tr(`SECRET WORLD · ${w.name}`, `MUNDO SECRETO · ${w.name}`) : tr(`WORLD ${i + 1} · ${w.name}`, `MUNDO ${i + 1} · ${w.name}`);
         this.el.boss.textContent = open ? w.tank.name : '???';
-        this.el.tell.textContent = open ? w.tell : w.secret ? 'DERROTA A LOS 8 JEFES PARA DESCUBRIRLO' : `DERROTA A ${WORLDS[i - 1].tank.name} PARA LLEGAR`;
-        this.el.status.textContent = beaten ? 'DERROTADO' : '';
+        this.el.tell.textContent = open ? w.tell : w.secret ? tr('DEFEAT ALL 8 BOSSES TO FIND IT', 'DERROTA A LOS 8 JEFES PARA DESCUBRIRLO') : tr(`DEFEAT ${WORLDS[i - 1].tank.name} TO GET HERE`, `DERROTA A ${WORLDS[i - 1].tank.name} PARA LLEGAR`);
+        this.el.status.textContent = beaten ? tr('DEFEATED', 'DERROTADO') : '';
         this.el.status.classList.toggle('hidden', !beaten);
         const n = Profile.stars(w.id, this.hard);
         this.el.stars.innerHTML = open ? [0, 1, 2].map((k) => `<i class="star${k < n ? ' on' : ''}"></i>`).join('') : '';
         this.el.go.disabled = !open;
-        this.el.go.textContent = !open ? 'BLOQUEADO' : beaten ? 'REVANCHA' : '¡A LUCHAR!';
+        this.el.go.textContent = !open ? tr('LOCKED', 'BLOQUEADO') : beaten ? tr('REMATCH', 'REVANCHA') : tr('FIGHT!', '¡A LUCHAR!');
         this.el.card.classList.toggle('locked', !open);
         this.el.card.classList.toggle('secret', !!w.secret);
         this.freeCam = false;
@@ -994,8 +995,8 @@ export class CampaignMap {
         const z = this.game.rig.z - 1.2;
         const i = clamp(N - 1 - Math.floor((z - TOP) / H), 0, N - 1);
         const w = WORLDS[i];
-        let text = w.secret && this.view.secret < 1 ? '???' : w.secret ? `SECRETO · ${w.name}` : `MUNDO ${i + 1} · ${w.name}`;
-        if (this.hard) text = `DIFÍCIL · ${text}`;
+        let text = w.secret && this.view.secret < 1 ? '???' : w.secret ? tr(`SECRET · ${w.name}`, `SECRETO · ${w.name}`) : tr(`WORLD ${i + 1} · ${w.name}`, `MUNDO ${i + 1} · ${w.name}`);
+        if (this.hard) text = tr(`HARD · ${text}`, `DIFÍCIL · ${text}`);
         if (this.el.region.textContent !== text) this.el.region.textContent = text;
     }
 }

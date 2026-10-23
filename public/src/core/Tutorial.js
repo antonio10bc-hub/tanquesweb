@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { PICKUPS } from '../content/index.js';
 import { box, toon, outline, OUTLINE } from '../render/materials.js';
 import { vibrate } from './Haptics.js';
+import { L } from './I18n.js';
 
 // Tutorial de la primera partida: lo mínimo para entender el juego, de uno en uno y en una
 // arena segura. Cada paso tiene un título, una frase y una condición para pasar al siguiente.
@@ -14,8 +15,8 @@ const ITEM_LEFT = { x: 3.5, z: 4.5 }, ITEM_RIGHT = { x: 9.5, z: 4.5 };
 
 const STEPS = [
     {
-        title: 'MUÉVETE',
-        text: 'ARRASTRA EL DEDO (O WASD) Y LLEGA A LA FLECHA',
+        title: L('MOVE', 'MUÉVETE'),
+        text: L('DRAG YOUR FINGER (OR WASD) AND REACH THE ARROW', 'ARRASTRA EL DEDO (O WASD) Y LLEGA A LA FLECHA'),
         enter(tu) {
             tu.point(GOAL);
         },
@@ -29,8 +30,8 @@ const STEPS = [
         done: (tu) => Math.hypot(tu.player.x - GOAL.x, tu.player.z - GOAL.z) < 0.8,
     },
     {
-        title: 'DISPARA',
-        text: 'SUELTA EL DEDO: QUIETO, TU TANQUE DISPARA SOLO',
+        title: L('FIRE', 'DISPARA'),
+        text: L('LIFT YOUR FINGER: WHEN STILL, YOUR TANK FIRES ON ITS OWN', 'SUELTA EL DEDO: QUIETO, TU TANQUE DISPARA SOLO'),
         enter(tu) {
             tu.point(null);
             tu.dummy = tu.spawnDummy();
@@ -39,18 +40,18 @@ const STEPS = [
         tick(tu) {
             if (tu.hits === 1 && !tu.toldReveal) {
                 tu.toldReveal = true;
-                tu.game.hud.tutorialTip('¡AL DISPARAR TE VEN UN MOMENTO!', true);
+                tu.game.hud.tutorialTip(L('FIRING MAKES YOU VISIBLE FOR A MOMENT!', '¡AL DISPARAR TE VEN UN MOMENTO!'), true);
             }
             if (tu.player.reloading > 0 && !tu.toldReload) {
                 tu.toldReload = true;
-                tu.game.hud.tutorialTip('3 BALAS Y RECARGA: MIRA LA BARRITA', false);
+                tu.game.hud.tutorialTip(L('3 SHOTS, THEN RELOAD: WATCH THE LITTLE BAR', '3 BALAS Y RECARGA: MIRA LA BARRITA'), false);
             }
         },
         done: (tu) => tu.hits >= 3 && tu.player.reloading > 0,
     },
     {
-        title: 'ESCÓNDETE',
-        text: 'MOVIÉNDOTE NADIE TE VE. EN LA HIERBA, AÚN MENOS: MÉTETE',
+        title: L('HIDE', 'ESCÓNDETE'),
+        text: L('WHILE MOVING NOBODY SEES YOU. IN THE GRASS, EVEN LESS: GET IN', 'MOVIÉNDOTE NADIE TE VE. EN LA HIERBA, AÚN MENOS: MÉTETE'),
         enter(tu) {
             tu.game.hud.tutorialTip('', true);
             tu.inBush = 0;
@@ -62,8 +63,8 @@ const STEPS = [
         done: (tu) => tu.inBush > 0.8,
     },
     {
-        title: 'COGE EL OBJETO',
-        text: 'LOS OBJETOS DAN VENTAJAS: ESTE HACE DE FUEGO TU SIGUIENTE BALA',
+        title: L('GRAB THE ITEM', 'COGE EL OBJETO'),
+        text: L('ITEMS GIVE YOU AN EDGE: THIS ONE SETS YOUR NEXT SHOT ON FIRE', 'LOS OBJETOS DAN VENTAJAS: ESTE HACE DE FUEGO TU SIGUIENTE BALA'),
         enter(tu) {
             tu.game.hud.tutorialTip('', false);
             const sp = tu.world.pickups, at = tu.bushSide === 'left' ? ITEM_RIGHT : ITEM_LEFT;
@@ -74,8 +75,8 @@ const STEPS = [
         done: (tu) => tu.got,
     },
     {
-        title: '¡EL MUÑECO DESPIERTA!',
-        text: 'DERRÓTALO. ÉL TAMBIÉN SE ESCONDE: SOLO LO VES SI DISPARA O ESTÁ CERCA',
+        title: L('THE DUMMY WAKES UP!', '¡EL MUÑECO DESPIERTA!'),
+        text: L('DEFEAT IT. IT HIDES TOO: YOU ONLY SEE IT WHEN IT FIRES OR IS CLOSE', 'DERRÓTALO. ÉL TAMBIÉN SE ESCONDE: SOLO LO VES SI DISPARA O ESTÁ CERCA'),
         enter(tu) {
             tu.point(null);
             tu.awaken();
@@ -183,7 +184,7 @@ export class Tutorial {
         d.model.dropY = 9;
         d.frozen = true;
         this.game.dropping.push({ tank: d, t: 0 });
-        this.game.hud.setNames(this.player.def.name, 'MUÑECO');
+        this.game.hud.setNames(this.player.def.name, L('DUMMY', 'MUÑECO'));
         return d;
     }
 
@@ -201,7 +202,7 @@ export class Tutorial {
         foe.brain.p.dodge = 0.1;
         foe.reveal = 1.5;
         g.hud.setNames(this.player.def.name, foe.def.name);
-        g.hud.banner('¡A LUCHAR!', 'go');
+        g.hud.banner(L('FIGHT!', '¡A LUCHAR!'), 'go');
         // A partir de aquí salen objetos como en una partida normal
         Object.assign(w.pickups.rules, { lifetime: 6, firstDelay: 2 });
         w.pickups.timer = 2;

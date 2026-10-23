@@ -24,6 +24,7 @@ import { Settings } from './Settings.js';
 import { Profile } from './Profile.js';
 import { vibrate } from './Haptics.js';
 import { approach, clamp, pick } from './math.js';
+import { L } from './I18n.js';
 
 const CONFETTI = [0xffe03a, 0x23e0d6, 0xff3e8e, 0xb6ff5c, 0x7b5cff, 0xffffff];
 const FIRE = [0xffe03a, 0xff9a1f, 0xffffff, 0xff3e3e];
@@ -270,7 +271,7 @@ export class Game {
         this.input.setSide(duel ? 'bottom' : null);
         this.input2.setSide(duel ? 'top' : null);
         this.hud.showDuel(duel);
-        if (duel) this.hud.setNames('JUGADOR 1', 'JUGADOR 2');
+        if (duel) this.hud.setNames(L('PLAYER 1', 'JUGADOR 1'), L('PLAYER 2', 'JUGADOR 2'));
         this.boss = this.mode === 'campaign' ? this.world.enemies()[0] : null;
         if (this.mode !== 'campaign') this.hard = false;
         if (this.boss && this.hard) {
@@ -287,14 +288,14 @@ export class Game {
         this.playTime = 0;
         this.damageTaken = 0;
         this.hud.showBoss(this.boss ? this.boss.def.name : null);
-        this.hud.endButtons(this.mode === 'tutorial' ? 'REPETIR' : 'OTRA VEZ', this.mode === 'campaign' ? 'VER EL MAPA' : 'MENÚ PRINCIPAL');
+        this.hud.endButtons(this.mode === 'tutorial' ? L('REPEAT', 'REPETIR') : L('PLAY AGAIN', 'OTRA VEZ'), this.mode === 'campaign' ? L('SEE THE MAP', 'VER EL MAPA') : L('MAIN MENU', 'MENÚ PRINCIPAL'));
         this.wave = 1;
         this.waveSize = this.world.enemies().length;
         this.waveClear = false;
         this.dropping = [];
         this.runCoins = 0;
         this.newRecord = false;
-        if (this.mode === 'survival') this.hud.setNames(this.world.player.def.name, 'OLEADA 1');
+        if (this.mode === 'survival') this.hud.setNames(this.world.player.def.name, L('WAVE 1', 'OLEADA 1'));
         this.events.emit('matchStart', this.mode);
         this.setState('intro');
         this.fallen = null;
@@ -434,9 +435,9 @@ export class Game {
         const st = Profile.data.stats;
         if (this.mode === 'tutorial') {
             this.finishTutorial();
-            this.hud.showEnd(true, 'YA SABES LO BÁSICO: ¡A JUGAR!', '¡TUTORIAL COMPLETADO!');
+            this.hud.showEnd(true, L('YOU KNOW THE BASICS: LET\'S PLAY!', 'YA SABES LO BÁSICO: ¡A JUGAR!'), L('TUTORIAL COMPLETE!', '¡TUTORIAL COMPLETADO!'));
         } else if (this.mode === 'duel') {
-            this.hud.showEnd(true, win ? 'EL JUGADOR 2 HA CAÍDO' : 'EL JUGADOR 1 HA CAÍDO', win ? '¡GANA EL J1!' : '¡GANA EL J2!');
+            this.hud.showEnd(true, win ? L('PLAYER 2 IS DOWN', 'EL JUGADOR 2 HA CAÍDO') : L('PLAYER 1 IS DOWN', 'EL JUGADOR 1 HA CAÍDO'), win ? L('P1 WINS!', '¡GANA EL J1!') : L('P2 WINS!', '¡GANA EL J2!'));
         } else if (this.mode === 'campaign') {
             const w = WORLD_BY_ID[this.worldId], hard = this.hard;
             if (win) {
@@ -452,19 +453,19 @@ export class Game {
                 st.stars = Object.values(Profile.data.campaign.stars).reduce((a, b) => a + b, 0);
                 st.hardBosses = Profile.data.campaign.hard.beaten.length;
                 Profile.save();
-                const sub = w.secret && !hard ? '¡HAS COMPLETADO LA CAMPAÑA!' : `${w.tank.name} HA CAÍDO`;
-                this.hud.showEnd(true, sub, hard ? '¡PESADILLA SUPERADA!' : '¡JEFE DERROTADO!');
+                const sub = w.secret && !hard ? L('YOU HAVE COMPLETED THE CAMPAIGN!', '¡HAS COMPLETADO LA CAMPAÑA!') : L(`${w.tank.name} IS DOWN`, `${w.tank.name} HA CAÍDO`);
+                this.hud.showEnd(true, sub, hard ? L('NIGHTMARE BEATEN!', '¡PESADILLA SUPERADA!') : L('BOSS DEFEATED!', '¡JEFE DERROTADO!'));
                 // Al ganar, solo se vuelve al mapa (allí se ve cómo se abre el siguiente mundo)
-                this.hud.endButtons(null, 'VOLVER AL MAPA');
+                this.hud.endButtons(null, L('BACK TO THE MAP', 'VOLVER AL MAPA'));
                 this.hud.showStars(got, best, par, (k) => this.sfx.play(k < stars ? 'coin' : 'tick'));
             } else {
-                this.hud.showEnd(false, '¡INTÉNTALO OTRA VEZ!');
+                this.hud.showEnd(false, L('TRY AGAIN!', '¡INTÉNTALO OTRA VEZ!'));
             }
         } else if (this.mode === 'survival') {
             const reached = this.wave - (this.waveClear ? 0 : 1);
-            const sub = this.newRecord ? '¡NUEVO RÉCORD!' : `RÉCORD: ${st.bestWave} OLEADAS`;
-            const coins = this.runCoins ? ` · +${this.runCoins} MONEDA${this.runCoins > 1 ? 'S' : ''}` : '';
-            this.hud.showEnd(false, sub + coins, `${reached} OLEADA${reached === 1 ? '' : 'S'}`);
+            const sub = this.newRecord ? L('NEW RECORD!', '¡NUEVO RÉCORD!') : L(`RECORD: ${st.bestWave} WAVES`, `RÉCORD: ${st.bestWave} OLEADAS`);
+            const coins = this.runCoins ? L(` · +${this.runCoins} COIN${this.runCoins > 1 ? 'S' : ''}`, ` · +${this.runCoins} MONEDA${this.runCoins > 1 ? 'S' : ''}`) : '';
+            this.hud.showEnd(false, sub + coins, L(`${reached} WAVE${reached === 1 ? '' : 'S'}`, `${reached} OLEADA${reached === 1 ? '' : 'S'}`));
         } else {
             st.streak = win ? st.streak + 1 : 0;
             if (win) st.wins++;
@@ -482,7 +483,7 @@ export class Game {
                     if (this.endToken === token && this.state === 'end') this.hud.showEnd(true, '');
                 });
             } else {
-                this.hud.showEnd(false, '¡A LA PRÓXIMA!');
+                this.hud.showEnd(false, L('NEXT TIME!', '¡A LA PRÓXIMA!'));
             }
         }
         this.events.emit('matchEnd', { win, mode: this.mode, wave: this.wave, world: this.worldId });
@@ -586,7 +587,7 @@ export class Game {
             // Oleada superada: respiro, curación y, cada pocas oleadas, una moneda
             this.waveClear = true;
             this.waveTimer = SURVIVAL.pause;
-            this.hud.banner(`¡OLEADA ${this.wave}!`, 'go');
+            this.hud.banner(L(`WAVE ${this.wave}!`, `¡OLEADA ${this.wave}!`), 'go');
             this.sfx.play('win');
             const p = w.player;
             const healed = Math.min(p.maxHp, p.hp + SURVIVAL.heal);
@@ -609,8 +610,8 @@ export class Game {
         this.wave++;
         const specs = SURVIVAL.wave(this.wave);
         this.waveSize = specs.length;
-        this.hud.setNames(w.player.def.name, `OLEADA ${this.wave}`);
-        this.hud.banner(`OLEADA ${this.wave}`);
+        this.hud.setNames(w.player.def.name, L(`WAVE ${this.wave}`, `OLEADA ${this.wave}`));
+        this.hud.banner(L(`WAVE ${this.wave}`, `OLEADA ${this.wave}`));
         this.sfx.play('go');
         specs.forEach((spec, i) => {
             const tank = w.spawn(spec, 'enemy', spec.brain, w.farSpot(SURVIVAL.minSpawnDist));
@@ -641,7 +642,7 @@ export class Game {
         Profile.addCoins(1);
         this.runCoins++;
         this.sfx.play('coin');
-        this.hud.toast('+1 MONEDA DE ORO', 'coin');
+        this.hud.toast(L('+1 GOLD COIN', '+1 MONEDA DE ORO'), 'coin');
         this.events.emit('coin', Profile.coins);
     }
 
@@ -675,7 +676,7 @@ export class Game {
                 this.sfx.play('tick');
                 this.countdown = step + 1;
             } else {
-                this.hud.banner('¡FUEGO!', 'go');
+                this.hud.banner(L('GO!', '¡FUEGO!'), 'go');
                 this.sfx.play('go');
                 // Durante la cuenta atrás os veis: cada uno arranca sabiendo dónde está el otro.
                 this.world.updateIntel(0);
@@ -694,7 +695,7 @@ export class Game {
         if (t < prev) this.introPrev = -1;
         if (at(BOSS_INTRO.card)) {
             const w = WORLD_BY_ID[this.worldId];
-            this.hud.bossIntro(b.def.name, this.def.tagline, this.hard ? 'MODO DIFÍCIL' : `JEFE DE ${w.name}`, this.hard);
+            this.hud.bossIntro(b.def.name, this.def.tagline, this.hard ? L('HARD MODE', 'MODO DIFÍCIL') : L(`${w.name} BOSS`, `JEFE DE ${w.name}`), this.hard);
         }
         if (at(BOSS_INTRO.gesture)) {
             this.sfx.play('roar', this.panOf(b.x));
@@ -1073,8 +1074,8 @@ export class Game {
             this.streak = now - (this.lastKill ?? -99) < 4 ? (this.streak || 1) + 1 : 1;
             this.lastKill = now;
             if (this.streak < 2) return;
-            const NAMES = ['', '', '¡DOBLE!', '¡TRIPLE!', '¡CUÁDRUPLE!'];
-            this.hud.streak(NAMES[this.streak] || '¡IMPARABLE!', this.streak);
+            const NAMES = ['', '', L('DOUBLE!', '¡DOBLE!'), L('TRIPLE!', '¡TRIPLE!'), L('QUADRUPLE!', '¡CUÁDRUPLE!')];
+            this.hud.streak(NAMES[this.streak] || L('UNSTOPPABLE!', '¡IMPARABLE!'), this.streak);
             this.sfx.play(`streak${Math.min(this.streak, 5)}`);
             if (this.streak >= 5) this.renderer.flash(0xffe03a, 0.3);
         });
@@ -1134,7 +1135,7 @@ export class Game {
         // ROBOPATRULLA: sus drones caen del cielo cerca de él
         ev.on('summon', (boss, n, max) => {
             const w = this.world;
-            const alive = w.tanks.filter((t) => t.alive && t.def.name === 'DRON').length;
+            const alive = w.tanks.filter((t) => t.alive && t.def.name === L('DRONE', 'DRON')).length;
             for (let i = 0; i < Math.min(n, max - alive); i++) {
                 const at = w.arena.randomFloorNear(boss.x, boss.z, 1.6, 4) || w.farSpot(3);
                 const tank = w.spawn({ tank: 'drone', params: { dodge: 0.15 } }, 'enemy', 'hunter', at);
@@ -1226,7 +1227,7 @@ export class Game {
         if (at(PHASE.rage)) {
             b.angry = true;
             b.flash = 1;
-            this.hud.banner('¡FASE 2!');
+            this.hud.banner(L('PHASE 2!', '¡FASE 2!'));
             this.startMusic();
             this.sfx.play('boom', this.panOf(b.x));
             this.rig.shake(1);

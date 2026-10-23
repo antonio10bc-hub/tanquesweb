@@ -1,7 +1,8 @@
 // Tanques jugables y enemigos. Se instancian desde los niveles por id.
+import { L } from '../core/I18n.js';
 export const TANKS = {
     hero: {
-        name: 'CHISPA',
+        name: L('SPARK', 'CHISPA'),
         hp: 6,
         speed: 3.4,
         radius: 0.36,
@@ -9,7 +10,7 @@ export const TANKS = {
         palette: { body: 0x23e0d6, accent: 0xffe03a, tread: 0x3b2d6b, barrel: 0xfff6e8, bullet: 0x8afcff },
     },
     rival: {
-        name: 'BRUTO',
+        name: L('BRUTE', 'BRUTO'),
         hp: 6,
         speed: 3.1,
         radius: 0.36,
@@ -18,7 +19,7 @@ export const TANKS = {
     },
     // Muñeco de entrenamiento del tutorial (de paja)
     dummy: {
-        name: 'MUÑECO',
+        name: L('DUMMY', 'MUÑECO'),
         hp: 99,
         speed: 0,
         radius: 0.36,
@@ -27,7 +28,7 @@ export const TANKS = {
     },
     // Enemigos de supervivencia: más débiles por separado, peligrosos en grupo
     grunt: {
-        name: 'SOLDADO',
+        name: L('SOLDIER', 'SOLDADO'),
         hp: 3,
         speed: 3.0,
         radius: 0.36,
@@ -35,7 +36,7 @@ export const TANKS = {
         palette: { body: 0xff3e8e, accent: 0xff9a1f, tread: 0x3a1640, barrel: 0xfff6e8, bullet: 0xff9fd0 },
     },
     scout: {
-        name: 'EXPLORADOR',
+        name: L('SCOUT', 'EXPLORADOR'),
         hp: 2,
         speed: 3.9,
         radius: 0.34,
@@ -43,7 +44,7 @@ export const TANKS = {
         palette: { body: 0xff9a1f, accent: 0xffe03a, tread: 0x4a2410, barrel: 0xfff6e8, bullet: 0xffd08a },
     },
     brute: {
-        name: 'BRUTO',
+        name: L('BRUTE', 'BRUTO'),
         hp: 6,
         speed: 2.6,
         radius: 0.4,

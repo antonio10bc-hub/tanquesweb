@@ -12,9 +12,10 @@
 //  sound                        acústica: tipo de suelo (ruido de las orugas) y eco
 //  specials                     casillas especiales del mapa: ice (manchas de hielo) y
 //                               barrels (barriles explosivos)
+import { L } from '../core/I18n.js';
 export const THEMES = {
     snow: {
-        name: 'NIEVE',
+        name: L('SNOW', 'NIEVE'),
         sound: { ground: 'snow' },
         specials: { ice: [2, 3] },
         sea: 0x4aa8ff, foam: 0xffffff, island: 0x7f9cff, outline: 0x1b1f4a,
@@ -31,7 +32,7 @@ export const THEMES = {
         music: { root: 62, scale: 'minor', tempo: 116, lead: 'triangle' },
     },
     desert: {
-        name: 'DESIERTO',
+        name: L('DESERT', 'DESIERTO'),
         sound: { ground: 'sand' },
         specials: { barrels: [2, 3] },
         sea: 0xe9a95a, foam: 0xffe6b0, island: 0xc7703a, outline: 0x3a1a14,
@@ -48,7 +49,7 @@ export const THEMES = {
         music: { root: 57, scale: 'phrygian', tempo: 118, lead: 'square' },
     },
     candy: {
-        name: 'CARAMELO',
+        name: L('CANDY', 'CARAMELO'),
         sound: { ground: 'candy' },
         sea: 0x1fb6ff, foam: 0xeafcff, island: 0xb04bff, outline: 0x1b0b33,
         floor: [0x8af06a, 0x6fdc5a], floorJitter: 0.035,
@@ -64,7 +65,7 @@ export const THEMES = {
         music: { root: 57, scale: 'major', tempo: 128, lead: 'square' },
     },
     volcano: {
-        name: 'VOLCÁN',
+        name: L('VOLCANO', 'VOLCÁN'),
         sound: { ground: 'rock', echo: 0.12 },
         specials: { barrels: [1, 3] },
         sea: 0xff5a1f, foam: 0xffd23f, island: 0x2e2232, outline: 0x120a12,
@@ -81,7 +82,7 @@ export const THEMES = {
         music: { root: 52, scale: 'phrygian', tempo: 132, lead: 'sawtooth' },
     },
     beach: {
-        name: 'PLAYA',
+        name: L('BEACH', 'PLAYA'),
         sound: { ground: 'sand' },
         specials: { barrels: [1, 2] },
         sea: 0x12d6e6, foam: 0xffffff, island: 0xf0b45a, outline: 0x3a1c2e,
@@ -98,7 +99,7 @@ export const THEMES = {
         music: { root: 60, scale: 'major', tempo: 132, lead: 'square' },
     },
     meadow: {
-        name: 'PRADERA',
+        name: L('MEADOW', 'PRADERA'),
         sound: { ground: 'grass' },
         specials: { barrels: [1, 2] },
         sea: 0x3fb8ff, foam: 0xf0fbff, island: 0x8a5a34, outline: 0x1c2410,
@@ -116,7 +117,7 @@ export const THEMES = {
         music: { root: 60, scale: 'major', tempo: 122, lead: 'triangle' },
     },
     city: {
-        name: 'CIUDAD DE NOCHE',
+        name: L('CITY AT NIGHT', 'CIUDAD DE NOCHE'),
         sound: { ground: 'metal', echo: 0.18 },
         specials: { barrels: [2, 3] },
         sea: 0x0c1033, foam: 0x4a5cff, island: 0x232642, outline: 0x05040f,
@@ -133,7 +134,7 @@ export const THEMES = {
         music: { root: 52, scale: 'minor', tempo: 140, lead: 'sawtooth' },
     },
     space: {
-        name: 'ESPACIO',
+        name: L('SPACE', 'ESPACIO'),
         sound: { ground: 'metal', echo: 0.32 },
         specials: { ice: [1, 2] },
         sea: 0x080420, foam: 0x8a7aff, island: 0x4a3f6b, outline: 0x05030f,
@@ -151,7 +152,7 @@ export const THEMES = {
     },
     // Mundo secreto de la campaña: una pista de arcoíris flotando en el cielo de noche
     rainbow: {
-        name: 'ARCOÍRIS',
+        name: L('RAINBOW', 'ARCOÍRIS'),
         sound: { ground: 'candy', echo: 0.24 },
         sea: 0x1a0640, foam: 0xff8fd8, island: 0x7b5cff, outline: 0x12052e,
         floor: [0xffffff, 0xf2eaff], floorJitter: 0,

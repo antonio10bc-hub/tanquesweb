@@ -5,6 +5,7 @@ import { TankModel } from '../render/TankModel.js';
 import { Particles } from '../render/Particles.js';
 import { box, toon, outline, OUTLINE } from '../render/materials.js';
 import { Profile } from '../core/Profile.js';
+import { L } from '../core/I18n.js';
 
 // "Mi Tanque": tu tanque en 3D sobre un pedestal. Tres pestañas (gorros, pinturas y estelas de
 // bala); flechas para pasar, comprar y usar. La vista previa combina lo que llevas puesto con
@@ -194,8 +195,8 @@ export class Garage {
         const owned = Profile.owns(s.id), equipped = Profile.data[CATS[this.cat].key] === s.id;
         el.action.disabled = equipped || (!owned && Profile.coins < s.price);
         el.action.className = `btn ${owned ? '' : 'buy'}`;
-        el.action.innerHTML = equipped ? 'EQUIPADO' : owned ? 'USAR'
-            : Profile.coins >= s.price ? `COMPRAR <span class="coin"></span> ${s.price}` : `<span class="coin"></span> ${s.price} · SIN MONEDAS`;
+        el.action.innerHTML = equipped ? L('EQUIPPED', 'EQUIPADO') : owned ? L('USE', 'USAR')
+            : Profile.coins >= s.price ? L(`BUY <span class="coin"></span> ${s.price}`, `COMPRAR <span class="coin"></span> ${s.price}`) : L(`<span class="coin"></span> ${s.price} · NOT ENOUGH COINS`, `<span class="coin"></span> ${s.price} · SIN MONEDAS`);
         el.screen.classList.toggle('golden', !!this.preview(true).skin.gold);
     }
 

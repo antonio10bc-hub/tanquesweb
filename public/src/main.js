@@ -8,7 +8,10 @@ import { Trophies } from './ui/Trophies.js';
 import { Profile } from './core/Profile.js';
 import { Achievements, achievementCount } from './core/Achievements.js';
 import { trackGame, trackGarage } from './core/GameAnalytics.js';
+import { L, applyHtmlTexts } from './core/I18n.js';
 
+// Idioma: los textos fijos de index.html están en inglés; en español se cambian ya
+applyHtmlTexts();
 Profile.load();
 
 const canvas = document.getElementById('view');
@@ -103,11 +106,11 @@ resetBtn.addEventListener('click', () => {
     if (!resetBtn.classList.contains('armed')) {
         sfx.play('warn');
         resetBtn.classList.add('armed');
-        resetBtn.textContent = '¿SEGURO? PULSA OTRA VEZ';
+        resetBtn.textContent = L('SURE? PRESS AGAIN', '¿SEGURO? PULSA OTRA VEZ');
         clearTimeout(resetTimer);
         resetTimer = setTimeout(() => {
             resetBtn.classList.remove('armed');
-            resetBtn.textContent = 'BORRAR PROGRESO';
+            resetBtn.textContent = L('DELETE PROGRESS', 'BORRAR PROGRESO');
         }, 3000);
         return;
     }
