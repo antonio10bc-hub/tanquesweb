@@ -2,14 +2,17 @@ import * as THREE from 'three';
 import { TILES } from '../content/index.js';
 import { box, toon, outline, OUTLINE } from '../render/materials.js';
 import { easeOutBack } from '../core/math.js';
+import { tntTextures } from '../render/tnt.js';
 
 const _d = new THREE.Object3D();
 const _c = new THREE.Color();
 const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
 const INTRO_TIME = 1.3;
-// Estilos que no dependen del tema (el barril explosivo es igual en todos los mundos)
+// Estilos que no dependen del tema (el bloque explosivo es igual en todos los mundos): un
+// bloque de TNT rojo con su llama de aviso (render/tnt.js). top/side son los colores de sus
+// trozos al romperse.
 export const COMMON_WALLS = {
-    barrel: { top: 0xffd23f, side: 0xff3e3e, height: 0.72 },
+    barrel: { top: 0xff9a1f, side: 0xe8202a, height: 0.82, tnt: true },
 };
 
 // Rejilla del nivel: datos de colisión + construcción visual (todo instanciado).
@@ -288,7 +291,17 @@ export class Arena {
         for (const [style, tiles] of byStyle) {
             const st = theme.walls[style] || COMMON_WALLS[style];
             if (!st) throw new Error(`[arena] el tema no define el estilo de muro "${style}"`);
-            const side = own(toon(st.side)), top = own(toon(st.top));
+            const side = own(toon(st.tnt ? 0xffffff : st.side)), top = own(toon(st.tnt ? 0xffffff : st.top));
+            if (st.tnt) {
+                const tex = tntTextures();
+                // Con un poco de brillo propio: se lee igual en los escenarios de noche
+                for (const [m, t] of [[side, tex.side], [top, tex.top]]) {
+                    m.map = t;
+                    m.emissiveMap = t;
+                    m.emissive.setHex(0xffffff);
+                    m.emissiveIntensity = 0.3;
+                }
+            }
             const h = st.height;
             const mesh = new THREE.InstancedMesh(box(1, h, 1), [side, side, top, side, side, side], tiles.length);
             const hull = new THREE.InstancedMesh(box(1, 1, 1), own(outline(theme.outline)), tiles.length);
