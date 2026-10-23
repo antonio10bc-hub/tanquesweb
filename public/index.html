@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
@@ -24,7 +24,7 @@
     <div id="hud" class="hud hidden">
         <div class="top">
             <div class="team team-p">
-                <span class="tname" id="p-name">TÚ</span>
+                <span class="tname" id="p-name" data-es="TÚ">YOU</span>
                 <div class="pips" id="p-hp"></div>
             </div>
             <div class="team team-e">
@@ -36,9 +36,9 @@
             <div id="bb-name" class="bb-name"></div>
             <div class="bb-track"><i id="bb-trail" class="bb-trail"></i><i id="bb-fill" class="bb-fill"></i><b class="bb-mark"></b></div>
         </div>
-        <button id="btn-pause" class="pause-btn" aria-label="Pausa"><span></span><span></span></button>
-        <div id="stealth" class="stealth">OCULTO</div>
-        <div id="hint" class="hint">ARRASTRA PARA MOVER<br>SUELTA PARA DISPARAR</div>
+        <button id="btn-pause" class="pause-btn" aria-label="Pause" data-es-aria="Pausa"><span></span><span></span></button>
+        <div id="stealth" class="stealth" data-es="OCULTO">HIDDEN</div>
+        <div id="hint" class="hint" data-es="ARRASTRA PARA MOVER&lt;br&gt;SUELTA PARA DISPARAR">DRAG TO MOVE<br>RELEASE TO FIRE</div>
     </div>
 
     <div id="banner" class="banner"></div>
@@ -48,15 +48,15 @@
         <div id="tut-title" class="tut-title"></div>
         <div id="tut-text" class="tut-text"></div>
         <div id="tut-tip" class="tut-tip hidden"></div>
-        <button id="btn-tut-skip" class="tut-skip">SALTAR</button>
+        <button id="btn-tut-skip" class="tut-skip" data-es="SALTAR">SKIP</button>
     </div>
     <div id="callout" class="callout"></div>
     <!-- Modo difícil desbloqueado (al terminar la campaña) -->
     <div id="hard-unlock" class="hard-unlock">
         <div class="hu-skull"></div>
-        <div class="hu-title">¡CAMPAÑA COMPLETADA!</div>
-        <div class="hu-sub">¡MODO DIFÍCIL DESBLOQUEADO!</div>
-        <div class="hu-text">JEFES MÁS DUROS Y MALVADOS, CON SUS PROPIAS ESTRELLAS.<br>LO ENCONTRARÁS EN ESTA CALAVERA DEL MAPA.</div>
+        <div class="hu-title" data-es="¡CAMPAÑA COMPLETADA!">CAMPAIGN COMPLETE!</div>
+        <div class="hu-sub" data-es="¡MODO DIFÍCIL DESBLOQUEADO!">HARD MODE UNLOCKED!</div>
+        <div class="hu-text" data-es="JEFES MÁS DUROS Y MALVADOS, CON SUS PROPIAS ESTRELLAS.&lt;br&gt;LO ENCONTRARÁS EN ESTA CALAVERA DEL MAPA.">TOUGHER, MEANER BOSSES, WITH THEIR OWN STARS.<br>YOU WILL FIND IT IN THIS SKULL ON THE MAP.</div>
     </div>
 
     <!-- Presentación del jefe: franjas que entran por los lados y su nombre en grande -->
@@ -79,7 +79,7 @@
     <div id="replay" class="replay hidden">
         <div class="bar-top"></div>
         <div class="bar-bottom"></div>
-        <div class="replay-tag">REPETICIÓN</div>
+        <div class="replay-tag" data-es="REPETICIÓN">REPLAY</div>
     </div>
 
     <div id="joy" class="joy hidden">
@@ -93,80 +93,80 @@
 
     <!-- Duelo local: cada jugador juega en su mitad de la pantalla -->
     <div id="duel-labels" class="duel-labels hidden">
-        <div class="duel-label p2">JUGADOR 2 · ARRASTRA EN TU MITAD</div>
+        <div class="duel-label p2" data-es="JUGADOR 2 · ARRASTRA EN TU MITAD">PLAYER 2 · DRAG ON YOUR HALF</div>
         <div class="duel-line"></div>
-        <div class="duel-label p1">JUGADOR 1 · ARRASTRA EN TU MITAD</div>
+        <div class="duel-label p1" data-es="JUGADOR 1 · ARRASTRA EN TU MITAD">PLAYER 1 · DRAG ON YOUR HALF</div>
     </div>
 
     <div id="menu" class="screen menu">
-        <div class="coins-badge" aria-label="Monedas"><span class="coin"></span><span id="menu-coins">0</span></div>
-        <button id="btn-settings" class="corner-btn">AJUSTES</button>
+        <div class="coins-badge" aria-label="Coins" data-es-aria="Monedas"><span class="coin"></span><span id="menu-coins">0</span></div>
+        <button id="btn-settings" class="corner-btn" data-es="AJUSTES">SETTINGS</button>
         <div class="menu-top">
         <h1 class="logo" aria-label="Tank-less">
             <span class="word"><span class="ch">T</span><span class="ch">A</span><span class="ch">N</span><span class="ch">K</span><span class="ch ghost">-</span><span class="ch ghost">L</span><span class="ch ghost">E</span><span class="ch ghost">S</span><span class="ch ghost">S</span></span>
         </h1>
             <div class="menu-row">
-                <button id="btn-garage" class="items-btn" aria-label="Mi tanque">
+                <button id="btn-garage" class="items-btn" aria-label="My tank" data-es-aria="Mi tanque">
                     <canvas width="56" height="56"></canvas>
-                    <span>MI TANQUE</span>
+                    <span data-es="MI TANQUE">MY TANK</span>
                 </button>
-                <button id="btn-items" class="items-btn" aria-label="Objetos">
+                <button id="btn-items" class="items-btn" aria-label="Items" data-es-aria="Objetos">
                     <canvas width="48" height="48"></canvas>
-                    <span>OBJETOS</span>
+                    <span data-es="OBJETOS">ITEMS</span>
                 </button>
             </div>
-            <button id="btn-trophies" class="btn btn-small trophy-btn"><span class="trophy"></span> LOGROS <span id="menu-trophies">0/0</span></button>
-            <p class="help">
-                MUÉVETE Y ERES INVISIBLE<br>
-                PARA Y DISPARAS SOLO<br>
-                <em>PERO DISPARAR TE DELATA</em>
+            <button id="btn-trophies" class="btn btn-small trophy-btn"><span class="trophy"></span> <span data-es="LOGROS">ACHIEVEMENTS</span> <span id="menu-trophies">0/0</span></button>
+            <p class="help" data-es="MUÉVETE Y ERES INVISIBLE<br>PARA Y DISPARAS SOLO<br><em>PERO DISPARAR TE DELATA</em>">
+                MOVE AND YOU ARE INVISIBLE<br>
+                STOP AND YOU FIRE ON YOUR OWN<br>
+                <em>BUT FIRING GIVES YOU AWAY</em>
             </p>
         </div>
         <div class="play-col">
-            <button id="btn-play" class="btn" disabled>CARGANDO...</button>
-            <button id="btn-campaign" class="btn btn-camp" disabled>CAMPAÑA</button>
-            <button id="btn-survival" class="btn btn-alt" disabled>SUPERVIVENCIA</button>
-            <button id="btn-duel" class="btn btn-duel" disabled>DUELO A DOS</button>
+            <button id="btn-play" class="btn" disabled data-es="CARGANDO...">LOADING...</button>
+            <button id="btn-campaign" class="btn btn-camp" disabled data-es="CAMPAÑA">CAMPAIGN</button>
+            <button id="btn-survival" class="btn btn-alt" disabled data-es="SUPERVIVENCIA">SURVIVAL</button>
+            <button id="btn-duel" class="btn btn-duel" disabled data-es="DUELO A DOS">TWO-PLAYER DUEL</button>
         </div>
     </div>
 
     <!-- Campaña: el mapa se dibuja en el canvas del juego; esto es la interfaz encima -->
     <div id="campaign" class="campaign hidden">
-        <button id="btn-campaign-back" class="corner-btn corner-left">VOLVER</button>
-        <button id="btn-hard" class="skull-btn hidden" aria-label="Modo difícil"></button>
-        <div id="hard-tip" class="hard-tip hidden">¡AQUÍ!</div>
+        <button id="btn-campaign-back" class="corner-btn corner-left" data-es="VOLVER">BACK</button>
+        <button id="btn-hard" class="skull-btn hidden" aria-label="Hard mode" data-es-aria="Modo difícil"></button>
+        <div id="hard-tip" class="hard-tip hidden" data-es="¡AQUÍ!">HERE!</div>
         <div id="camp-region" class="camp-region"></div>
         <div id="camp-card" class="camp-card">
             <div class="camp-head"><span id="camp-world" class="camp-world"></span><span id="camp-status" class="camp-status hidden"></span></div>
             <div id="camp-boss" class="camp-boss"></div>
             <div id="camp-stars" class="camp-stars"></div>
             <div id="camp-tell" class="camp-tell"></div>
-            <button id="camp-go" class="btn">¡A LUCHAR!</button>
+            <button id="camp-go" class="btn" data-es="¡A LUCHAR!">FIGHT!</button>
         </div>
     </div>
 
     <div id="garage" class="screen garage hidden">
-        <h2 class="end-title">MI TANQUE</h2>
-        <div class="garage-tabs"><button class="tab on">GORROS</button><button class="tab">PINTURA</button><button class="tab">ESTELA</button></div>
+        <h2 class="end-title" data-es="MI TANQUE">MY TANK</h2>
+        <div class="garage-tabs"><button class="tab on" data-es="GORROS">HATS</button><button class="tab" data-es="PINTURA">PAINT</button><button class="tab" data-es="ESTELA">TRAIL</button></div>
         <div class="coins-badge static"><span class="coin"></span><span id="garage-coins">0</span></div>
         <div class="garage-stage">
-            <button id="garage-prev" class="arrow" aria-label="Anterior">&lt;</button>
+            <button id="garage-prev" class="arrow" aria-label="Previous" data-es-aria="Anterior">&lt;</button>
             <canvas id="garage-view" width="112" height="112"></canvas>
-            <button id="garage-next" class="arrow" aria-label="Siguiente">&gt;</button>
+            <button id="garage-next" class="arrow" aria-label="Next" data-es-aria="Siguiente">&gt;</button>
         </div>
         <div id="garage-name" class="garage-name"></div>
         <div id="garage-count" class="garage-count"></div>
-        <button id="garage-action" class="btn">USAR</button>
-        <div id="garage-hint" class="garage-hint hidden">LAS MONEDAS SE GANAN EN LA CAMPAÑA:<br>UNA POR CADA ESTRELLA NUEVA</div>
-        <button id="btn-garage-close" class="btn btn-small">VOLVER</button>
+        <button id="garage-action" class="btn" data-es="USAR">USE</button>
+        <div id="garage-hint" class="garage-hint hidden" data-es="LAS MONEDAS SE GANAN EN LA CAMPAÑA:<br>UNA POR CADA ESTRELLA NUEVA">COINS ARE EARNED IN THE CAMPAIGN:<br>ONE FOR EACH NEW STAR</div>
+        <button id="btn-garage-close" class="btn btn-small" data-es="VOLVER">BACK</button>
     </div>
 
     <div id="trophies" class="screen glossary hidden">
-        <h2 class="end-title">LOGROS</h2>
+        <h2 class="end-title" data-es="LOGROS">ACHIEVEMENTS</h2>
         <p id="trophies-count" class="tag"></p>
         <div id="trophies-pips" class="t-pips"></div>
         <div id="trophies-list" class="glossary-list"></div>
-        <button id="btn-trophies-close" class="btn btn-small">VOLVER</button>
+        <button id="btn-trophies-close" class="btn btn-small" data-es="VOLVER">BACK</button>
     </div>
 
     <div id="toast" class="toast"></div>
@@ -175,7 +175,7 @@
     <div id="ach" class="ach">
         <div id="ach-icon" class="ach-icon"><i id="ach-trophy" class="ach-trophy"></i><i class="spark"></i></div>
         <div class="ach-text">
-            <div class="ach-head">¡LOGRO COMPLETADO!</div>
+            <div class="ach-head" data-es="¡LOGRO COMPLETADO!">ACHIEVEMENT UNLOCKED!</div>
             <div id="ach-name" class="ach-name"></div>
             <div id="ach-desc" class="ach-desc"></div>
         </div>
@@ -197,44 +197,44 @@
     <div id="coin-counter" class="coins-badge coin-counter hidden"><span class="coin"></span><span id="hud-coins">0</span></div>
 
     <div id="glossary" class="screen glossary hidden">
-        <h2 class="end-title">OBJETOS</h2>
+        <h2 class="end-title" data-es="OBJETOS">ITEMS</h2>
         <div id="glossary-list" class="glossary-list"></div>
-        <button id="btn-glossary-close" class="btn btn-small">VOLVER</button>
+        <button id="btn-glossary-close" class="btn btn-small" data-es="VOLVER">BACK</button>
     </div>
 
     <div id="settings" class="screen settings hidden">
-        <h2 class="end-title">AJUSTES</h2>
+        <h2 class="end-title" data-es="AJUSTES">SETTINGS</h2>
         <div class="toggles toggles-col">
-            <button class="toggle" data-key="music">MÚSICA</button>
-            <button class="toggle" data-key="sfx">SONIDO</button>
-            <button class="toggle" data-key="vibration">VIBRACIÓN</button>
+            <button class="toggle" data-key="music" data-es="MÚSICA">MUSIC</button>
+            <button class="toggle" data-key="sfx" data-es="SONIDO">SOUND</button>
+            <button class="toggle" data-key="vibration" data-es="VIBRACIÓN">VIBRATION</button>
         </div>
-        <button id="btn-settings-close" class="btn btn-small">VOLVER</button>
-        <button id="btn-tutorial" class="btn btn-small">VER TUTORIAL</button>
-        <button id="btn-reset" class="btn btn-small btn-danger">BORRAR PROGRESO</button>
+        <button id="btn-settings-close" class="btn btn-small" data-es="VOLVER">BACK</button>
+        <button id="btn-tutorial" class="btn btn-small" data-es="VER TUTORIAL">WATCH TUTORIAL</button>
+        <button id="btn-reset" class="btn btn-small btn-danger" data-es="BORRAR PROGRESO">DELETE PROGRESS</button>
     </div>
 
     <div id="pause" class="screen hidden">
-        <h2 class="end-title">PAUSA</h2>
+        <h2 class="end-title" data-es="PAUSA">PAUSED</h2>
         <canvas id="pause-map" class="pause-map"></canvas>
-        <button id="btn-resume" class="btn">SEGUIR</button>
+        <button id="btn-resume" class="btn" data-es="SEGUIR">RESUME</button>
         <div class="toggles">
-            <button class="toggle" data-key="music">MÚSICA</button>
-            <button class="toggle" data-key="sfx">SONIDO</button>
-            <button class="toggle" data-key="vibration">VIBRACIÓN</button>
+            <button class="toggle" data-key="music" data-es="MÚSICA">MUSIC</button>
+            <button class="toggle" data-key="sfx" data-es="SONIDO">SOUND</button>
+            <button class="toggle" data-key="vibration" data-es="VIBRACIÓN">VIBRATION</button>
         </div>
-        <button id="btn-quit" class="btn btn-small">SALIR AL MENÚ</button>
+        <button id="btn-quit" class="btn btn-small" data-es="SALIR AL MENÚ">QUIT TO MENU</button>
     </div>
 
     <div id="end" class="screen hidden">
-        <h2 id="end-title" class="end-title">¡VICTORIA!</h2>
+        <h2 id="end-title" class="end-title" data-es="¡VICTORIA!">VICTORY!</h2>
         <p id="end-sub" class="tag"></p>
         <div id="end-stars" class="end-stars hidden">
             <div class="stars-row"><i class="star"></i><i class="star"></i><i class="star"></i></div>
             <div id="stars-why" class="stars-why"></div>
         </div>
-        <button id="btn-again" class="btn">OTRA VEZ</button>
-        <button id="btn-end-menu" class="btn btn-small">MENÚ PRINCIPAL</button>
+        <button id="btn-again" class="btn" data-es="OTRA VEZ">PLAY AGAIN</button>
+        <button id="btn-end-menu" class="btn btn-small" data-es="MENÚ PRINCIPAL">MAIN MENU</button>
     </div>
 
     <script type="module" src="src/main.js"></script>

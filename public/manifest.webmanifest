@@ -1,7 +1,8 @@
 {
   "name": "Tank-less",
   "short_name": "Tank-less",
-  "description": "Duelo de tanques con sigilo: muévete y eres invisible, para y disparas solo, pero disparar te delata.",
+  "description": "A stealth tank duel: move and you are invisible, stop and you fire on your own, but firing gives you away.",
+  "lang": "en",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",

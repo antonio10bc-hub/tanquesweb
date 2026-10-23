@@ -1,6 +1,7 @@
 // Capa DOM: menús, marcador de vida, aviso de sigilo y carteles.
 import { drawCoin, COIN_SPIN, installPixelSprites } from './PixelArt.js';
 import { achievementIcon, achievementBg } from './achievementIcons.js';
+import { L } from '../core/I18n.js';
 export class Hud {
     constructor() {
         installPixelSprites();
@@ -53,7 +54,7 @@ export class Hud {
 
     ready() {
         this.el.play.disabled = false;
-        this.el.play.textContent = 'PARTIDA RÁPIDA';
+        this.el.play.textContent = L('QUICK MATCH', 'PARTIDA RÁPIDA');
         document.getElementById('btn-survival').disabled = false;
         document.getElementById('btn-campaign').disabled = false;
         document.getElementById('btn-duel').disabled = false;
@@ -297,7 +298,7 @@ export class Hud {
     setStealth(state) {
         if (this.cache.visible === state) return;
         this.cache.visible = state;
-        const LABELS = { visible: '¡VISIBLE!', hidden: 'OCULTO', bush: 'EN LA HIERBA', cloak: 'INVISIBLE' };
+        const LABELS = { visible: L('VISIBLE!', '¡VISIBLE!'), hidden: L('HIDDEN', 'OCULTO'), bush: L('IN THE GRASS', 'EN LA HIERBA'), cloak: L('INVISIBLE', 'INVISIBLE') };
         this.el.stealth.textContent = LABELS[state];
         this.el.stealth.className = `stealth ${state === 'hidden' ? '' : state}${this.replaying ? ' hidden' : ''}`;
     }
@@ -403,8 +404,8 @@ export class Hud {
         const n = got.filter(Boolean).length;
         const line = (ok, text) => (ok ? `<b>★ ${text}</b>` : `<s>☆ ${text}</s>`);
         document.getElementById('stars-why').innerHTML = [
-            line(got[0], 'GANAR'), line(got[1], 'PERDER 2 DE VIDA COMO MUCHO'), line(got[2], `GANAR EN MENOS DE ${par} S`),
-        ].join('<br>') + (best > n ? `<br>RÉCORD: ${best} ★` : '');
+            line(got[0], L('WIN', 'GANAR')), line(got[1], L('LOSE 2 HEALTH AT MOST', 'PERDER 2 DE VIDA COMO MUCHO')), line(got[2], L(`WIN IN UNDER ${par} S`, `GANAR EN MENOS DE ${par} S`)),
+        ].join('<br>') + (best > n ? L(`<br>RECORD: ${best} ★`, `<br>RÉCORD: ${best} ★`) : '');
         clearTimeout(this.starTimer);
         let k = 0;
         const next = () => {
@@ -437,7 +438,7 @@ export class Hud {
     // title: opcional (supervivencia muestra las oleadas en lugar de VICTORIA/DERROTA)
     showEnd(win, sub, title) {
         document.getElementById('end-stars').classList.add('hidden');
-        this.el.endTitle.textContent = title || (win ? '¡VICTORIA!' : 'DERROTA');
+        this.el.endTitle.textContent = title || (win ? L('VICTORY!', '¡VICTORIA!') : L('DEFEAT', 'DERROTA'));
         this.el.endTitle.classList.toggle('lose', !win);
         this.el.endSub.textContent = sub || '';
         this.screen('end');

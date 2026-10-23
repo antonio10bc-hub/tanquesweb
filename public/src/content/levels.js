@@ -5,6 +5,7 @@
 //              (# muro, B bloque bajo, D rompible) y cuánta hierba alta
 //   pickups    qué objetos salen (content/pickups.js) y, si hace falta, sus reglas
 // "map" es un mapa fijo de respaldo por si la generación fallara.
+import { L } from '../core/I18n.js';
 const DUEL = {
     player: { tank: 'hero', spawn: 'P' },
     enemies: [{ tank: 'rival', spawn: 'E', brain: 'hunter', params: { dodge: 0.5 } }],
@@ -34,43 +35,43 @@ const FALLBACK_MAP = [
 
 export const LEVELS = {
     clasico: {
-        name: 'ARENA CLÁSICA',
-        tagline: 'FUEGO Y VIDA',
+        name: L('CLASSIC ARENA', 'ARENA CLÁSICA'),
+        tagline: L('FIRE AND HEALTH', 'FUEGO Y VIDA'),
         themes: ['candy', 'meadow'],
         generator: { materials: { '#': 3, B: 2, D: 1 }, bushes: [1, 2] },
         pickups: { kinds: { heal: 2, power: 2, bounce: 1, triple: 1, decoy: 1, nuke: 1 } },
     },
     emboscada: {
-        name: 'EMBOSCADA',
-        tagline: 'LA HIERBA ESCONDE',
+        name: L('AMBUSH', 'EMBOSCADA'),
+        tagline: L('THE GRASS HIDES', 'LA HIERBA ESCONDE'),
         themes: ['meadow', 'beach', 'desert'],
         generator: { pieces: [4, 6], density: [0.1, 0.22], materials: { '#': 2, B: 2 }, bushes: [5, 7], bushSize: [3, 6] },
         pickups: { kinds: { radar: 2, cloak: 1, heal: 2, decoy: 2, nuke: 1 } },
     },
     demolicion: {
-        name: 'DEMOLICIÓN',
-        tagline: 'TODO SE ROMPE',
+        name: L('DEMOLITION', 'DEMOLICIÓN'),
+        tagline: L('EVERYTHING BREAKS', 'TODO SE ROMPE'),
         themes: ['city', 'desert', 'space'],
         generator: { pieces: [6, 9], density: [0.16, 0.32], materials: { '#': 1, D: 5 }, bushes: [0, 1] },
         pickups: { kinds: { power: 3, bounce: 2, heal: 1, triple: 2, nuke: 1 } },
     },
     fortaleza: {
-        name: 'FORTALEZA',
-        tagline: 'MUROS Y ESCUDOS',
+        name: L('FORTRESS', 'FORTALEZA'),
+        tagline: L('WALLS AND SHIELDS', 'MUROS Y ESCUDOS'),
         themes: ['snow', 'volcano', 'space'],
         generator: { pieces: [6, 9], density: [0.18, 0.32], materials: { '#': 4, B: 1, D: 2 }, bushes: [0, 2] },
         pickups: { kinds: { shield: 2, bounce: 2, heal: 1, triple: 1, nuke: 1 } },
     },
     carreras: {
-        name: 'CARRERAS',
-        tagline: 'CORRE Y DISPARA',
+        name: L('RACING', 'CARRERAS'),
+        tagline: L('RUN AND GUN', 'CORRE Y DISPARA'),
         themes: ['beach', 'candy', 'city'],
         generator: { pieces: [3, 5], density: [0.08, 0.18], materials: { B: 3, D: 2 }, bushes: [2, 3] },
         pickups: { kinds: { turbo: 3, power: 2, shield: 1, triple: 1, nuke: 1 }, lifetime: 4 },
     },
     fantasmas: {
-        name: 'FANTASMAS',
-        tagline: 'NADIE SE VE',
+        name: L('GHOSTS', 'FANTASMAS'),
+        tagline: L('NOBODY IS SEEN', 'NADIE SE VE'),
         themes: ['city', 'space', 'volcano'],
         generator: { materials: { '#': 2, B: 2, D: 1 }, bushes: [3, 5], bushSize: [2, 4] },
         pickups: { kinds: { cloak: 2, radar: 2, heal: 1, decoy: 2, nuke: 1 } },
@@ -82,8 +83,8 @@ for (const lvl of Object.values(LEVELS)) Object.assign(lvl, { map: FALLBACK_MAP 
 // Modo supervivencia: un mapa para toda la partida y oleadas de enemigos cada vez mayores.
 // No entra en la rotación de partidas rápidas ("survival: true").
 LEVELS.supervivencia = {
-    name: 'SUPERVIVENCIA',
-    tagline: 'AGUANTA LO QUE PUEDAS',
+    name: L('SURVIVAL', 'SUPERVIVENCIA'),
+    tagline: L('HOLD OUT AS LONG AS YOU CAN', 'AGUANTA LO QUE PUEDAS'),
     survival: true,
     themes: ['snow', 'desert', 'candy', 'volcano', 'beach', 'meadow', 'city', 'space'],
     generator: { materials: { '#': 3, B: 2, D: 2 }, bushes: [2, 4] },
@@ -108,8 +109,8 @@ const TUTORIAL_MAP = [
 ];
 
 LEVELS.tutorial = {
-    name: 'TUTORIAL',
-    tagline: 'APRENDE LO BÁSICO',
+    name: L('TUTORIAL', 'TUTORIAL'),
+    tagline: L('LEARN THE BASICS', 'APRENDE LO BÁSICO'),
     tutorial: true,
     themes: ['meadow'],
     map: TUTORIAL_MAP,
@@ -120,8 +121,8 @@ LEVELS.tutorial = {
 
 // Duelo local: dos personas en el mismo móvil. No entra en la rotación de partidas rápidas.
 LEVELS.duelo = {
-    name: 'DUELO',
-    tagline: 'UNO CONTRA UNO',
+    name: L('DUEL', 'DUELO'),
+    tagline: L('ONE ON ONE', 'UNO CONTRA UNO'),
     duel: true,
     themes: ['snow', 'desert', 'candy', 'volcano', 'beach', 'meadow', 'city', 'space'],
     generator: { materials: { '#': 3, B: 2, D: 1 }, bushes: [2, 3] },
