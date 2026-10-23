@@ -380,7 +380,8 @@ export class Game {
         this.paused = false;
         this.hud.showPause(false);
         this.sfx.hold(false);
-        if (!silent) this.setInputs(this.state === 'play' && !this.cutscene, true);
+        // Entre oleadas de supervivencia el mando sigue bloqueado hasta la siguiente
+        if (!silent) this.setInputs(this.state === 'play' && !this.cutscene && !this.waveClear, true);
         this.last = performance.now();
     }
 

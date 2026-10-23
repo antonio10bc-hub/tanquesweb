@@ -17,8 +17,12 @@ export const SurvivalPart = {
         const w = this.world;
         if (!this.waveClear) {
             if (w.aliveEnemies() > 0 || this.dropping.length) return;
-            // Oleada superada: respiro y curación (las minas que quedaban se desactivan)
+            // Oleada superada: respiro y curación (las minas que quedaban se desactivan). Tu
+            // tanque se queda quieto y sin disparar hasta la siguiente oleada (mientras pasa el
+            // avión y eliges la mejora no hay nada que hacer, y así no vuela ningún barril)
             this.waveClear = true;
+            this.setInputs(false, true);
+            w.player.cooldown = 1e9; // sin disparar hasta la siguiente oleada
             w.hazards.list = w.hazards.list.filter((h) => h.kind !== 'mine');
             if (this.miniBoss) {
                 if (this.miniBoss.def.secretBoss) this.startMusic(); // vuelve la música del escenario
@@ -59,6 +63,8 @@ export const SurvivalPart = {
         if (this.waveTimer > 0) return;
         this.waveClear = false;
         this.wave++;
+        if (!this.paused) this.setInputs(true);
+        w.player.cooldown = w.player.weapon.firstShotDelay;
         const specs = waveSpecs(this.wave, this.themeId, SURVIVAL.maxEnemies);
         this.waveSize = specs.length;
         this.hud.setNames(w.player.def.name, L(`WAVE ${this.wave}`, `OLEADA ${this.wave}`));

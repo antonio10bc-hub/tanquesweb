@@ -154,7 +154,9 @@ function placeBarrels(grid, p, rng, copies) {
     for (let k = 0, placed = 0; placed < n && k < 80; k++) {
         const c = 1 + Math.floor(rng() * (cols - 2)), r = 2 + Math.floor(rng() * Math.ceil((rows - 4) / 2));
         const cells = copies(c, r);
-        if (cells.some(([cc, rr]) => grid[rr][cc] !== '.' || (Math.abs(cc - mid) <= 1 && (rr <= 2 || rr >= rows - 3)))) continue;
+        // Nunca en las columnas del centro: es la línea de tiro de las salidas (los tanques
+        // disparan solos al empezar quietos y reventarían el barril nada más empezar)
+        if (cells.some(([cc, rr]) => grid[rr][cc] !== '.' || Math.abs(cc - mid) <= 1)) continue;
         // Pegado a un muro y con un pasillo de "gap" casillas libre por el otro lado
         const wall = [[1, 0], [-1, 0], [0, 1], [0, -1]].find(([dc, dr]) => solid(grid[r + dr][c + dc]));
         if (!wall) continue;
