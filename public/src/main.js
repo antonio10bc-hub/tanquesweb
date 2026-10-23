@@ -12,7 +12,7 @@ import { trackGame, trackGarage } from './core/GameAnalytics.js';
 import { L, applyHtmlTexts, switchLang } from './core/I18n.js';
 import { DEV_CHANGED } from './core/Dev.js';
 import { Settings } from './core/Settings.js';
-import { analyticsAvailable, setAnalyticsConsent } from './core/Analytics.js';
+import { analyticsAsk, setAnalyticsConsent } from './core/Analytics.js';
 
 // Idioma: los textos fijos de index.html están en inglés; en español se cambian ya
 applyHtmlTexts();
@@ -79,9 +79,10 @@ syncProfile();
 
 // Aviso de privacidad: la primera vez que se ve el menú (tras el tutorial, si sale), una vez
 const consent = document.getElementById('consent');
-if (analyticsAvailable()) document.querySelector('.toggle[data-key="analytics"]').classList.remove('hidden');
+// (en el dispositivo del autor no hay aviso ni interruptor: se mide siempre)
+if (analyticsAsk()) document.querySelector('.toggle[data-key="analytics"]').classList.remove('hidden');
 hud.onScreenChange = (name) => {
-    const ask = name === 'menu' && Settings.analytics === null && analyticsAvailable();
+    const ask = name === 'menu' && Settings.analytics === null && analyticsAsk();
     consent.classList.toggle('hidden', !ask);
 };
 const answer = (on) => {

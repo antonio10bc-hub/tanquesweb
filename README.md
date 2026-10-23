@@ -223,3 +223,5 @@ sin clics automáticos ni grabaciones: `public/src/core/Analytics.js` (arranque 
 `item_equipped`. Todos llevan `app: tankless` (el proyecto de PostHog es compartido con los
 otros juegos). Salen por `/ingest` (rewrite en `vercel.json`) para esquivar los bloqueadores;
 el service worker no los toca.
+
+En el dispositivo del autor (el que abrió el juego con `?dev=tanqueloco`, ver `Dev.js`) se mide siempre, sin aviso ni interruptor, y todos los eventos llevan `author: true` para poder filtrarlos en PostHog.
