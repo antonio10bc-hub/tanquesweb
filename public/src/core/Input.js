@@ -66,7 +66,8 @@ export class Input {
 
     rest() {
         this.ox = window.innerWidth / 2;
-        const off = Math.max(100, window.innerHeight * 0.16);
+        // En el duelo descansa más cerca del borde: el centro de la pantalla es para las arenas
+        const off = this.region ? 82 : Math.max(100, window.innerHeight * 0.16);
         this.oy = this.top ? off : window.innerHeight - off;
         this.place(0, 0);
         this.joy.classList.add('idle');

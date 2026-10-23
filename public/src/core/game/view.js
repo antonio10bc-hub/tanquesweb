@@ -8,6 +8,9 @@ import { SPARKS, TURBO, NUKE, TRIPLE, REPLAY, PHASE, BOSS_INTRO } from './consta
 
 // Vista: dibujar cada fotograma, clima, cámara y tanques (fundido de sigilo, marcas).
 // Métodos de Game (se mezclan en su prototipo desde core/Game.js): "this" es la partida.
+// Duelo: altura (píxeles de pantalla) que se reserva en el borde de fuera para el joystick
+const DUEL_JOY_ZONE = 150;
+
 export const ViewPart = {
     draw(dt, simDt) {
         const w = this.world;
@@ -37,29 +40,35 @@ export const ViewPart = {
         if (this.mode === 'duel' && ['intro', 'play', 'outro', 'replay', 'end'].includes(this.state)) this.renderDuel(dt);
         else {
             const aspect = this.renderer.width / this.renderer.height;
-            if (this.rig.camera.aspect !== aspect) this.rig.resize(aspect); // al salir del duelo
+            if (this.rig.camera.view && this.rig.camera.view.enabled) this.rig.camera.clearViewOffset(); // al salir del duelo
+            if (this.rig.camera.aspect !== aspect) this.rig.resize(aspect);
             this.renderer.render(this.scene, this.rig.camera, dt);
         }
     },
 
     // Duelo a pantalla partida: cada jugador ve la arena entera desde su lado. El de abajo, como
     // siempre; el de arriba desde el lado contrario y girado 180° en pantalla, para quien coge
-    // el móvil por el otro extremo. Los dos ven lo mismo a la misma distancia.
+    // el móvil por el otro extremo. Las dos arenas van pegadas a la línea del centro y tan
+    // grandes como quepan: la franja de fuera de cada mitad queda para el joystick.
     renderDuel(dt) {
         const r = this.renderer, a = this.world.arena, cfg = this.rig.cfg;
-        const hb = Math.floor(r.height / 2), aspect = r.width / hb;
+        const w = r.width, hb = Math.floor(r.height / 2);
+        const px = r.height / window.innerHeight; // píxeles del juego por píxel de pantalla
+        const pad = Math.round(DUEL_JOY_ZONE * px); // franja del joystick (fuera)
+        const hs = Math.max(1, hb - pad);           // zona de la arena (dentro, junto al centro)
+        const aspect = w / hs;
         const cams = (this.duelCams ||= [this.rig.camera, new THREE.PerspectiveCamera(cfg.fov, 1, 0.5, 400)]);
         const tanV = Math.tan((cfg.fov * Math.PI) / 360), tanH = tanV * aspect;
         const p = (cfg.pitch * Math.PI) / 180, sinP = Math.sin(p), cosP = Math.cos(p);
-        const d = Math.max((a.cols / 2 + 0.5) / tanH, ((a.rows / 2 + 1.1) * sinP) / tanV);
+        const d = Math.max((a.cols / 2 + 0.3) / tanH, ((a.rows / 2 + 0.75) * sinP) / tanV);
         const s = this.rig.trauma * this.rig.trauma * 0.3;
         const cx = a.cols / 2 + (Math.random() * 2 - 1) * s, cz = a.rows / 2 + (Math.random() * 2 - 1) * s;
         cams.forEach((cam, i) => {
             const side = i === 0 ? 1 : -1;
-            if (cam.aspect !== aspect) {
-                cam.aspect = aspect;
-                cam.updateProjectionMatrix();
-            }
+            cam.aspect = aspect;
+            // La imagen de la arena ocupa "hs" y la mitad entera "hb": se dibuja la mitad con la
+            // arena arriba (J1, junto al centro) o abajo (J2, junto al centro tras el giro)
+            cam.setViewOffset(w, hs, 0, i === 0 ? 0 : -(hb - hs), w, hb);
             cam.position.set(cx, sinP * d, cz + side * cosP * d);
             cam.up.set(0, 1, 0);
             cam.lookAt(cx, 0, cz);
