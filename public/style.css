@@ -1250,3 +1250,57 @@ html[lang="en"] .toggle.off::after { content: ' OFF'; }
     border: 4px solid var(--ink);
     box-shadow: inset -6px -6px 0 #ffb300, inset 4px 4px 0 #fff7a8;
 }
+
+/* ---------- PANTALLA DE CARGA ---------- */
+.loader {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 34px;
+    /* Algo más claro que la tinta: así se ve el contorno del tanquecito */
+    background: #3b2d6b;
+}
+.loader.done { animation: ldOut .45s steps(4) forwards; }
+@keyframes ldOut { to { opacity: 0; visibility: hidden; } }
+.ld-logo { font-size: clamp(26px, 9vw, 44px); white-space: nowrap; }
+.ld-logo span {
+    display: inline-block;
+    color: var(--yellow);
+    text-shadow: 0 4px 0 #000, 3px 0 0 #000, -3px 0 0 #000, 0 -3px 0 #000;
+    animation: ldHop .9s steps(2) infinite;
+}
+.ld-logo span:nth-child(4n+2) { color: var(--pink); animation-delay: .15s; }
+.ld-logo span:nth-child(4n+3) { color: var(--cyan); animation-delay: .3s; }
+.ld-logo span:nth-child(4n+4) { color: var(--orange); animation-delay: .45s; }
+.ld-logo span.g { color: #8e86a8; }
+@keyframes ldHop { 50% { transform: translateY(-4px); } }
+.ld-road { position: relative; width: min(260px, 70vw); padding-top: 44px; }
+.ld-rider { position: absolute; top: 0; left: 0; width: 88px; height: 44px; transform: translateX(-50%); }
+.ld-tank { width: 100%; height: 100%; animation: ldBump .2s steps(1) infinite; }
+@keyframes ldBump { 50% { transform: translateY(-2px); } }
+.ld-f2 { opacity: 0; }
+.ld-tank .ld-f1 { animation: ldWheel .2s steps(1) infinite; }
+.ld-tank .ld-f2 { animation: ldWheel .2s steps(1) infinite reverse; }
+@keyframes ldWheel { 0% { opacity: 1; } 50% { opacity: 0; } }
+.ld-bar {
+    height: 18px;
+    border: 4px solid #fff;
+    background: var(--ink);
+    box-shadow: 0 5px 0 #000;
+    padding: 2px;
+}
+.ld-bar i {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: repeating-linear-gradient(90deg, var(--yellow) 0 8px, #ffb300 8px 12px);
+}
+.ld-dots { display: flex; gap: 10px; }
+.ld-dots i { width: 8px; height: 8px; background: #fff; animation: ldDot .9s steps(1) infinite; }
+.ld-dots i:nth-child(2) { animation-delay: .3s; }
+.ld-dots i:nth-child(3) { animation-delay: .6s; }
+@keyframes ldDot { 0%, 60% { opacity: 1; } 61%, 100% { opacity: .15; } }

@@ -19,6 +19,32 @@
     </script>
 </head>
 <body>
+    <!-- Pantalla de carga: solo HTML y CSS para que salga al instante, antes que el juego.
+         Un tanquecito avanza sobre la barra; la barra la mueve el script de abajo y la termina
+         Hud.ready() cuando todo está listo. Sin texto: aún no se sabe el idioma. -->
+    <div id="loader" class="loader">
+        <div class="ld-logo"><span>T</span><span>A</span><span>N</span><span>K</span><span class="g">-</span><span class="g">L</span><span class="g">E</span><span class="g">S</span><span class="g">S</span></div>
+        <div class="ld-road">
+            <div class="ld-rider" id="ld-rider"><svg class="ld-tank" viewBox="0 0 22 11" shape-rendering="crispEdges" aria-hidden="true"><rect x="6" y="0" width="6" height="1" fill="#1b0b33"/><rect x="5" y="1" width="1" height="1" fill="#1b0b33"/><rect x="6" y="1" width="6" height="1" fill="#23e0d6"/><rect x="12" y="1" width="1" height="1" fill="#1b0b33"/><rect x="5" y="2" width="1" height="1" fill="#1b0b33"/><rect x="6" y="2" width="1" height="1" fill="#23e0d6"/><rect x="7" y="2" width="1" height="1" fill="#fff6e8"/><rect x="8" y="2" width="1" height="1" fill="#1b0b33"/><rect x="9" y="2" width="3" height="1" fill="#23e0d6"/><rect x="12" y="2" width="8" height="1" fill="#1b0b33"/><rect x="5" y="3" width="1" height="1" fill="#1b0b33"/><rect x="6" y="3" width="6" height="1" fill="#ffe03a"/><rect x="12" y="3" width="1" height="1" fill="#1b0b33"/><rect x="13" y="3" width="7" height="1" fill="#fff6e8"/><rect x="20" y="3" width="1" height="1" fill="#1b0b33"/><rect x="3" y="4" width="3" height="1" fill="#1b0b33"/><rect x="6" y="4" width="6" height="1" fill="#23e0d6"/><rect x="12" y="4" width="8" height="1" fill="#1b0b33"/><rect x="2" y="5" width="1" height="1" fill="#1b0b33"/><rect x="3" y="5" width="13" height="1" fill="#23e0d6"/><rect x="16" y="5" width="1" height="1" fill="#1b0b33"/><rect x="2" y="6" width="1" height="1" fill="#1b0b33"/><rect x="3" y="6" width="13" height="1" fill="#ffe03a"/><rect x="16" y="6" width="1" height="1" fill="#1b0b33"/><rect x="1" y="7" width="1" height="1" fill="#1b0b33"/><rect x="2" y="7" width="15" height="1" fill="#3b2d6b"/><rect x="17" y="7" width="1" height="1" fill="#1b0b33"/><rect x="1" y="8" width="1" height="1" fill="#1b0b33"/><rect x="2" y="8" width="11" height="1" fill="#3b2d6b"/><rect x="13" y="8" width="1" height="1" fill="#1b0b33"/><rect x="2" y="9" width="1" height="1" fill="#1b0b33"/><rect x="3" y="9" width="13" height="1" fill="#3b2d6b"/><rect x="16" y="9" width="1" height="1" fill="#1b0b33"/><rect x="3" y="10" width="13" height="1" fill="#1b0b33"/><g class="ld-f1"><rect x="3" y="8" width="1" height="1" fill="#ffe03a"/><rect x="5" y="8" width="1" height="1" fill="#ffe03a"/><rect x="7" y="8" width="1" height="1" fill="#ffe03a"/><rect x="9" y="8" width="1" height="1" fill="#ffe03a"/><rect x="11" y="8" width="1" height="1" fill="#ffe03a"/></g><g class="ld-f2"><rect x="4" y="8" width="1" height="1" fill="#ffe03a"/><rect x="6" y="8" width="1" height="1" fill="#ffe03a"/><rect x="8" y="8" width="1" height="1" fill="#ffe03a"/><rect x="10" y="8" width="1" height="1" fill="#ffe03a"/><rect x="12" y="8" width="1" height="1" fill="#ffe03a"/></g></svg></div>
+            <div class="ld-bar"><i id="ld-fill"></i></div>
+        </div>
+        <div class="ld-dots"><i></i><i></i><i></i></div>
+    </div>
+    <script>
+        // Avanza sola hacia el 90% (sin saber cuánto falta) hasta que el juego dice que está listo
+        (function () {
+            var k = 0, fill = document.getElementById('ld-fill'), rider = document.getElementById('ld-rider');
+            function step() {
+                if (window.__loaded) k += (1 - k) * 0.25; else k += (0.9 - k) * 0.012;
+                var p = Math.round(k * 40) / 40 * 100; // a saltitos, como un sprite
+                fill.style.width = p + '%';
+                rider.style.left = p + '%';
+                if (k < 0.995) requestAnimationFrame(step);
+                else document.getElementById('loader').classList.add('done');
+            }
+            requestAnimationFrame(step);
+        })();
+    </script>
     <canvas id="view"></canvas>
 
     <div id="hud" class="hud hidden">

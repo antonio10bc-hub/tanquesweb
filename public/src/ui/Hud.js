@@ -59,6 +59,7 @@ export class Hud {
         document.getElementById('btn-survival').disabled = false;
         document.getElementById('btn-campaign').disabled = false;
         document.getElementById('btn-duel').disabled = false;
+        window.__loaded = true; // la pantalla de carga termina la barra y se va
     }
 
     // Ceremonia al ganar: la moneda aparece con un +1, vuela al contador (que muestra la cifra
