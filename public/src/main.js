@@ -10,6 +10,8 @@ import { Achievements, achievementCount } from './core/Achievements.js';
 import { trackGame, trackGarage } from './core/GameAnalytics.js';
 import { L, applyHtmlTexts } from './core/I18n.js';
 import { DEV_CHANGED } from './core/Dev.js';
+import { Settings } from './core/Settings.js';
+import { analyticsAvailable, setAnalyticsConsent } from './core/Analytics.js';
 
 // Idioma: los textos fijos de index.html están en inglés; en español se cambian ya
 applyHtmlTexts();
@@ -73,6 +75,22 @@ const syncProfile = () => {
 };
 Profile.onChange(syncProfile);
 syncProfile();
+
+// Aviso de privacidad: la primera vez que se ve el menú (tras el tutorial, si sale), una vez
+const consent = document.getElementById('consent');
+if (analyticsAvailable()) document.querySelector('.toggle[data-key="analytics"]').classList.remove('hidden');
+hud.onScreenChange = (name) => {
+    const ask = name === 'menu' && Settings.analytics === null && analyticsAvailable();
+    consent.classList.toggle('hidden', !ask);
+};
+const answer = (on) => {
+    sfx.play('ui');
+    setAnalyticsConsent(on);
+    hud.syncToggles(Settings);
+    consent.classList.add('hidden');
+};
+document.getElementById('consent-yes').addEventListener('click', () => answer(true));
+document.getElementById('consent-no').addEventListener('click', () => answer(false));
 
 game.showMenu();
 // Aviso al encender o apagar las herramientas de desarrollo con ?dev=

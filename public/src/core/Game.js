@@ -21,6 +21,7 @@ import { Input } from './Input.js';
 import { Music } from './Music.js';
 import { ReplayRecorder } from './Replay.js';
 import { Settings } from './Settings.js';
+import { setAnalyticsConsent } from './Analytics.js';
 import { Profile } from './Profile.js';
 import { vibrate } from './Haptics.js';
 import { approach, clamp, pick } from './math.js';
@@ -123,7 +124,8 @@ export class Game {
         hud.settingsSource = Settings;
         hud.syncToggles(Settings);
         hud.onToggle = (key) => {
-            Settings.toggle(key);
+            if (key === 'analytics') setAnalyticsConsent(!Settings.analytics);
+            else Settings.toggle(key);
             this.applySettings();
             hud.syncToggles(Settings);
             if (key === 'vibration' && Settings.vibration) vibrate('pickup');

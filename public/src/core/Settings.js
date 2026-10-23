@@ -1,7 +1,8 @@
-// Preferencias del jugador (música, sonido, vibración). Se guardan en el navegador;
+// Preferencias del jugador (música, sonido, vibración, estadísticas anónimas). Se guardan en el navegador;
 // si el almacenamiento no está disponible, simplemente no se recuerdan.
 const KEY = 'tanques.settings';
-const DEFAULTS = { music: true, sfx: true, vibration: true };
+// analytics: null mientras no ha contestado al aviso; true/false después
+const DEFAULTS = { music: true, sfx: true, vibration: true, analytics: null };
 
 export const Settings = {
     ...DEFAULTS,
@@ -16,12 +17,18 @@ export const Settings = {
     },
 
     toggle(key) {
-        this[key] = !this[key];
+        return this.set(key, !this[key]);
+    },
+
+    set(key, value) {
+        this[key] = value;
         try {
-            localStorage.setItem(KEY, JSON.stringify({ music: this.music, sfx: this.sfx, vibration: this.vibration }));
+            const out = {};
+            for (const k of Object.keys(DEFAULTS)) out[k] = this[k];
+            localStorage.setItem(KEY, JSON.stringify(out));
         } catch {
             /* ignorar */
         }
-        return this[key];
+        return value;
     },
 };

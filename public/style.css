@@ -734,6 +734,41 @@ html, body {
 .toggle::after { content: ' SÍ'; }
 .toggle.off { background: #8e86a8; text-decoration: line-through; }
 .toggle.off::after { content: ' NO'; }
+html[lang="en"] .toggle::after { content: ' ON'; }
+html[lang="en"] .toggle.off::after { content: ' OFF'; }
+
+/* ---------- AVISO DE PRIVACIDAD ---------- */
+.consent {
+    position: fixed;
+    left: 50%;
+    bottom: calc(max(12px, env(safe-area-inset-bottom)) + 8px);
+    z-index: 40;
+    width: min(92vw, 420px);
+    transform: translateX(-50%);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 12px;
+    align-items: center;
+    padding: 12px 14px;
+    color: #fff;
+    background: var(--ink);
+    border: 3px solid #fff;
+    box-shadow: 0 5px 0 #000;
+    animation: consentIn .35s steps(3) both;
+}
+.consent.hidden { display: none; }
+.consent-icon {
+    grid-row: span 2;
+    width: 36px; height: 39px;
+    background: var(--px-trophy) center / contain no-repeat;
+    image-rendering: pixelated;
+}
+.consent-q { margin: 0; font-size: 11px; color: var(--yellow); text-shadow: 2px 2px 0 #000; }
+.consent-txt { margin: 0; font-size: 7px; line-height: 1.7; color: #cfc8ea; }
+.consent-btns { grid-column: 1 / -1; display: flex; gap: 10px; justify-content: center; margin-top: 4px; }
+.consent-btns .btn { margin: 0; min-width: 96px; }
+.btn.btn-grey { background: #8e86a8; box-shadow: 0 7px 0 var(--ink), inset 0 -6px 0 #6d6589, inset 0 4px 0 #b8b1cf; animation: none; }
+@keyframes consentIn { from { transform: translate(-50%, 30px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
 .pause-map {
     height: min(34vh, 300px);
     image-rendering: pixelated;

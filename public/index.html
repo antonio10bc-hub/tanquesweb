@@ -171,6 +171,17 @@
 
     <div id="toast" class="toast"></div>
 
+    <!-- Aviso de privacidad: sale una vez en el menú; hasta que contesta no se envía nada -->
+    <div id="consent" class="consent hidden" role="dialog" aria-labelledby="consent-q">
+        <div class="consent-icon" aria-hidden="true"></div>
+        <p id="consent-q" class="consent-q" data-es="¿NOS AYUDAS A MEJORAR EL JUEGO?">HELP US IMPROVE THE GAME?</p>
+        <p class="consent-txt" data-es="ENVÍA ESTADÍSTICAS ANÓNIMAS DE TUS PARTIDAS (MODOS, OBJETOS, JEFES). SIN DATOS PERSONALES. PUEDES CAMBIARLO EN AJUSTES.">SEND ANONYMOUS STATS ABOUT YOUR MATCHES (MODES, ITEMS, BOSSES). NO PERSONAL DATA. YOU CAN CHANGE IT IN SETTINGS.</p>
+        <div class="consent-btns">
+            <button id="consent-yes" class="btn btn-small" data-es="SÍ">YES</button>
+            <button id="consent-no" class="btn btn-small btn-grey">NO</button>
+        </div>
+    </div>
+
     <!-- Logro completado: baja desde arriba del todo, se queda un momento y vuelve a subir -->
     <div id="ach" class="ach">
         <div id="ach-icon" class="ach-icon"><i id="ach-trophy" class="ach-trophy"></i><i class="spark"></i></div>
@@ -208,6 +219,7 @@
             <button class="toggle" data-key="music" data-es="MÚSICA">MUSIC</button>
             <button class="toggle" data-key="sfx" data-es="SONIDO">SOUND</button>
             <button class="toggle" data-key="vibration" data-es="VIBRACIÓN">VIBRATION</button>
+            <button class="toggle hidden" data-key="analytics" data-es="ESTADÍSTICAS">STATS</button>
         </div>
         <button id="btn-settings-close" class="btn btn-small" data-es="VOLVER">BACK</button>
         <button id="btn-tutorial" class="btn btn-small" data-es="VER TUTORIAL">WATCH TUTORIAL</button>
