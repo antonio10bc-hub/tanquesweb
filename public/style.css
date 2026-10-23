@@ -353,6 +353,8 @@ html, body {
 .play-col .mode-btn.btn-duel { font-size: clamp(9px, 3vw, 13px); }
 /* Botones de modo: la escenita voxel asoma por la izquierda (sale un poco del botón) y el
    texto se centra en el resto */
+/* Ningún modo late más que otro: todos quietos */
+.play-col .mode-btn { animation: none; }
 .play-col .mode-btn { position: relative; display: flex; align-items: center; justify-content: center; padding-left: 86px; font-size: clamp(11px, 3.4vw, 14px); white-space: nowrap; }
 .mode-art {
     position: absolute;
