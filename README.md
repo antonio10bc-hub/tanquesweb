@@ -82,7 +82,11 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
   de un jefe (normal o difícil). En **Mi Tanque** se compran y equipan, en tres pestañas: 8 gorros voxel y el **tanque
   dorado** (aura, pilar de luz, chispas y balas de oro), 7 **pinturas** y 5 **estelas de bala**
   (arcoíris, llamarada, estrellas, burbujas, confeti), con una bala de muestra en el escaparate.
-- **Logros**: 19, con aviso al conseguirlos y pantalla propia con barras de progreso.
+  Los gorros se ven a escala 1.4. Cada jefe vencido en **modo difícil** regala su gorro y su
+  pintura (sombrero de paja, gorro cangrejo, aguijón, magdalena, muñeco de nieve, gorra de
+  policía, minivolcán, antenas marcianas y corona prismática): no se compran, y en Mi Tanque
+  dicen a quién hay que vencer.
+- **Logros**: 20, con aviso al conseguirlos y pantalla propia con barras de progreso.
 - **Arquetipos de escenario**: cada partida elige uno (Arena clásica, Emboscada, Demolición, Fortaleza,
   Carreras, Fantasmas) que decide cuánto muro, qué materiales, cuánta hierba y qué objetos salen,
   y lo viste con uno de sus temas visuales (nieve, desierto, caramelo, volcán, playa, pradera,

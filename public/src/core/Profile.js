@@ -1,5 +1,7 @@
 // Progreso del jugador guardado en el navegador: monedas, skins, logros y estadísticas.
 // Si el almacenamiento no está disponible, todo funciona igual pero no se recuerda.
+import { BOSS_REWARDS } from '../content/skins.js';
+
 const KEY = 'tankless.profile';
 
 const fresh = () => ({
@@ -90,6 +92,8 @@ export const Profile = {
     },
 
     owns(id) {
+        // Los trofeos de los jefes son tuyos en cuanto vences a ese jefe en modo difícil
+        if (BOSS_REWARDS[id]) return this.data.campaign.hard.beaten.includes(BOSS_REWARDS[id]);
         return this.data.owned.includes(id) || id === 'p_default' || id === 't_default';
     },
 

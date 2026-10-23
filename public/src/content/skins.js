@@ -1,4 +1,5 @@
-// Skins del tanque del jugador. Se compran con monedas de oro en "Mi Tanque".
+// Skins del tanque del jugador. Se compran con monedas de oro en "Mi Tanque"; las de los jefes
+// ("boss") no se compran: se ganan al vencer a ese jefe en modo difícil.
 // Los gorros se construyen con cubos encima de la torreta: add(w, h, d, color, x, y, z, outlined)
 // con y = 0 en la tapa de la torreta. Un gorro puede devolver piezas a animar.
 // "gold" convierte el tanque entero en oro, con aura y partículas.
@@ -110,6 +111,135 @@ export const SKINS = [
         gold: true,
         palette: { body: 0xffc21a, accent: 0xfff2a0, tread: 0x9a6200, barrel: 0xffe680, bullet: 0xffe680 },
     },
+    // ---------- Trofeos de los jefes (modo difícil) ----------
+    {
+        id: 'h_w1', boss: 'w1',
+        name: L('FARMER HAT', 'SOMBRERO DE PAJA'),
+        hat(add) {
+            add(0.6, 0.04, 0.6, 0xffd86b, 0, 0.02, 0);
+            add(0.3, 0.16, 0.3, 0xffd86b, 0, 0.12, 0);
+            add(0.31, 0.05, 0.31, 0xff3e3e, 0, 0.07, 0, false);
+            for (const [x, z] of [[-0.2, 0.22], [0.24, -0.1], [-0.25, -0.2]]) add(0.06, 0.02, 0.06, 0xd6a842, x, 0.045, z, false);
+            add(0.03, 0.18, 0.03, 0xd6a842, 0.08, 0.26, 0.04, false); // espiga
+            add(0.06, 0.06, 0.06, 0xffe680, 0.08, 0.37, 0.04, false);
+        },
+    },
+    {
+        id: 'h_w2', boss: 'w2',
+        name: L('CRAB HAT', 'GORRO CANGREJO'),
+        hat(add) {
+            add(0.36, 0.12, 0.32, 0xff5a3c, 0, 0.06, 0);
+            add(0.26, 0.06, 0.22, 0xffb08a, 0, 0.15, 0);
+            const eyes = [];
+            for (const s of [-1, 1]) {
+                add(0.04, 0.16, 0.04, 0xff5a3c, s * 0.08, 0.26, 0.08, false);
+                eyes.push(add(0.1, 0.1, 0.1, 0xffffff, s * 0.08, 0.38, 0.08));
+                add(0.04, 0.04, 0.02, 0x1b0b33, s * 0.08, 0.38, 0.135, false);
+                add(0.12, 0.08, 0.1, 0xff5a3c, s * 0.24, 0.08, 0.1);   // pinzas
+                add(0.06, 0.06, 0.08, 0xffb08a, s * 0.28, 0.14, 0.17);
+            }
+            return { animate: (t) => eyes.forEach((e, i) => (e.position.y = 0.38 + Math.sin(t * 5 + i * 2) * 0.02)) };
+        },
+    },
+    {
+        id: 'h_w3', boss: 'w3',
+        name: L('STINGER', 'AGUIJÓN'),
+        hat(add) {
+            add(0.3, 0.08, 0.3, 0x4a2f7a, 0, 0.04, 0);
+            add(0.12, 0.12, 0.12, 0x4a2f7a, 0, 0.14, -0.1);
+            add(0.11, 0.12, 0.11, 0x4a2f7a, 0, 0.26, -0.14);
+            add(0.1, 0.12, 0.1, 0x4a2f7a, 0, 0.38, -0.08);
+            add(0.1, 0.1, 0.12, 0xffb03a, 0, 0.44, 0.04);
+            add(0.04, 0.04, 0.08, 0xff3e3e, 0, 0.41, 0.13, false);
+        },
+    },
+    {
+        id: 'h_w4', boss: 'w4',
+        name: L('CUPCAKE', 'MAGDALENA'),
+        hat(add) {
+            add(0.36, 0.1, 0.36, 0xc47a3a, 0, 0.05, 0);
+            for (const x of [-0.12, 0, 0.12]) add(0.04, 0.1, 0.37, 0xa8642e, x, 0.05, 0, false);
+            add(0.42, 0.08, 0.42, 0xff8fd8, 0, 0.14, 0);
+            add(0.3, 0.08, 0.3, 0xffc6ec, 0, 0.22, 0);
+            add(0.14, 0.14, 0.14, 0xff2a4a, 0, 0.33, 0);
+            add(0.03, 0.12, 0.03, 0x3fbf4a, 0.03, 0.45, 0, false);
+            const sprinkles = [0xffe03a, 0x23e0d6, 0xffffff, 0x7b5cff];
+            for (let i = 0; i < 6; i++) {
+                const a = (i / 6) * Math.PI * 2;
+                add(0.05, 0.03, 0.03, sprinkles[i % 4], Math.sin(a) * 0.16, 0.185, Math.cos(a) * 0.16, false);
+            }
+        },
+    },
+    {
+        id: 'h_w5', boss: 'w5',
+        name: L('SNOWMAN', 'MUÑECO DE NIEVE'),
+        hat(add) {
+            add(0.32, 0.26, 0.3, 0xffffff, 0, 0.13, 0);
+            for (const s of [-1, 1]) add(0.05, 0.05, 0.02, 0x1b1f4a, s * 0.07, 0.17, 0.155, false);
+            add(0.05, 0.05, 0.14, 0xff9a1f, 0, 0.12, 0.2, false);       // zanahoria
+            add(0.36, 0.04, 0.34, 0x1b1f4a, 0, 0.28, 0);                // chistera
+            add(0.22, 0.18, 0.22, 0x1b1f4a, 0, 0.38, 0);
+            add(0.23, 0.04, 0.23, 0x2a6aff, 0, 0.32, 0, false);
+        },
+    },
+    {
+        id: 'h_w6', boss: 'w6',
+        name: L('POLICE CAP', 'GORRA DE POLICÍA'),
+        hat(add) {
+            add(0.36, 0.12, 0.34, 0x2a3a8a, 0, 0.06, 0);
+            add(0.4, 0.06, 0.38, 0x1a2a6a, 0, 0.15, 0);
+            add(0.36, 0.03, 0.14, 0x15152a, 0, 0.02, 0.2);              // visera
+            add(0.08, 0.08, 0.02, 0xffd23f, 0, 0.1, 0.18, false);       // placa
+            const red = add(0.08, 0.07, 0.08, 0xff2a4a, -0.05, 0.22, 0, false);
+            const blue = add(0.08, 0.07, 0.08, 0x2a6aff, 0.05, 0.22, 0, false);
+            return {
+                animate: (t) => {
+                    const on = Math.floor(t * 5) % 2 === 0;
+                    red.visible = on;
+                    blue.visible = !on;
+                },
+            };
+        },
+    },
+    {
+        id: 'h_w7', boss: 'w7',
+        name: L('MINI VOLCANO', 'MINIVOLCÁN'),
+        hat(add) {
+            add(0.36, 0.12, 0.36, 0x3a2a30, 0, 0.06, 0);
+            add(0.26, 0.12, 0.26, 0x3a2a30, 0, 0.18, 0);
+            add(0.16, 0.06, 0.16, 0x4a3a40, 0, 0.27, 0);
+            add(0.1, 0.03, 0.1, 0xffd23f, 0, 0.3, 0, false);
+            for (const s of [-1, 1]) add(0.03, 0.1, 0.03, 0xff5a1f, s * 0.1, 0.17, 0.13, false);
+            const blob = add(0.06, 0.06, 0.06, 0xff9a1f, 0, 0.36, 0, false);
+            return { animate: (t) => (blob.position.y = 0.34 + Math.abs(Math.sin(t * 3)) * 0.14) };
+        },
+    },
+    {
+        id: 'h_w8', boss: 'w8',
+        name: L('ALIEN ANTENNAE', 'ANTENAS MARCIANAS'),
+        hat(add) {
+            add(0.42, 0.06, 0.06, 0x7dff4a, 0, 0.03, 0);                 // diadema
+            const tips = [];
+            for (const s of [-1, 1]) {
+                add(0.04, 0.26, 0.04, 0x7dff4a, s * 0.16, 0.18, 0, false);
+                tips.push(add(0.1, 0.1, 0.1, 0x2ef2ff, s * 0.16, 0.34, 0));
+            }
+            return { animate: (t) => tips.forEach((b, i) => (b.position.y = 0.34 + Math.sin(t * 4 + i * Math.PI) * 0.03)) };
+        },
+    },
+    {
+        id: 'h_secret', boss: 'secret',
+        name: L('PRISM CROWN', 'CORONA PRISMÁTICA'),
+        hat(add) {
+            add(0.38, 0.08, 0.38, 0xffffff, 0, 0.04, 0);
+            const cols = [0xff3e5e, 0xffe03a, 0x7dff4a, 0x23e0d6, 0x7b5cff];
+            const gems = cols.map((c, i) => {
+                const a = (i / cols.length) * Math.PI * 2;
+                return add(0.08, 0.16 + (i % 2) * 0.08, 0.08, c, Math.sin(a) * 0.13, 0.16 + (i % 2) * 0.04, Math.cos(a) * 0.13);
+            });
+            return { animate: (t) => gems.forEach((g, i) => (g.position.y = 0.17 + (i % 2) * 0.04 + Math.sin(t * 3 + i) * 0.02)) };
+        },
+    },
 ];
 
 export const SKIN_BY_ID = Object.fromEntries(SKINS.map((s) => [s.id, s]));
@@ -125,6 +255,16 @@ export const PAINTS = [
     { id: 'p_mint', name: L('MINT', 'MENTA'), price: 1, palette: { body: 0x7dffc8, accent: 0xffffff, tread: 0x1f6a5a, bullet: 0xc8fff0 } },
     { id: 'p_snow', name: L('GLACIER', 'GLACIAR'), price: 1, palette: { body: 0xf4f8ff, accent: 0x2a8bff, tread: 0x3a4a6a, bullet: 0x9af6ff } },
     { id: 'p_lemon', name: L('LEMON', 'LIMÓN'), price: 1, palette: { body: 0xffe03a, accent: 0x2a2a40, tread: 0x3a3a1a, bullet: 0xfff6a0 } },
+    // Trofeos de los jefes (modo difícil): sus colores
+    { id: 'p_w1', boss: 'w1', name: L('TRACTOR', 'TRACTOR'), palette: { body: 0x3fbf4a, accent: 0xffd86b, tread: 0x2a2a2a, barrel: 0x9a9aac, bullet: 0xd8ff8a } },
+    { id: 'p_w2', boss: 'w2', name: L('CORAL', 'CORAL'), palette: { body: 0xff5a3c, accent: 0xffb08a, tread: 0x6a1a10, bullet: 0xffb08a } },
+    { id: 'p_w3', boss: 'w3', name: L('VENOM', 'VENENO'), palette: { body: 0x4a2f7a, accent: 0xffb03a, tread: 0x1a0f2a, bullet: 0xffd08a } },
+    { id: 'p_w4', boss: 'w4', name: L('FROSTING', 'GLASEADO'), palette: { body: 0xffc6ec, accent: 0xff2a4a, tread: 0xa8642e, barrel: 0xffffff, bullet: 0xff8fd8 } },
+    { id: 'p_w5', boss: 'w5', name: L('BLIZZARD', 'VENTISCA'), palette: { body: 0xffffff, accent: 0x2a6aff, tread: 0x1b1f4a, bullet: 0xcff6ff } },
+    { id: 'p_w6', boss: 'w6', name: L('PATROL', 'PATRULLA'), palette: { body: 0x2a3a8a, accent: 0x2ef2ff, tread: 0x15152a, barrel: 0xd0dcff, bullet: 0x8afcff } },
+    { id: 'p_w7', boss: 'w7', name: L('MAGMA', 'MAGMA'), palette: { body: 0x3a2a30, accent: 0xff5a1f, tread: 0x1a1014, barrel: 0x6e5a6c, bullet: 0xffb03a } },
+    { id: 'p_w8', boss: 'w8', name: L('MARTIAN', 'MARCIANO'), palette: { body: 0x7dff4a, accent: 0xd0dcff, tread: 0x1a1a3a, barrel: 0x9af6ff, bullet: 0xb0ff8a } },
+    { id: 'p_secret', boss: 'secret', name: L('OPAL', 'ÓPALO'), palette: { body: 0xf4f0ff, accent: 0xff8fd8, tread: 0x5a3aa8, barrel: 0x9af6ff, bullet: 0xffffff } },
 ];
 
 // Estelas: el rastro que dejan tus balas (las de fuego y rebote mantienen el suyo).
@@ -139,3 +279,6 @@ export const TRAILS = [
 
 export const PAINT_BY_ID = Object.fromEntries(PAINTS.map((p) => [p.id, p]));
 export const TRAIL_BY_ID = Object.fromEntries(TRAILS.map((t) => [t.id, t]));
+
+// Trofeos de los jefes: id del objeto -> id del jefe que hay que vencer en modo difícil
+export const BOSS_REWARDS = Object.fromEntries([...SKINS, ...PAINTS].filter((x) => x.boss).map((x) => [x.id, x.boss]));

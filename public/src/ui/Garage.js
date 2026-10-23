@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { SKINS, SKIN_BY_ID, GOLD_SPARKS, TANKS, PAINTS, TRAILS, PAINT_BY_ID, TRAIL_BY_ID } from '../content/index.js';
+import { SKINS, SKIN_BY_ID, GOLD_SPARKS, TANKS, PAINTS, TRAILS, PAINT_BY_ID, TRAIL_BY_ID, WORLD_BY_ID } from '../content/index.js';
 import { trailParticle, TRAIL_RATE } from '../render/trails.js';
 import { TankModel } from '../render/TankModel.js';
 import { Particles } from '../render/Particles.js';
@@ -40,8 +40,9 @@ export class Garage {
         sun.position.set(-4, 10, 6);
         this.scene.add(sun, new THREE.HemisphereLight(0xd6c8ff, 0x7a4cff, 1.2));
         this.camera = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
-        this.camera.position.set(0, 1.9, 3.6);
-        this.camera.lookAt(0, 0.38, 0);
+        // Algo alejada y mirando más arriba: caben los gorros altos (van a escala 1.4)
+        this.camera.position.set(0, 2.05, 4.05);
+        this.camera.lookAt(0, 0.52, 0);
         this.buildPedestal();
         this.particles = new Particles(this.scene, 160);
         this.fake = {
@@ -174,6 +175,8 @@ export class Garage {
                 this.sfx.play('reloaded');
                 if (this.onWear) this.onWear(s, key, false);
             }
+        } else if (s.boss) {
+            this.sfx.play('itemGone'); // trofeo de jefe: no se compra
         } else if (Profile.buy(s.id, s.price)) {
             Profile.equip(s.id, key);
             this.sfx.play('win');
@@ -193,6 +196,16 @@ export class Garage {
         el.count.textContent = `${this.index + 1} / ${this.items.length}`;
         el.coins.textContent = Profile.coins;
         const owned = Profile.owns(s.id), equipped = Profile.data[CATS[this.cat].key] === s.id;
+        // Trofeo de un jefe aún sin ganar: dice a quién hay que vencer
+        if (s.boss && !owned) {
+            const boss = WORLD_BY_ID[s.boss].tank.name;
+            el.action.disabled = true;
+            el.action.className = 'btn buy locked';
+            el.action.innerHTML = L(`<span class="skull-mini"></span> BEAT ${boss} ON HARD`, `<span class="skull-mini"></span> VENCE A ${boss} EN DIFÍCIL`);
+            el.hint.classList.add('hidden');
+            el.screen.classList.toggle('golden', !!this.preview(true).skin.gold);
+            return;
+        }
         el.action.disabled = equipped || (!owned && Profile.coins < s.price);
         el.action.className = `btn ${owned ? '' : 'buy'}`;
         el.action.innerHTML = equipped ? L('EQUIPPED', 'EQUIPADO') : owned ? L('USE', 'USAR')

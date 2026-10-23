@@ -115,6 +115,8 @@ export const EndingPart = {
                     // Al ganar, solo se vuelve al mapa (allí se ve cómo se abre el siguiente mundo)
                     this.hud.endButtons(null, L('BACK TO THE MAP', 'VOLVER AL MAPA'));
                     this.hud.showStars(got, best, par, (k) => this.sfx.play(k < stars ? 'coin' : 'tick'));
+                    // Primera victoria en difícil: su gorro y su pintura ya están en Mi Tanque
+                    if (hard && first) setTimeout(() => this.state === 'end' && this.hud.toast(L('NEW HAT AND PAINT IN MY TANK!', '¡NUEVO GORRO Y PINTURA EN MI TANQUE!'), 'trophy'), 2600);
                 };
                 if (reward > 0) {
                     // Primero las monedas vuelan al contador; después, con calma, el final con las estrellas

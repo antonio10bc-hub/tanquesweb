@@ -5,6 +5,9 @@ import { damp, wrapAngle } from '../core/math.js';
 const BAR_W = 0.78;
 const PIP_GAP = 0.05;
 
+// Los gorros se ven más grandes que la torreta: así lucen desde la cámara del juego
+const HAT_SCALE = 1.4;
+
 // Tanque voxel con ojitos. Solo es visual: la simulación vive en world/Tank.js.
 export class TankModel {
     // skin: entrada de content/skins.js (gorro y/o tanque dorado), opcional.
@@ -80,6 +83,7 @@ export class TankModel {
         if (skin && skin.hat) {
             this.hat = new THREE.Group();
             this.hat.position.set(0, 0.305, -0.03);
+            this.hat.scale.setScalar(HAT_SCALE);
             this.turret.add(this.hat);
             const extra = skin.hat((w, h, d, color, x, y, z, outlined = true) => this.part(this.hat, w, h, d, mat(color), x, y, z, outlined));
             this.hatAnim = extra && extra.animate;

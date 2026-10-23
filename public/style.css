@@ -405,6 +405,8 @@ html, body {
     cursor: pointer;
 }
 .garage-tabs .tab.on { color: var(--ink); background: var(--yellow); transform: translateY(-2px); }
+.garage .btn.locked { font-size: clamp(9px, 2.8vw, 12px); background: #2a1f4f; color: #ff6a7a; box-shadow: 0 7px 0 var(--ink); opacity: 1; display: inline-flex; align-items: center; gap: 8px; }
+.skull-mini { display: inline-block; width: 18px; height: 15px; background: var(--px-skull) center / contain no-repeat; image-rendering: pixelated; }
 #garage-view {
     width: min(224px, 56vw);
     height: min(224px, 56vw);
