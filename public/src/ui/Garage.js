@@ -169,12 +169,16 @@ export class Garage {
     act() {
         const s = this.skin, key = CATS[this.cat].key;
         if (Profile.owns(s.id)) {
-            if (Profile.data[key] !== s.id && Profile.equip(s.id, key)) this.sfx.play('reloaded');
+            if (Profile.data[key] !== s.id && Profile.equip(s.id, key)) {
+                this.sfx.play('reloaded');
+                if (this.onWear) this.onWear(s, key, false);
+            }
         } else if (Profile.buy(s.id, s.price)) {
             Profile.equip(s.id, key);
             this.sfx.play('win');
             this.burst = 1;
-            if (this.onBuy) this.onBuy(s);
+            if (this.onBuy) this.onBuy(s, key);
+            if (this.onWear) this.onWear(s, key, true);
         } else {
             this.sfx.play('itemGone');
         }

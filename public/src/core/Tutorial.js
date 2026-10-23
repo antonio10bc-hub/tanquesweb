@@ -152,6 +152,7 @@ export class Tutorial {
         if (!s) return;
         if (s.enter) s.enter(this);
         this.game.hud.tutorial(s.title, s.text, this.step, STEPS.length);
+        this.game.events.emit('tutorialStep', this.step, s.title, STEPS.length);
     }
 
     update(dt) {

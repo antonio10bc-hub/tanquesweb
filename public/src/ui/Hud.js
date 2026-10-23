@@ -228,6 +228,7 @@ export class Hud {
         this.el.hud.classList.toggle('hidden', name === 'menu' || name === 'campaign');
         document.getElementById('campaign').classList.toggle('hidden', name !== 'campaign');
         this.el.pauseBtn.classList.toggle('hidden', name !== 'play');
+        if (this.onScreen) this.onScreen(name);
     }
 
     showPause(on, settings) {

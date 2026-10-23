@@ -4,7 +4,7 @@
 // copia); sin conexión, o si la red tarda demasiado, se usa la copia guardada.
 // La primera visita guarda la estructura básica al instalarse, y la página le envía la
 // lista de todo lo que ha cargado (módulos, iconos...) para que también lo guarde.
-const CACHE = 'tanques-v1';
+const CACHE = 'tanques-v2';
 const SHELL = [
     './',
     './index.html',
@@ -40,7 +40,10 @@ self.addEventListener('message', (event) => {
 
 self.addEventListener('fetch', (event) => {
     const req = event.request;
-    if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
+    const url = new URL(req.url);
+    if (req.method !== 'GET' || url.origin !== self.location.origin) return;
+    // Las analíticas van siempre a la red, sin caché
+    if (url.pathname.startsWith('/ingest')) return;
     event.respondWith(networkFirst(req));
 });
 

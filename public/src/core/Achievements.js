@@ -1,5 +1,6 @@
 import { ACHIEVEMENTS, SKIN_BY_ID } from '../content/index.js';
 import { Profile } from './Profile.js';
+import { trackAchievement } from './GameAnalytics.js';
 
 // Vigila los eventos del juego, actualiza las estadísticas y desbloquea logros.
 export class Achievements {
@@ -63,6 +64,7 @@ export class Achievements {
 
     unlock(id) {
         if (!Profile.unlock(id)) return;
+        trackAchievement(id);
         const a = ACHIEVEMENTS.find((x) => x.id === id);
         this.game.hud.achievement(a.name, a.desc, a.id);
         this.game.sfx.play('achievement');
