@@ -116,13 +116,6 @@ html, body {
 }
 .tag:empty { display: none; }
 
-.help {
-    margin: 0;
-    font-size: 10px;
-    line-height: 2;
-    text-shadow: 2px 2px 0 var(--ink);
-}
-.help em { color: var(--pink); font-style: normal; }
 
 .btn {
     font-family: var(--font);
@@ -305,13 +298,35 @@ html, body {
 
 /* ---------- MENÚ ---------- */
 .menu {
-    justify-content: space-between;
-    padding-top: calc(max(14px, env(safe-area-inset-top)) + 54px);
-    padding-bottom: calc(max(20px, env(safe-area-inset-bottom)) + 12px);
+    justify-content: center;
+    /* Mismo margen arriba (monedas y Ajustes) que abajo: el bloque queda centrado de verdad */
+    padding-top: calc(max(14px, env(safe-area-inset-top)) + 50px);
+    padding-bottom: calc(max(14px, env(safe-area-inset-bottom)) + 50px);
     overflow-y: auto;
 }
-.menu-top { display: flex; flex-direction: column; align-items: center; gap: 18px; margin: auto 0; }
-.menu-row { display: flex; gap: 12px; }
+/* Un solo bloque centrado: título, tu tanque en grande, objetos y logros, y los modos */
+.menu-top { display: flex; flex-direction: column; align-items: center; gap: 16px; margin: auto 0; }
+.menu-row { display: flex; gap: 10px; width: min(300px, 88vw); }
+/* Mi Tanque: la pieza principal del menú, grande y centrada bajo el título */
+.garage-btn { width: 168px; gap: 6px; font-size: 12px; }
+.garage-btn canvas { width: 132px; height: 132px; }
+/* Objetos y logros: mismo formato, uno al lado del otro, con su icono a la izquierda */
+.btn.pill-btn {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 8px 6px;
+    font-size: clamp(8px, 2.5vw, 9px);
+    white-space: nowrap;
+}
+.pill-btn canvas { width: 28px; height: 28px; margin: -6px 0; image-rendering: pixelated; flex: none; }
+.pill-icon { flex: none; width: 18px; height: 20px; background: center / contain no-repeat; image-rendering: pixelated; }
+.trophy-icon { background-image: var(--px-trophy); }
+/* Un poco de aire sobre los modos: sus escenitas asoman por encima de cada botón */
+.menu-top .play-col { margin-top: 6px; }
 .play-col { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .play-col .btn { width: min(300px, 82vw); font-size: clamp(13px, 4.4vw, 18px); padding: 13px 14px; }
 .btn-alt {
@@ -704,12 +719,15 @@ html, body {
     100% { opacity: 0; transform: translate(-50%, -10px); }
 }
 
-/* Con los cuatro modos, en móviles normales el texto de ayuda no cabe (lo explica el tutorial) */
-@media (max-height: 760px) {
-    .menu .help { display: none; }
-}
-@media (max-height: 640px) {
+/* Pantallas bajas: todo algo más apretado para que el bloque quepa entero */
+@media (max-height: 700px) {
     .menu-top { gap: 12px; }
+    .garage-btn canvas { width: 104px; height: 104px; }
+}
+@media (max-height: 600px) {
+    .menu-top { gap: 8px; }
+    .garage-btn canvas { width: 76px; height: 76px; }
+    .logo { font-size: clamp(24px, 8vw, 40px); }
     .play-col { gap: 10px; }
     .play-col .btn { padding: 10px 12px; }
     .play-col .mode-btn { padding-left: 86px; }

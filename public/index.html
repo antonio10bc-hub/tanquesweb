@@ -127,33 +127,27 @@
     <div id="menu" class="screen menu">
         <div class="coins-badge" aria-label="Coins" data-es-aria="Monedas"><span class="coin"></span><span id="menu-coins">0</span></div>
         <button id="btn-settings" class="corner-btn" data-es="AJUSTES">SETTINGS</button>
+        <!-- Todo el menú va en un bloque centrado en la pantalla: título, tu tanque en grande,
+             objetos y logros, y los cuatro modos -->
         <div class="menu-top">
-        <h1 class="logo" aria-label="Tank-less">
-            <span class="word"><span class="ch">T</span><span class="ch">A</span><span class="ch">N</span><span class="ch">K</span><span class="ch ghost">-</span><span class="ch ghost">L</span><span class="ch ghost">E</span><span class="ch ghost">S</span><span class="ch ghost">S</span></span>
-        </h1>
+            <h1 class="logo" aria-label="Tank-less">
+                <span class="word"><span class="ch">T</span><span class="ch">A</span><span class="ch">N</span><span class="ch">K</span><span class="ch ghost">-</span><span class="ch ghost">L</span><span class="ch ghost">E</span><span class="ch ghost">S</span><span class="ch ghost">S</span></span>
+            </h1>
+            <button id="btn-garage" class="items-btn garage-btn" aria-label="My tank" data-es-aria="Mi tanque">
+                <canvas width="112" height="112"></canvas>
+                <span data-es="MI TANQUE">MY TANK</span>
+            </button>
             <div class="menu-row">
-                <button id="btn-garage" class="items-btn" aria-label="My tank" data-es-aria="Mi tanque">
-                    <canvas width="56" height="56"></canvas>
-                    <span data-es="MI TANQUE">MY TANK</span>
-                </button>
-                <button id="btn-items" class="items-btn" aria-label="Items" data-es-aria="Objetos">
-                    <canvas width="48" height="48"></canvas>
-                    <span data-es="OBJETOS">ITEMS</span>
-                </button>
+                <button id="btn-items" class="btn btn-small pill-btn" aria-label="Items" data-es-aria="Objetos"><canvas width="48" height="48"></canvas><span data-es="OBJETOS">ITEMS</span></button>
+                <button id="btn-trophies" class="btn btn-small pill-btn trophy-btn"><span class="pill-icon trophy-icon"></span><span data-es="LOGROS">AWARDS</span> <span id="menu-trophies">0/0</span></button>
             </div>
-            <button id="btn-trophies" class="btn btn-small trophy-btn"><span class="trophy"></span> <span data-es="LOGROS">ACHIEVEMENTS</span> <span id="menu-trophies">0/0</span></button>
-            <p class="help" data-es="MUÉVETE Y ERES INVISIBLE<br>PARA Y DISPARAS SOLO<br><em>PERO DISPARAR TE DELATA</em>">
-                MOVE AND YOU ARE INVISIBLE<br>
-                STOP AND YOU FIRE ON YOUR OWN<br>
-                <em>BUT FIRING GIVES YOU AWAY</em>
-            </p>
-        </div>
-        <div class="play-col">
-            <!-- Cada modo con su escenita voxel (ui/ModeArt.js) -->
-            <button id="btn-play" class="btn mode-btn" disabled><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="CARGANDO...">LOADING...</span></button>
-            <button id="btn-campaign" class="btn btn-camp mode-btn" disabled><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="CAMPAÑA">CAMPAIGN</span></button>
-            <button id="btn-survival" class="btn btn-alt mode-btn" disabled><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="SUPERVIVENCIA">SURVIVAL</span></button>
-            <button id="btn-duel" class="btn btn-duel mode-btn" disabled><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="DUELO A DOS">TWO-PLAYER DUEL</span></button>
+            <div class="play-col">
+                <!-- Cada modo con su escenita voxel (ui/ModeArt.js) -->
+                <button id="btn-play" class="btn mode-btn" disabled><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="CARGANDO...">LOADING...</span></button>
+                <button id="btn-campaign" class="btn btn-camp mode-btn" disabled><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="CAMPAÑA">CAMPAIGN</span></button>
+                <button id="btn-survival" class="btn btn-alt mode-btn" disabled><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="SUPERVIVENCIA">SURVIVAL</span></button>
+                <button id="btn-duel" class="btn btn-duel mode-btn" disabled><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="DUELO A DOS">TWO-PLAYER DUEL</span></button>
+            </div>
         </div>
     </div>
 
