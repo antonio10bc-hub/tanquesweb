@@ -90,18 +90,26 @@ export const ISLANDS = {
     },
 
     // Caramelo: tres lóbulos redondos, como gominolas, con una piruleta gigante
+    // Separados por un canal de agua y unidos por puentes de bastón de caramelo
     candy: {
         land: (c, r, k) =>
-            blob(c, r, k.n.x, k.zc + 0.4, 2.9, 3.3) || blob(c, r, k.x(4.3), k.zc - 1.6, 2.1, 1.9) || blob(c, r, k.x(3.8), k.zc + 2.6, 1.8, 1.6),
+            blob(c, r, k.n.x, k.zc + 0.4, 2.4, 3.3) || blob(c, r, k.x(5.2), k.zc - 1.8, 1.6, 1.7) || blob(c, r, k.x(4.6), k.zc + 2.5, 1.3, 1.3),
         landmark(add, k, reserve) {
-            const x = k.x(4.3), z = k.zc - 1.6;
+            // Puentes de rayas sobre el canal (de cada lóbulo pequeño al grande)
+            for (const z of [k.zc - 1.8, k.zc + 2.5]) {
+                for (let t = 0; t < 4; t++) {
+                    add(0.42, 0.12, 0.7, t % 2 ? 0xff3e5e : 0xffffff, k.x(2.25 + t * 0.42), 0.0, z);
+                }
+                for (const side of [-0.38, 0.38]) add(1.7, 0.08, 0.08, 0xffffff, k.x(2.88), 0.2, z + side, { outlined: false });
+            }
+            const x = k.x(5.2), z = k.zc - 1.8;
             reserve(x, z, 1.2);
             add(0.14, 2.0, 0.14, 0xffffff, x, 1.0, z);
             add(1.3, 1.3, 0.22, 0xff4fa3, x, 2.4, z);
             add(0.9, 0.9, 0.24, 0xffffff, x, 2.4, z, { outlined: false });
             add(0.5, 0.5, 0.26, 0x6ff6ff, x, 2.4, z, { outlined: false });
             // Gominolas en el otro lóbulo
-            const gx = k.x(3.8), gz = k.zc + 2.6;
+            const gx = k.x(4.6), gz = k.zc + 2.5;
             reserve(gx, gz, 1);
             [[0, 0, 0x7dff4a], [0.55, 0.3, 0xffd23f], [-0.45, 0.35, 0xb46bff]].forEach(([dx, dz, c]) => {
                 add(0.46, 0.36, 0.46, c, gx + dx, 0.18, gz + dz);
