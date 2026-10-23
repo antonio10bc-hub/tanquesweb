@@ -52,6 +52,26 @@ export const EndingPart = {
         if (this.stateTime * REPLAY.speed > this.replayLen + 0.8) this.showEnd();
     },
 
+    // Lo que cuenta el resumen final (solo lo que hace tu tanque)
+    trackTally() {
+        const ev = this.events, mine = (t) => this.world && t === this.world.player;
+        ev.on('hit', (tank, x, z, color, damage, owner) => mine(owner) && tank.team !== 'player' && this.tally.hits++);
+        ev.on('death', (tank, owner) => mine(owner) && tank.team !== 'player' && this.tally.kills++);
+        ev.on('pickup', (tank) => mine(tank) && this.tally.pickups++);
+    },
+
+    // Resumen de la partida en la pantalla final, contado cifra a cifra
+    showTally() {
+        const p = this.world.player, t = Math.round(this.playTime);
+        const aim = p.shots ? Math.min(100, Math.round((this.tally.hits / p.shots) * 100)) : 0;
+        this.hud.showTally([
+            { label: L('TIME', 'TIEMPO'), value: t, format: (v) => `${Math.floor(v / 60)}:${String(v % 60).padStart(2, '0')}` },
+            { label: L('TANKS DESTROYED', 'DERRIBADOS'), value: this.tally.kills },
+            { label: L('SHOTS', 'DISPAROS'), value: p.shots },
+            { label: L('ACCURACY', 'PUNTERÍA'), value: aim, format: (v) => `${v}%` },
+        ], (final) => this.sfx.play(final ? 'reloaded' : 'tick'));
+    },
+
     showEnd() {
         const win = this.result;
         this.setState('end');
@@ -91,6 +111,7 @@ export const EndingPart = {
                 const sub = w.secret && !hard ? L('YOU HAVE COMPLETED THE CAMPAIGN!', '¡HAS COMPLETADO LA CAMPAÑA!') : L(`${w.tank.name} IS DOWN`, `${w.tank.name} HA CAÍDO`);
                 const end = () => {
                     this.hud.showEnd(true, sub, hard ? L('NIGHTMARE BEATEN!', '¡PESADILLA SUPERADA!') : L('BOSS DEFEATED!', '¡JEFE DERROTADO!'));
+                    this.showTally();
                     // Al ganar, solo se vuelve al mapa (allí se ve cómo se abre el siguiente mundo)
                     this.hud.endButtons(null, L('BACK TO THE MAP', 'VOLVER AL MAPA'));
                     this.hud.showStars(got, best, par, (k) => this.sfx.play(k < stars ? 'coin' : 'tick'));
@@ -112,11 +133,13 @@ export const EndingPart = {
                 }
             } else {
                 this.hud.showEnd(false, L('TRY AGAIN!', '¡INTÉNTALO OTRA VEZ!'));
+                this.showTally();
             }
         } else if (this.mode === 'survival') {
             const reached = this.wave - (this.waveClear ? 0 : 1);
             const sub = this.newRecord ? L('NEW RECORD!', '¡NUEVO RÉCORD!') : L(`RECORD: ${st.bestWave} WAVES`, `RÉCORD: ${st.bestWave} OLEADAS`);
             this.hud.showEnd(false, sub, L(`${reached} WAVE${reached === 1 ? '' : 'S'}`, `${reached} OLEADA${reached === 1 ? '' : 'S'}`));
+            this.showTally();
         } else {
             st.streak = win ? st.streak + 1 : 0;
             if (win) st.wins++;
@@ -126,6 +149,7 @@ export const EndingPart = {
             } else {
                 this.hud.showEnd(false, L('NEXT TIME!', '¡A LA PRÓXIMA!'));
             }
+            this.showTally();
         }
         this.events.emit('matchEnd', { win, mode: this.mode, wave: this.wave, world: this.worldId });
         this.sfx.play(win ? 'win' : 'lose');

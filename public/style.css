@@ -1114,6 +1114,26 @@ html[lang="en"] .toggle.off::after { content: ' OFF'; }
 @keyframes biPop { from { transform: scale(0); } }
 @keyframes biOut { 0%, 88% { opacity: 1; } 94% { opacity: .5; } 100% { opacity: 0; } }
 
+/* ---------- RESUMEN DE LA PARTIDA (pantalla final) ---------- */
+.end-tally { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; width: min(300px, 84vw); }
+.t-cell {
+    padding: 7px 8px 8px;
+    background: var(--ink);
+    border: 3px solid #fff;
+    box-shadow: 0 4px 0 #000;
+    text-align: left;
+    visibility: hidden;
+}
+.t-cell.in { visibility: visible; animation: tIn .25s steps(3) both; }
+.t-cell b { display: block; font-size: 16px; font-weight: normal; color: #fff; text-shadow: 2px 2px 0 #000; }
+.t-cell.done b { color: var(--yellow); }
+.t-cell span { display: block; margin-top: 5px; font-size: 7px; color: #cfc8ea; }
+@keyframes tIn { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (max-height: 640px) {
+    .t-cell { padding: 5px 7px 6px; }
+    .t-cell b { font-size: 13px; }
+}
+
 /* ---------- ESTRELLAS AL VENCER A UN JEFE ---------- */
 .end-stars { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .stars-row { display: flex; gap: 10px; }

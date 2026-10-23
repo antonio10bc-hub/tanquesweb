@@ -94,6 +94,7 @@ export class Game {
         this.renderer.onResize = (w, h) => this.rig.resize(w / h);
         this.renderer.resize();
         this.bindEvents();
+        this.trackTally();
         this.bindUi();
         this.campaign = new CampaignMap(this);
         this.tutorial = new Tutorial(this);
@@ -274,6 +275,7 @@ export class Game {
         this.skulls.start(this.hard ? this.world.arena : null);
         this.playTime = 0;
         this.damageTaken = 0;
+        this.tally = { kills: 0, hits: 0, pickups: 0 }; // para el resumen final
         this.hud.showBoss(this.boss ? this.boss.def.name : null);
         this.hud.endButtons(this.mode === 'tutorial' ? L('REPEAT', 'REPETIR') : L('PLAY AGAIN', 'OTRA VEZ'), this.mode === 'campaign' ? L('SEE THE MAP', 'VER EL MAPA') : L('MAIN MENU', 'MENÚ PRINCIPAL'));
         this.wave = 1;

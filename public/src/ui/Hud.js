@@ -399,6 +399,39 @@ export class Hud {
     }
 
     // Estrellas al ganar a un jefe: aparecen una a una y debajo se explica cada una.
+    // Resumen de la partida: las casillas entran de una en una y su cifra sube a saltitos.
+    // cells: [{ label, value, format? }]; onTick(final) suena en cada salto (final: al acabar
+    // una casilla). Las estrellas del jefe esperan a que termine.
+    showTally(cells, onTick) {
+        const box = document.getElementById('end-tally');
+        box.innerHTML = cells.map((c) => `<div class="t-cell"><b>0</b><span>${c.label}</span></div>`).join('');
+        box.classList.remove('hidden');
+        const els = [...box.children];
+        const STEPS = 10, STEP = 0.045, PAUSE = 0.18;
+        const per = STEPS * STEP + PAUSE;
+        this.tallyUntil = performance.now() + (0.3 + cells.length * per) * 1000;
+        let i = 0, k = 0;
+        const tick = () => {
+            const c = cells[i], el = els[i];
+            if (k === 0) el.classList.add('in');
+            k++;
+            const v = k >= STEPS ? c.value : Math.round((c.value * k) / STEPS);
+            el.firstChild.textContent = c.format ? c.format(v) : v;
+            if (k >= STEPS) {
+                el.classList.add('done');
+                onTick(true);
+                i++;
+                k = 0;
+                if (i < cells.length) this.tallyTimer = setTimeout(tick, PAUSE * 1000);
+                return;
+            }
+            if (k % 2 === 0) onTick(false);
+            this.tallyTimer = setTimeout(tick, STEP * 1000);
+        };
+        clearTimeout(this.tallyTimer);
+        this.tallyTimer = setTimeout(tick, 300);
+    }
+
     showStars(got, best, par, onStar) {
         const box = document.getElementById('end-stars');
         const stars = [...box.querySelectorAll('.star')];
@@ -418,7 +451,8 @@ export class Hud {
             k++;
             this.starTimer = setTimeout(next, 380);
         };
-        this.starTimer = setTimeout(next, 450);
+        // Si el resumen de la partida aún se está contando, las estrellas esperan
+        this.starTimer = setTimeout(next, 450 + Math.max(0, (this.tallyUntil || 0) - performance.now()));
     }
 
     // Aviso del ataque especial que viene ("¡OLA GIGANTE!")
@@ -441,6 +475,9 @@ export class Hud {
     // title: opcional (supervivencia muestra las oleadas en lugar de VICTORIA/DERROTA)
     showEnd(win, sub, title) {
         document.getElementById('end-stars').classList.add('hidden');
+        document.getElementById('end-tally').classList.add('hidden');
+        clearTimeout(this.tallyTimer);
+        this.tallyUntil = 0;
         this.el.endTitle.textContent = title || (win ? L('VICTORY!', '¡VICTORIA!') : L('DEFEAT', 'DERROTA'));
         this.el.endTitle.classList.toggle('lose', !win);
         this.el.endSub.textContent = sub || '';
