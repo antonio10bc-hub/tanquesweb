@@ -433,9 +433,12 @@ export class Arena {
             const parts = 3 + (i % 3);
             for (let k = 0; k < parts; k++) {
                 const w = 0.9 + Math.random() * 1.2, h = 0.5 + Math.random() * 0.4, d = 0.8 + Math.random() * 0.8;
-                const m = new THREE.Mesh(box(w, h, d), mat);
+                // Un único cubo escalado: con tamaños aleatorios la caché de box() crecería sin fin
+                const m = new THREE.Mesh(box(1, 1, 1), mat);
+                m.scale.set(w, h, d);
                 m.position.set(k * 0.8 - parts * 0.4, Math.random() * 0.3, (Math.random() - 0.5) * 0.6);
-                const o = new THREE.Mesh(box(w + OUTLINE * 2, h + OUTLINE * 2, d + OUTLINE * 2), hullMat);
+                const o = new THREE.Mesh(box(1, 1, 1), hullMat);
+                o.scale.set(w + OUTLINE * 2, h + OUTLINE * 2, d + OUTLINE * 2);
                 o.position.copy(m.position);
                 g.add(m, o);
             }
