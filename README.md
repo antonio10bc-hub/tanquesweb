@@ -7,7 +7,13 @@ sombreado toon a 3 tonos y contornos gruesos.
 ```bash
 npm install
 npm start          # http://localhost:3000
+npm test           # pruebas en Chromium (la primera vez: npx playwright install chromium)
 ```
+
+**Pruebas** (`tests/`, Playwright): abren el juego en un navegador de verdad y juegan partidas
+cortas con `window.game` y el botón secreto (tutorial, menús, partida rápida, jefe con fase 2 y
+monedas, duelo, repetición con ataques de jefe, supervivencia con mini jefe y escudo del
+acorazado). GitHub Actions las pasa en cada push a `main` (`.github/workflows/tests.yml`).
 
 No hay paso de compilación: módulos ES nativos. Three.js (`public/vendor/`, MIT) y la fuente
 Press Start 2P (`public/fonts/`, SIL OFL) se sirven desde la propia web, sin dependencias externas.
