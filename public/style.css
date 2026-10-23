@@ -787,8 +787,48 @@ html, body {
 }
 .corner-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
 .settings { z-index: 25; background-color: rgba(27, 11, 51, .92); }
-.toggles-col { flex-direction: column; align-items: stretch; width: min(260px, 100%); }
-.toggles-col .toggle { font-size: 13px; padding: 14px; }
+.toggles-col { flex-direction: column; align-items: stretch; width: min(270px, 100%); gap: 12px; }
+/* Interruptores de Ajustes: el nombre a la izquierda y un piloto SÍ/NO a la derecha */
+.toggles-col .toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 11px 12px 11px 16px;
+    background: #fff;
+    box-shadow: 0 5px 0 var(--ink), inset 0 -4px 0 #d8d2ee;
+}
+.toggles-col .toggle::after {
+    min-width: 46px;
+    padding: 6px 6px 5px;
+    font-size: 10px;
+    color: #fff;
+    text-align: center;
+    text-shadow: 2px 2px 0 var(--ink);
+    background: #17d65a;
+    border: 3px solid var(--ink);
+    box-shadow: inset 0 -3px 0 #0e9a40;
+}
+.toggles-col .toggle.off { text-decoration: none; color: #8e86a8; background: #e8e4f4; }
+.toggles-col .toggle.off::after { background: #8e86a8; box-shadow: inset 0 -3px 0 #5a5478; }
+.set-col { display: flex; flex-direction: column; gap: 12px; width: min(270px, 100%); }
+.set-col .set-btn { width: 100%; font-size: 11px; }
+/* Volver: el botón que manda en esta pantalla */
+.home-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: min(270px, 100%); font-size: 18px; padding: 14px 16px; }
+.home-icon { width: 26px; height: 24px; background: var(--px-home) center / contain no-repeat; image-rendering: pixelated; }
+.set-foot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(max(14px, env(safe-area-inset-bottom)) + 4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+.set-foot .toggle.mini { font-size: 8px; padding: 8px 10px; box-shadow: 0 4px 0 var(--ink); }
+.set-foot .toggle.mini.off { text-decoration: none; }
+.set-foot .btn-danger { margin-top: 0; font-size: 8px; padding: 8px 10px; }
 
 /* ---------- PAUSA ---------- */
 .pause-btn {

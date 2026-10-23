@@ -237,7 +237,7 @@ export const WORLDS = [
         id: 'w8', theme: 'space', name: L('SPACE', 'ESPACIO'),
         generator: { materials: { '#': 3, B: 2, D: 2 }, bushes: [1, 3] },
         tank: boss({
-            name: L('COMMANDER ZORG', 'COMANDANTE ZORG'), hp: 16, speed: 2.9,
+            name: L('MARTIANATOR', 'MARCIANÓN'), hp: 16, speed: 2.9,
             palette: { body: 0x8a5cff, accent: 0x7dff4a, tread: 0x2a1a5a, barrel: 0xd0dcff, bullet: 0x7dff4a },
             deco: (part) => {
                 part('body', 0.96, 0.05, 0.96, 0xd0dcff, 0, 0.3, 0);              // platillo

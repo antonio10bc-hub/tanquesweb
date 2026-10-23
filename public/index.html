@@ -249,12 +249,18 @@
             <button class="toggle" data-key="music" data-es="MÚSICA">MUSIC</button>
             <button class="toggle" data-key="sfx" data-es="SONIDO">SOUND</button>
             <button class="toggle" data-key="vibration" data-es="VIBRACIÓN">VIBRATION</button>
-            <button class="toggle hidden" data-key="analytics" data-es="ESTADÍSTICAS">STATS</button>
         </div>
-        <button id="btn-settings-close" class="btn btn-small" data-es="VOLVER">BACK</button>
-        <button id="btn-lang" class="btn btn-small" data-es="IDIOMA: ESPAÑOL">LANGUAGE: ENGLISH</button>
-        <button id="btn-tutorial" class="btn btn-small" data-es="VER TUTORIAL">WATCH TUTORIAL</button>
-        <button id="btn-reset" class="btn btn-small btn-danger" data-es="BORRAR PROGRESO">DELETE PROGRESS</button>
+        <div class="set-col">
+            <button id="btn-lang" class="btn btn-small set-btn" data-es="IDIOMA: ESPAÑOL">LANGUAGE: ENGLISH</button>
+            <button id="btn-tutorial" class="btn btn-small set-btn" data-es="VER TUTORIAL">WATCH TUTORIAL</button>
+        </div>
+        <!-- Volver, bien grande: es lo que más se pulsa aquí -->
+        <button id="btn-settings-close" class="btn home-btn"><span class="home-icon"></span><span data-es="VOLVER">BACK</span></button>
+        <!-- Lo que casi nunca se toca va abajo del todo y en pequeño -->
+        <div class="set-foot">
+            <button class="toggle mini hidden" data-key="analytics" data-es="ESTADÍSTICAS">STATS</button>
+            <button id="btn-reset" class="btn btn-small btn-danger" data-es="BORRAR PROGRESO">DELETE PROGRESS</button>
+        </div>
     </div>
 
     <div id="pause" class="screen hidden">

@@ -65,6 +65,11 @@ const SPRITES = {
             '.KWWWWWWWWK.', '..KWKWKWKK..', '..KWKWKWKK..', '...KKKKKK...'],
         pal: { K: INK, W: '#ffffff', R: '#ff1a3a' },
     },
+    // Casita del botón de volver (Ajustes)
+    home: {
+        rows: ['.....KK.....', '....KRRK....', '...KRRRRK.KK', '..KRRRRRRKWK', '.KRRRRRRRRKK', 'KKKKKKKKKKKK', '.KWWWWWWWWK.', '.KWKKWWWWWK.', '.KWKBKWKKWK.', '.KWKKWWKNWK.', '.KWWWWWKNWK.', '.KKKKKKKKKK.'],
+        pal: { K: INK, R: '#ff3e5e', W: '#fff6e8', B: '#6ff6ff', N: '#b8763a' },
+    },
     // Mejoras de supervivencia (vida, recarga, daño, velocidad)
     upHeart: {
         rows: ['............', '..KK....KK..', '.KRRK..KRRK.', 'KRWRRKKRRRRK', 'KRWRRRRRRRRK', 'KRRRRRRRRRRK', '.KRRRRRRRRK.', '..KRRRRRRK..', '...KRRRRK...', '....KRRK....', '.....KK.....', '............'],
