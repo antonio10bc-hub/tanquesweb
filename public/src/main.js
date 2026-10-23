@@ -9,6 +9,7 @@ import { Profile } from './core/Profile.js';
 import { Achievements, achievementCount } from './core/Achievements.js';
 import { trackGame, trackGarage } from './core/GameAnalytics.js';
 import { L, applyHtmlTexts } from './core/I18n.js';
+import { DEV_CHANGED } from './core/Dev.js';
 
 // Idioma: los textos fijos de index.html están en inglés; en español se cambian ya
 applyHtmlTexts();
@@ -74,6 +75,8 @@ Profile.onChange(syncProfile);
 syncProfile();
 
 game.showMenu();
+// Aviso al encender o apagar las herramientas de desarrollo con ?dev=
+if (DEV_CHANGED !== null) hud.toast(DEV_CHANGED ? L('DEV MODE ON', 'MODO DEV ACTIVADO') : L('DEV MODE OFF', 'MODO DEV APAGADO'));
 // Primera vez que se abre el juego: directo al tutorial
 if (!Profile.data.tutorialDone) game.startTutorial();
 document.getElementById('btn-tut-skip').addEventListener('click', () => {

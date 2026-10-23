@@ -2,6 +2,7 @@
 import { drawCoin, COIN_SPIN, installPixelSprites } from './PixelArt.js';
 import { achievementIcon, achievementBg } from './achievementIcons.js';
 import { L } from '../core/I18n.js';
+import { DEV } from '../core/Dev.js';
 export class Hud {
     constructor() {
         installPixelSprites();
@@ -26,10 +27,10 @@ export class Hud {
         this.onQuit = null;
         this.onToggle = null;
         this.el.pauseBtn.addEventListener('click', () => this.onPause && this.onPause());
-        // Depuración secreta: tres toques rápidos sobre tu barra de vida
+        // Depuración secreta: tres toques rápidos sobre tu barra de vida (solo en el dispositivo del autor)
         this.onDebug = null;
         let taps = [];
-        document.querySelector('.team-p').addEventListener('pointerdown', (e) => {
+        if (DEV) document.querySelector('.team-p').addEventListener('pointerdown', (e) => {
             e.stopPropagation();
             const now = performance.now();
             taps = taps.filter((t) => now - t < 600);
