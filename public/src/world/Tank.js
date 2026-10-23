@@ -41,7 +41,6 @@ export class Tank {
         this.inBush = false;
         this.vx = 0;         // velocidad real (sobre hielo tarda en cambiar)
         this.vz = 0;
-        this.tpLock = null;  // teletransporte del que acaba de salir (hay que pisar fuera para volver a usarlo)
         this.slowT = 0;      // pisando hielo o caramelo: va más lento mientras dure
         this.slowMult = 1;
         this.chargeT = 0;    // embestida de un jefe: corre mucho más durante este tiempo

@@ -22,7 +22,6 @@ export class Arena {
         this.hp = new Uint8Array(this.cols * this.rows);      // >0: muro rompible
         this.bush = new Uint8Array(this.cols * this.rows);    // 1: hierba alta
         this.ice = new Uint8Array(this.cols * this.rows);     // 1: hielo
-        this.teleports = [];                                   // { c, r, x, z, i, to } por pareja
         this.shake = new Float32Array(this.cols * this.rows); // agitación visual de la hierba
         this.styles = new Array(this.cols * this.rows).fill(null);
         this.spawns = {};
@@ -43,19 +42,11 @@ export class Arena {
                     this.bush[i] = 1;
                 } else if (tile && tile.ice) {
                     this.ice[i] = 1;
-                } else if (tile && tile.teleport) {
-                    this.teleports.push({ c, r, x: c + 0.5, z: r + 0.5, i, to: null });
                 } else if (!tile) {
                     (this.spawns[ch] ||= []).push({ x: c + 0.5, z: r + 0.5 });
                 }
             });
         });
-
-        // Cada teletransporte lleva a su pareja: la casilla girada 180° (o el más lejano)
-        for (const t of this.teleports) {
-            t.to = this.teleports.find((o) => o.c === this.cols - 1 - t.c && o.r === this.rows - 1 - t.r && o !== t) ||
-                this.teleports.filter((o) => o !== t).sort((a, b) => Math.hypot(b.x - t.x, b.z - t.z) - Math.hypot(a.x - t.x, a.z - t.z))[0] || null;
-        }
 
         this.prev = new Int32Array(this.cols * this.rows);
         this.queue = new Int32Array(this.cols * this.rows);
@@ -84,11 +75,6 @@ export class Arena {
     iceAt(x, z) {
         const c = Math.floor(x), r = Math.floor(z);
         return c >= 0 && r >= 0 && c < this.cols && r < this.rows && this.ice[r * this.cols + c] === 1;
-    }
-
-    teleportAt(x, z) {
-        const c = Math.floor(x), r = Math.floor(z);
-        return this.teleports.find((t) => t.c === c && t.r === r && t.to) || null;
     }
 
     styleAt(c, r) {
@@ -324,7 +310,6 @@ export class Arena {
         }
 
         this.buildIce(root, own, cx, cz);
-        this.buildPads(root, theme, own, cx, cz);
         this.buildBushes(root, theme, own, cx, cz);
         if (theme.flowers) this.buildFlowers(root, theme, own, cx, cz);
 
@@ -403,24 +388,6 @@ export class Arena {
         const mesh = new THREE.InstancedMesh(box(1, 1, 1), own(toon(0x6fd8ff)), slabs.length);
         this.addAnimated(root, mesh, slabs, cx, cz, 0.1);
         if (shine.length) this.addAnimated(root, new THREE.InstancedMesh(box(1, 1, 1), own(new THREE.MeshBasicMaterial({ color: 0xffffff })), shine.length), shine, cx, cz, 0.15);
-    }
-
-    // Teletransportes: una losa que brilla con cuatro cubitos girando alrededor
-    buildPads(root, theme, own, cx, cz) {
-        if (!this.teleports.length) return;
-        const base = this.teleports.map((t) => ({ x: t.x, y: 0.02, z: t.z, sx: 0.8, sy: 0.04, sz: 0.8 }));
-        this.addAnimated(root, new THREE.InstancedMesh(box(1, 1, 1), own(new THREE.MeshBasicMaterial({ color: 0x7b5cff })), base.length), base, cx, cz, 0.2);
-        const core = this.teleports.map((t) => ({ x: t.x, y: 0.04, z: t.z, sx: 0.5, sy: 0.04, sz: 0.5 }));
-        this.padCore = this.addAnimated(root, new THREE.InstancedMesh(box(1, 1, 1), own(new THREE.MeshBasicMaterial({ color: 0x9af6ff })), core.length), core, cx, cz, 0.2);
-        const n = this.teleports.length * 4;
-        const cubes = new THREE.InstancedMesh(box(0.14, 0.14, 0.14), own(toon(0x6ff6ff)), n);
-        const hull = new THREE.InstancedMesh(box(0.14 + OUTLINE * 2, 0.14 + OUTLINE * 2, 0.14 + OUTLINE * 2), own(outline(theme.outline)), n);
-        for (const m of [cubes, hull]) {
-            m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-            m.frustumCulled = false;
-            root.add(m);
-        }
-        this.padCubes = [cubes, hull];
     }
 
     // Florecitas decorativas sobre el suelo libre (solo adorno, no afectan a nada).
@@ -513,20 +480,6 @@ export class Arena {
                 tiles.forEach(({ c, r }, i) => m.setColorAt(i, _c.setHSL((((c + r) * 0.055 - time * 0.12) % 1 + 1) % 1, sat, light)));
                 m.instanceColor.needsUpdate = true;
             }
-        }
-        if (this.padCubes) {
-            // Cubitos orbitando cada teletransporte
-            this.teleports.forEach((t, k) => {
-                for (let j = 0; j < 4; j++) {
-                    const a = time * 2.5 + (j / 4) * Math.PI * 2;
-                    _d.position.set(t.x + Math.sin(a) * 0.4, 0.25 + Math.sin(time * 4 + j) * 0.08, t.z + Math.cos(a) * 0.4);
-                    _d.rotation.set(time, time * 1.3, 0);
-                    _d.scale.setScalar(intro ? Math.min(1, Math.max(0.001, this.introT - 0.4)) : 1);
-                    _d.updateMatrix();
-                    for (const m of this.padCubes) m.setMatrixAt(k * 4 + j, _d.matrix);
-                }
-            });
-            for (const m of this.padCubes) m.instanceMatrix.needsUpdate = true;
         }
         const { mesh, pts } = this.foam;
         pts.forEach((p, i) => {

@@ -40,8 +40,7 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
     quema la hierba y hace 4 de daño (también a quien la lanza).
 - **Hierba alta**: dentro solo te ven casi pegados y disparar te delata un instante. Se mueve al pasar.
 - **Muros rompibles**: aguantan 3 balas.
-- **Casillas especiales** según el tema: **hielo** (nieve, espacio) en el que resbalas,
-  **teletransportes** por parejas (caramelo, playa, ciudad, espacio, arcoíris) y **barriles
+- **Casillas especiales** según el tema: **hielo** (nieve, espacio) en el que resbalas y **barriles
   explosivos** (desierto, volcán, ciudad, playa, pradera) que revientan de un disparo, dañan a los
   tanques cercanos, rompen muros y estallan en cadena.
 - **Cuatro modos**: **Partida rápida** (duelo contra un rival), **Campaña**, **Duelo a dos** (dos

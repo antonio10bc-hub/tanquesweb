@@ -27,7 +27,6 @@ export function drawMinimap(canvas, world, theme) {
             g.fillRect(c * PX, r * PX, PX, PX - 1);
         }
     }
-    for (const t of a.teleports) cell(t.c, t.r, '#9af6ff', 1);
     // Objeto en el suelo
     const item = world.pickups && world.pickups.current;
     if (item) dot(g, item.x, item.z, hex(item.def.color), 3);

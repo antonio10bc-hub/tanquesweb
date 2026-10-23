@@ -151,7 +151,6 @@ export class World {
             for (const t of this.tanks) t.step(dt, this);
             this.separate();
             this.rams();
-            this.teleport();
             this.hazards.step(dt);
             if (this.pickups) this.pickups.step(dt, this);
         }
@@ -215,26 +214,6 @@ export class World {
                 this.arena.resolveCircle(a, a.radius);
                 this.arena.resolveCircle(b, b.radius);
             }
-        }
-    }
-
-    // Teletransportes: al pisar uno apareces en su pareja. Para volver a usarlo hay que salir.
-    teleport() {
-        for (const t of this.tanks) {
-            if (!t.alive) continue;
-            const pad = this.arena.teleportAt(t.x, t.z);
-            if (!pad) {
-                t.tpLock = null;
-                continue;
-            }
-            if (t.tpLock === pad) continue;
-            const to = pad.to;
-            const from = { x: t.x, z: t.z };
-            t.x = to.x;
-            t.z = to.z;
-            t.tpLock = to;
-            this.arena.resolveCircle(t, t.radius);
-            this.events.emit('teleport', t, from, to);
         }
     }
 

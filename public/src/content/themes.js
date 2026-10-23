@@ -10,8 +10,8 @@
 //  music                        raíz MIDI, escala, tempo y timbre del secuenciador
 //  rainbow                      opcional: suelo y muros cambian de color sin parar (mundo secreto)
 //  sound                        acústica: tipo de suelo (ruido de las orugas) y eco
-//  specials                     casillas especiales del mapa: ice (manchas de hielo),
-//                               teleports (parejas) y barrels (barriles explosivos)
+//  specials                     casillas especiales del mapa: ice (manchas de hielo) y
+//                               barrels (barriles explosivos)
 export const THEMES = {
     snow: {
         name: 'NIEVE',
@@ -50,7 +50,6 @@ export const THEMES = {
     candy: {
         name: 'CARAMELO',
         sound: { ground: 'candy' },
-        specials: { teleports: 1 },
         sea: 0x1fb6ff, foam: 0xeafcff, island: 0xb04bff, outline: 0x1b0b33,
         floor: [0x8af06a, 0x6fdc5a], floorJitter: 0.035,
         dust: 0xf4ffd8, scorch: 0x2c1a45, clouds: 0xffffff,
@@ -84,7 +83,7 @@ export const THEMES = {
     beach: {
         name: 'PLAYA',
         sound: { ground: 'sand' },
-        specials: { barrels: [1, 2], teleports: 1 },
+        specials: { barrels: [1, 2] },
         sea: 0x12d6e6, foam: 0xffffff, island: 0xf0b45a, outline: 0x3a1c2e,
         floor: [0xffe6a6, 0xf8d68c], floorJitter: 0.03,
         dust: 0xfff1c9, scorch: 0x8a5a3a, clouds: 0xffffff,
@@ -119,7 +118,7 @@ export const THEMES = {
     city: {
         name: 'CIUDAD DE NOCHE',
         sound: { ground: 'metal', echo: 0.18 },
-        specials: { barrels: [2, 3], teleports: 1 },
+        specials: { barrels: [2, 3] },
         sea: 0x0c1033, foam: 0x4a5cff, island: 0x232642, outline: 0x05040f,
         floor: [0x3c4160, 0x343854], floorJitter: 0.05,
         dust: 0x9aa4ff, scorch: 0x0e0d1c, clouds: 0x2a2f5a,
@@ -136,7 +135,7 @@ export const THEMES = {
     space: {
         name: 'ESPACIO',
         sound: { ground: 'metal', echo: 0.32 },
-        specials: { teleports: 2, ice: [1, 2] },
+        specials: { ice: [1, 2] },
         sea: 0x080420, foam: 0x8a7aff, island: 0x4a3f6b, outline: 0x05030f,
         floor: [0x66739a, 0x5a668a], floorJitter: 0.03,
         dust: 0xc8d4ff, scorch: 0x1a1430, clouds: null,
@@ -154,7 +153,6 @@ export const THEMES = {
     rainbow: {
         name: 'ARCOÍRIS',
         sound: { ground: 'candy', echo: 0.24 },
-        specials: { teleports: 2 },
         sea: 0x1a0640, foam: 0xff8fd8, island: 0x7b5cff, outline: 0x12052e,
         floor: [0xffffff, 0xf2eaff], floorJitter: 0,
         dust: 0xffffff, scorch: 0x3a1a6b, clouds: 0xffd6f4,

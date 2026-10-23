@@ -150,7 +150,6 @@ export class Sfx {
             case 'bounceGet': this.seq('square', [523, 784, 659, 1047], 0.05, 0.12, 0.08); break;
             case 'radar': this.tone('sine', 1320, 1320, 0.08, 0.15); this.tone('sine', 1320, 1320, 0.08, 0.1, 0, 0.25); break;
             case 'pause': this.tone('square', 660, 440, 0.08, 0.12); break;
-            case 'teleport': this.tone('sine', 300, 1500, 0.18, 0.14, pan); this.tone('square', 1500, 600, 0.12, 0.06, pan, 0.16); break;
             case 'streak2': this.seq('square', [784, 1047], 0.07, 0.14, 0.12); break;
             case 'streak3': this.seq('square', [784, 988, 1319], 0.07, 0.14, 0.12); break;
             case 'streak4': this.seq('square', [784, 988, 1175, 1568], 0.06, 0.14, 0.12); break;

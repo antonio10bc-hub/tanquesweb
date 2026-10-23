@@ -1052,15 +1052,6 @@ export class Game {
             this.world.arena.trash.push(mark.material, mark.geometry);
         });
 
-        ev.on('teleport', (tank, from, to) => {
-            for (const p of [from, to]) {
-                this.particles.burst(p.x, 0.5, p.z, 22, [0x9af6ff, 0x7b5cff, 0xffffff], { speed: 2.5, up: 3, size: 0.12, ttl: 0.5, grav: -2 });
-                this.waves.spawn(p.x, p.z, 0x9af6ff, 1.2, 0.35);
-            }
-            // El rival solo lo nota si te estaba viendo
-            if (tank === this.world.player || tank.viewFade > 0.4) this.sfx.play('teleport', this.panOf(to.x));
-        });
-
         // Señuelo: una nube de humo al soltarlo (tapa el cambio) y un "¡puf!" al deshacerse
         ev.on('decoy', (d) => {
             this.particles.burst(d.x, 0.5, d.z, 34, DECOY, { speed: 2.4, up: 2, size: 0.24, ttl: 0.8, grav: -1 });

@@ -6,8 +6,8 @@
 //   menos un tile de pasillo, para que no salgan rincones ni callejones encerrados.
 // - Cada pieza es de un material elegido por peso: muro (#), bloque bajo (B) o rompible (D).
 // - Después se siembran manchas de hierba alta (g), también simétricas: no bloquean, esconden.
-// - Según el tema, casillas especiales: hielo (i), parejas de teletransporte (T) y barriles
-//   explosivos (X). Los barriles solo se ponen si el mapa sigue conectado.
+// - Según el tema, casillas especiales: hielo (i) y barriles explosivos
+//   (X). Los barriles solo se ponen si el mapa sigue conectado.
 // - Cada mapa se valida: todo el suelo conectado, densidad razonable y sin línea de tiro
 //   directa entre las dos salidas. Si no cumple, se descarta y se genera otro.
 
@@ -35,7 +35,6 @@ const DEFAULTS = {
     spawnClear: 2,          // filas libres delante de cada salida
     gap: 1,                 // anchura mínima de los pasillos (2 en las arenas de jefe: el boss es grande)
     ice: [0, 0],            // manchas de hielo
-    teleports: 0,           // parejas de teletransporte
     barrels: [0, 0],        // barriles explosivos (cada uno se copia por simetría)
 };
 
@@ -110,7 +109,6 @@ function tryGenerate(p, rng) {
     if (!isGood(grid, p)) return null;
     sowPatches(grid, p, rng, copies, 'g', p.bushes, p.bushSize);
     sowPatches(grid, p, rng, copies, 'i', p.ice, [3, 6]);
-    placeTeleports(grid, p, rng);
     placeBarrels(grid, p, rng, copies);
     return grid.map((row) => row.join(''));
 }
@@ -145,19 +143,6 @@ function sowPatches(grid, p, rng, copies, ch, countRange, sizeRange) {
             c = Math.max(1, Math.min(cols - 2, c));
             r = Math.max(1, Math.min(rows - 2, r));
         }
-    }
-}
-
-// Parejas de teletransporte: una casilla y su copia girada 180° (cada bando tiene la suya).
-function placeTeleports(grid, p, rng) {
-    const { cols, rows } = p, mid = (cols - 1) / 2;
-    for (let k = 0, placed = 0; placed < p.teleports && k < 80; k++) {
-        const c = 1 + Math.floor(rng() * (cols - 2)), r = 3 + Math.floor(rng() * Math.max(1, Math.floor(rows / 2) - 4));
-        const c2 = cols - 1 - c, r2 = rows - 1 - r;
-        if (grid[r][c] !== '.' || grid[r2][c2] !== '.' || Math.abs(c - mid) <= 1) continue;
-        if (Math.hypot(c - c2, r - r2) < 7) continue;
-        grid[r][c] = grid[r2][c2] = 'T';
-        placed++;
     }
 }
 
