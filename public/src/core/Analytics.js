@@ -1,8 +1,9 @@
 // --- ANALÍTICAS (PostHog, región EU) ---
 // Eventos de juego anónimos para entender cómo se juega: el funnel (tutorial → partidas →
 // campaña → modo difícil), qué modos, objetos y skins se usan más y cuáles menos.
-// Solo en la web publicada (nunca en local ni en el dispositivo del autor) y solo si el
-// jugador dice que SÍ en el aviso del menú (o en Ajustes). Sin datos personales: un
+// Solo en la web publicada (nunca en local) y solo si el jugador dice que SÍ en el aviso del
+// menú (o en Ajustes). En el dispositivo del autor (Dev.js) se mide siempre, sin aviso, y los
+// eventos llevan author: true para poder separarlos de los de jugadores reales. Sin datos personales: un
 // identificador anónimo por navegador. Mientras no contesta, los eventos esperan en memoria
 // (nada sale del navegador ni se guarda); si dice que NO, se tiran. La librería la descarga el navegador aparte (no frena el arranque) y,
 // mientras llega, los eventos esperan en la cola del propio stub.
@@ -15,18 +16,20 @@ const UI_HOST = 'https://eu.posthog.com';
 import { Settings } from './Settings.js';
 import { DEV } from './Dev.js';
 
-// Si en esta web se pueden pedir las estadísticas (la publicada, no el móvil del autor)
-export const analyticsAvailable = () => location.protocol === 'https:' && !['localhost', '127.0.0.1'].includes(location.hostname) && !DEV;
+// Si en esta web se miden estadísticas (la publicada, no la local)
+export const analyticsAvailable = () => location.protocol === 'https:' && !['localhost', '127.0.0.1'].includes(location.hostname);
+// Si hay que preguntar al jugador (el autor no: lo suyo se mide siempre)
+export const analyticsAsk = () => analyticsAvailable() && !DEV;
 
 let ph = null;
 let base = null;    // propiedades comunes (llegan con initAnalytics)
 let pending = [];   // eventos a la espera de que conteste el aviso
 
 // Prepara las analíticas. props: propiedades que van en todos los eventos. Solo arranca
-// PostHog si ya hay permiso.
+// PostHog si ya hay permiso (o en el dispositivo del autor).
 export function initAnalytics(props = {}) {
-    base = props;
-    if (Settings.analytics === true) start();
+    base = DEV ? { ...props, author: true } : props;
+    if (Settings.analytics === true || DEV) start();
 }
 
 // La respuesta del jugador (aviso del menú o Ajustes)
