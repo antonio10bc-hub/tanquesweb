@@ -396,8 +396,10 @@ export class Game {
 
     // Tras la cámara lenta, la repetición del golpe final (si hay grabación).
     startReplay() {
-        this.world.hazards.clear();
-        if (this.recorder.duration < 0.5) return this.showEnd();
+        if (this.recorder.duration < 0.5) {
+            this.world.hazards.clear();
+            return this.showEnd();
+        }
         this.setState('replay');
         this.timeScale = 1;
         this.hud.showReplay(true);
@@ -406,11 +408,15 @@ export class Game {
         this.replayFrom = this.recorder.duration - this.replayLen;
         this.replayAlive = this.world.tanks.map(() => true);
         this.replayNukes = new Map();
+        this.recorder.rewind();
     }
 
     updateReplay() {
         const t = Math.min(this.stateTime * REPLAY.speed, this.replayLen);
-        this.recorder.apply(this.replayFrom + t, this.world, this.bullets);
+        // Los ataques del jefe también se repiten: los impactos vuelven a sonar y temblar
+        for (const n of this.recorder.apply(this.replayFrom + t, this.world, this.bullets)) {
+            if (n.kind === 'hazardBoom') this.hazardBoomFx(n.data);
+        }
         const live = new Set(this.world.nukes.map((n) => n.id));
         for (const [id, n] of this.replayNukes) if (!live.has(id)) { this.nukeFx(n, false); this.replayNukes.delete(id); }
         for (const n of this.world.nukes) this.replayNukes.set(n.id, n);
@@ -1122,11 +1128,8 @@ export class Game {
         ev.on('bossPhase', (tank) => this.startPhaseScene(tank));
 
         ev.on('hazardBoom', (h) => {
-            const cols = h.style === 'meteor' ? FIRE.concat([0x3a2a30]) : [0xffffff, 0x9fefff, 0x6fd0ff];
-            this.particles.burst(h.x, 0.4, h.z, 26, cols, { speed: 4, up: 5, size: 0.16, ttl: 0.7, grav: 14 });
-            this.waves.spawn(h.x, h.z, h.color, h.r + 0.5, 0.4);
-            this.rig.shake(0.3);
-            this.sfx.play('crash', this.panOf(h.x));
+            this.recorder.note('hazardBoom', h);
+            this.hazardBoomFx(h);
         });
 
         ev.on('bossBump', (tank) => {
@@ -1153,6 +1156,15 @@ export class Game {
     // ---------- Depuración ----------
     // Triple toque en tu barra de vida: gana la partida. Contra un jefe, primero fuerza su fase 2
     // y a la siguiente gana; en supervivencia supera la oleada; en el tutorial pasa de paso.
+    // Impacto de algo que cae del cielo (meteorito, carámbano)
+    hazardBoomFx(h) {
+        const cols = h.style === 'meteor' ? FIRE.concat([0x3a2a30]) : [0xffffff, 0x9fefff, 0x6fd0ff];
+        this.particles.burst(h.x, 0.4, h.z, 26, cols, { speed: 4, up: 5, size: 0.16, ttl: 0.7, grav: 14 });
+        this.waves.spawn(h.x, h.z, h.color, h.r + 0.5, 0.4);
+        this.rig.shake(0.3);
+        this.sfx.play('crash', this.panOf(h.x));
+    }
+
     debugWin() {
         if (this.state !== 'play' || this.cutscene || this.paused) return;
         const w = this.world, p = w.player;
