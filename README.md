@@ -85,10 +85,11 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
   y especiales más seguidos (con su propio progreso y estrellas).
 - **Monedas y skins**: las monedas de oro se ganan al ganar una partida rápida (1),
   al superar oleadas de supervivencia (la oleada n da n: 1, 3, 6... en total) y en la campaña,
-  una por cada estrella nueva de un jefe (normal o difícil). En **Mi Tanque** se compran y equipan, en tres pestañas: 8 gorros voxel y el **tanque
-  dorado** (aura, pilar de luz, chispas y balas de oro), 7 **pinturas** y 5 **estelas de bala**
-  (arcoíris, llamarada, estrellas, burbujas, confeti), con una bala de muestra en el escaparate.
-  Los gorros se ven a escala 1.4. Cada jefe vencido en **modo difícil** regala su gorro y su
+  una por cada estrella nueva de un jefe (normal o difícil). En **Mi Tanque** se compran y equipan, en tres pestañas: 14 gorros voxel y el **tanque
+  dorado** (aura, pilar de luz, chispas y balas de oro), 7 **pinturas** y 9 **estelas de bala**
+  (arcoíris, llamarada, estrellas, burbujas, confeti, corazones, eléctrica, nevada, sombra), con una bala de muestra en el escaparate.
+  Los gorros se ven a escala 1.4. Primero los genéricos y después los trofeos de los jefes, con marco rojo y dorado.
+  Cada jefe vencido en **modo difícil** regala su gorro y su
   pintura (sombrero de paja, gorro cangrejo, aguijón, magdalena, muñeco de nieve, gorra de
   policía, minivolcán, antenas marcianas y corona prismática): no se compran, y en Mi Tanque
   dicen a quién hay que vencer.

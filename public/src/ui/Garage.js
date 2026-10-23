@@ -193,6 +193,9 @@ export class Garage {
     refresh() {
         const s = this.skin, el = this.el;
         el.name.textContent = s.name;
+        // Los trofeos de los jefes van con su marco especial
+        el.screen.classList.toggle('boss-item', !!s.boss);
+        document.getElementById('garage-badge').classList.toggle('hidden', !s.boss);
         el.count.textContent = `${this.index + 1} / ${this.items.length}`;
         el.coins.textContent = Profile.coins;
         const owned = Profile.owns(s.id), equipped = Profile.data[CATS[this.cat].key] === s.id;

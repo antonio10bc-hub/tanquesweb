@@ -105,6 +105,83 @@ export const SKINS = [
         },
     },
     {
+        id: 'wizard',
+        name: L('WIZARD', 'MAGO'),
+        price: 2,
+        hat(add) {
+            add(0.58, 0.04, 0.58, 0x5a3ad6, 0, 0.02, 0);
+            [[0.34, 0.1], [0.26, 0.22], [0.18, 0.34], [0.11, 0.46]].forEach(([w, y], i) => add(w, 0.12, w, 0x7b5cff, i * 0.015, y, -i * 0.02));
+            add(0.07, 0.07, 0.07, 0xffe03a, 0.06, 0.55, -0.06);
+            for (const [x, y, z] of [[-0.12, 0.14, 0.17], [0.1, 0.27, 0.13], [-0.05, 0.36, 0.1]]) add(0.05, 0.05, 0.02, 0xffe03a, x, y, z, false);
+        },
+    },
+    {
+        id: 'cat',
+        name: L('CAT EARS', 'OREJAS DE GATO'),
+        price: 2,
+        hat(add) {
+            add(0.46, 0.05, 0.36, 0xff9a1f, 0, 0.025, 0);
+            for (const s of [-1, 1]) {
+                add(0.16, 0.12, 0.1, 0xff9a1f, s * 0.15, 0.1, 0);
+                add(0.1, 0.1, 0.1, 0xff9a1f, s * 0.15, 0.2, 0);
+                add(0.04, 0.06, 0.1, 0xff9a1f, s * 0.15, 0.28, 0);
+                add(0.08, 0.1, 0.02, 0xff8fd8, s * 0.15, 0.15, 0.06, false);
+            }
+        },
+    },
+    {
+        id: 'santa',
+        name: L('SANTA HAT', 'GORRO DE NAVIDAD'),
+        price: 2,
+        hat(add) {
+            add(0.46, 0.08, 0.46, 0xffffff, 0, 0.04, 0);
+            add(0.36, 0.14, 0.36, 0xff2a3a, 0, 0.15, 0);
+            add(0.24, 0.12, 0.24, 0xff2a3a, 0.03, 0.27, -0.04);
+            add(0.14, 0.1, 0.14, 0xff2a3a, 0.1, 0.33, -0.12);
+            add(0.13, 0.13, 0.13, 0xffffff, 0.18, 0.31, -0.2);
+        },
+    },
+    {
+        id: 'helmet',
+        name: L('ARMY HELMET', 'CASCO MILITAR'),
+        price: 2,
+        hat(add) {
+            add(0.5, 0.12, 0.5, 0x4a6a2a, 0, 0.06, 0);
+            add(0.38, 0.1, 0.38, 0x5a7a34, 0, 0.17, 0);
+            add(0.54, 0.04, 0.1, 0x3a5a24, 0, 0.02, 0.26);
+            add(0.38, 0.06, 0.02, 0x2a2a2a, 0, 0.09, 0.26, false);  // cinta
+            for (const [x, z] of [[-0.12, -0.1], [0.14, 0.06]]) add(0.08, 0.04, 0.08, 0x3a5a24, x, 0.23, z, false); // camuflaje
+        },
+    },
+    {
+        id: 'headphones',
+        name: L('HEADPHONES', 'AURICULARES'),
+        price: 2,
+        hat(add) {
+            for (const s of [-1, 1]) {
+                add(0.08, 0.2, 0.18, 0x2a2a40, s * 0.27, -0.02, 0);
+                add(0.03, 0.12, 0.12, 0xff4fa3, s * 0.32, -0.02, 0, false);
+                add(0.05, 0.22, 0.06, 0x2a2a40, s * 0.25, 0.13, 0);
+            }
+            add(0.54, 0.05, 0.08, 0x2a2a40, 0, 0.25, 0);
+            add(0.3, 0.03, 0.09, 0xff4fa3, 0, 0.27, 0, false);
+        },
+    },
+    {
+        id: 'flowers',
+        name: L('FLOWER CROWN', 'CORONA DE FLORES'),
+        price: 2,
+        hat(add) {
+            for (const [w, d, x, z] of [[0.46, 0.06, 0, -0.2], [0.46, 0.06, 0, 0.2], [0.06, 0.46, -0.2, 0], [0.06, 0.46, 0.2, 0]]) add(w, 0.05, d, 0x3fbf4a, x, 0.03, z, false);
+            const cols = [0xff4fa3, 0xffe03a, 0xffffff, 0xb46bff, 0xff9a1f, 0x6ff6ff];
+            cols.forEach((c, i) => {
+                const a = (i / cols.length) * Math.PI * 2;
+                add(0.11, 0.08, 0.11, c, Math.sin(a) * 0.2, 0.08, Math.cos(a) * 0.2);
+                add(0.04, 0.03, 0.04, 0xffd23f, Math.sin(a) * 0.2, 0.13, Math.cos(a) * 0.2, false);
+            });
+        },
+    },
+    {
         id: 'gold',
         name: L('GOLDEN TANK', 'TANQUE DORADO'),
         price: 1,
@@ -275,6 +352,10 @@ export const TRAILS = [
     { id: 't_stars', name: L('STARS', 'ESTRELLAS'), price: 2, style: 'stars' },
     { id: 't_bubbles', name: L('BUBBLES', 'BURBUJAS'), price: 2, style: 'bubbles' },
     { id: 't_confetti', name: L('CONFETTI', 'CONFETI'), price: 2, style: 'confetti' },
+    { id: 't_hearts', name: L('HEARTS', 'CORAZONES'), price: 3, style: 'hearts' },
+    { id: 't_electric', name: L('ELECTRIC', 'ELÉCTRICA'), price: 3, style: 'electric' },
+    { id: 't_snow', name: L('SNOWFALL', 'NEVADA'), price: 3, style: 'snow' },
+    { id: 't_shadow', name: L('SHADOW', 'SOMBRA'), price: 3, style: 'shadow' },
 ];
 
 export const PAINT_BY_ID = Object.fromEntries(PAINTS.map((p) => [p.id, p]));

@@ -446,6 +446,26 @@ html, body {
 .garage-name { font-size: 16px; color: #fff; text-shadow: 3px 3px 0 var(--ink); }
 .garage.golden .garage-name { color: #ffd23f; }
 .garage-count { font-size: 9px; color: #b9b0d8; }
+/* Trofeos de los jefes: marco rojo y dorado, fondo de pesadilla y su cartel */
+.garage.boss-item #garage-view {
+    background: radial-gradient(circle at 50% 45%, #6a0018, #12000a 75%);
+    border-color: #ffd23f;
+    box-shadow: 0 0 0 4px #ff1a3a, 0 0 0 8px var(--ink), 0 12px 0 var(--ink);
+}
+.garage.boss-item .garage-name { color: #ff6a7a; }
+.garage-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    padding: 5px 10px;
+    font-size: 9px;
+    color: #fff;
+    background: #ff1a3a;
+    border: 3px solid var(--ink);
+    box-shadow: 0 4px 0 var(--ink);
+}
+.garage-badge.hidden { display: none; }
 .garage-hint { font-size: 8px; line-height: 1.8; color: var(--yellow); text-align: center; text-shadow: 2px 2px 0 var(--ink); }
 .btn.buy { background: #ffd23f; }
 #garage-action { display: flex; align-items: center; gap: 10px; font-size: 15px; }
