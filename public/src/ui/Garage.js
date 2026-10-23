@@ -195,7 +195,7 @@ export class Garage {
         el.name.textContent = s.name;
         // Los trofeos de los jefes van con su marco especial
         el.screen.classList.toggle('boss-item', !!s.boss);
-        document.getElementById('garage-badge').classList.toggle('hidden', !s.boss);
+        document.getElementById('garage-badge').classList.toggle('off', !s.boss);
         el.count.textContent = `${this.index + 1} / ${this.items.length}`;
         el.coins.textContent = Profile.coins;
         const owned = Profile.owns(s.id), equipped = Profile.data[CATS[this.cat].key] === s.id;
@@ -205,7 +205,7 @@ export class Garage {
             el.action.disabled = true;
             el.action.className = 'btn buy locked';
             el.action.innerHTML = L(`<span class="skull-mini"></span> BEAT ${boss} ON HARD`, `<span class="skull-mini"></span> VENCE A ${boss} EN DIFÍCIL`);
-            el.hint.classList.add('hidden');
+            el.hint.classList.add('off');
             el.screen.classList.toggle('golden', !!this.preview(true).skin.gold);
             return;
         }
@@ -214,7 +214,7 @@ export class Garage {
         el.action.innerHTML = equipped ? L('EQUIPPED', 'EQUIPADO') : owned ? L('USE', 'USAR')
             : Profile.coins >= s.price ? L(`BUY <span class="coin"></span> ${s.price}`, `COMPRAR <span class="coin"></span> ${s.price}`) : L(`<span class="coin"></span> ${s.price} · NOT ENOUGH COINS`, `<span class="coin"></span> ${s.price} · SIN MONEDAS`);
         // Recordatorio de dónde salen las monedas
-        el.hint.classList.toggle('hidden', owned || Profile.coins >= s.price);
+        el.hint.classList.toggle('off', owned || Profile.coins >= s.price);
         el.screen.classList.toggle('golden', !!this.preview(true).skin.gold);
     }
 

@@ -420,7 +420,7 @@ html, body {
     cursor: pointer;
 }
 .garage-tabs .tab.on { color: var(--ink); background: var(--yellow); transform: translateY(-2px); }
-.garage .btn.locked { font-size: clamp(9px, 2.8vw, 12px); background: #2a1f4f; color: #ff6a7a; box-shadow: 0 7px 0 var(--ink); opacity: 1; display: inline-flex; align-items: center; gap: 8px; }
+.garage .btn.locked { font-size: clamp(7px, 2.2vw, 9px); line-height: 1.5; background: #2a1f4f; color: #ff6a7a; box-shadow: 0 7px 0 var(--ink); opacity: 1; display: inline-flex; align-items: center; gap: 8px; }
 .skull-mini { display: inline-block; width: 18px; height: 15px; background: var(--px-skull) center / contain no-repeat; image-rendering: pixelated; }
 #garage-view {
     width: min(224px, 56vw);
@@ -443,7 +443,20 @@ html, body {
     cursor: pointer;
 }
 .arrow:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--ink); }
-.garage-name { font-size: 16px; color: #fff; text-shadow: 3px 3px 0 var(--ink); }
+.garage-name { font-size: clamp(11px, 4vw, 16px); color: #fff; text-shadow: 3px 3px 0 var(--ink); }
+/* Mi Tanque no se mueve al pasar de un objeto a otro: cada pieza ocupa siempre lo mismo (el
+   cartel de trofeo y el aviso de monedas se ocultan sin dejar su hueco; nombre y botón con
+   altura fija) */
+.garage .off { visibility: hidden; }
+.garage > * { flex-shrink: 0; }
+/* Pantallas bajas: más compacto, para que quepa entero sin que nada se encoja */
+@media (max-height: 640px) {
+    .garage { gap: 8px; padding-top: 12px; padding-bottom: 12px; }
+    .garage .end-title { font-size: clamp(22px, 7vw, 30px); }
+    #garage-view { width: min(170px, 48vw); height: min(170px, 48vw); }
+}
+.garage-name { height: 20px; line-height: 20px; white-space: nowrap; }
+.garage-hint { height: 30px; }
 .garage.golden .garage-name { color: #ffd23f; }
 .garage-count { font-size: 9px; color: #b9b0d8; }
 /* Trofeos de los jefes: marco rojo y dorado, fondo de pesadilla y su cartel */
@@ -465,11 +478,15 @@ html, body {
     border: 3px solid var(--ink);
     box-shadow: 0 4px 0 var(--ink);
 }
-.garage-badge.hidden { display: none; }
 .garage-hint { font-size: 8px; line-height: 1.8; color: var(--yellow); text-align: center; text-shadow: 2px 2px 0 var(--ink); }
 .btn.buy { background: #ffd23f; }
 #garage-action { display: flex; align-items: center; gap: 10px; font-size: 15px; }
 #garage-action:disabled { opacity: .55; cursor: default; }
+/* Altura fija y texto en una sola franja: cambiar de objeto no mueve nada */
+#garage-action { height: 58px; width: min(300px, 86vw); padding-top: 0; padding-bottom: 0; justify-content: center; font-size: clamp(10px, 3.4vw, 14px); line-height: 1.4; }
+#garage-action.locked { font-size: clamp(7px, 2.3vw, 9px); line-height: 1.6; white-space: normal; text-align: center; }
+#garage-action.locked:disabled { opacity: 1; }
+@media (max-height: 640px) { #garage-action { height: 48px; } }
 
 /* ---------- LOGROS ---------- */
 .t-pips { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; max-width: min(460px, 100%); }
