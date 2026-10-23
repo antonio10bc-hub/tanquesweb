@@ -10,6 +10,7 @@ import { PickupView } from '../render/PickupView.js';
 import { NukeView } from '../render/NukeView.js';
 import { HazardView } from '../render/HazardView.js';
 import { SkullWisps } from '../render/SkullWisps.js';
+import { SupplyPlane } from '../render/SupplyPlane.js';
 import { CampaignMap } from '../ui/CampaignMap.js';
 import { drawMinimap } from '../ui/Minimap.js';
 import { Tutorial } from './Tutorial.js';
@@ -60,6 +61,7 @@ export class Game {
         this.nukeView = new NukeView(this.scene);
         this.hazardView = new HazardView(this.scene, this.particles);
         this.skulls = new SkullWisps(this.scene, this.particles); // bordes del modo difícil
+        this.plane = new SupplyPlane(this.scene, this.particles); // suministros de supervivencia
         this.bullets = new BulletSystem(this.scene, this.events, this.particles);
         this.recorder = new ReplayRecorder(3);
 
@@ -200,6 +202,8 @@ export class Game {
     }
 
     showMenu(levelId) {
+        this.plane.stop();
+        this.supply = null;
         this.campaign.show(false);
         if (this.state === 'campaign') this.music.stop(0.3);
         this.load(levelId);
@@ -284,6 +288,14 @@ export class Game {
         this.dropping = [];
         this.newRecord = false;
         this.runCoins = 0; // monedas ganadas en esta partida de supervivencia
+        // Mejoras del avión (supervivencia): nivel de cada una y los valores de partida del tanque
+        this.supply = null;
+        this.plane.stop();
+        this.hud.hideUpgrades();
+        this.upgrades = {};
+        const pl = this.world.player;
+        pl.weapon = { ...pl.weapon }; // copia propia: las mejoras no tocan el arma compartida
+        this.upgradeBase = { reload: pl.weapon.reload, interval: pl.weapon.interval, damage: pl.weapon.damage, speed: pl.speed };
         this.miniBoss = null;
         this.seenTypes = new Set(['grunt']); // tipos ya presentados en esta partida
         if (this.mode === 'survival') this.hud.setNames(this.world.player.def.name, L('WAVE 1', 'OLEADA 1'));

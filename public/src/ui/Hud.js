@@ -226,6 +226,7 @@ export class Hud {
     }
 
     screen(name) {
+        if (name !== 'play') this.hideUpgrades();
         if (name !== 'end') document.getElementById('coin-counter').classList.add('hidden');
         this.el.menu.classList.toggle('hidden', name !== 'menu');
         this.el.end.classList.toggle('hidden', name !== 'end');
@@ -472,8 +473,51 @@ export class Hud {
         this.el.endMenu.textContent = menu;
     }
 
+    // Supervivencia: las mejoras del avión. options: [{ id, name, desc, icon, level }];
+    // onPick(id) al elegir (tocando o con 1, 2, 3). La elegida brilla, gana su estrella y se va.
+    showUpgrades(options, onPick) {
+        const box = document.getElementById('upgrade'), cards = document.getElementById('up-cards');
+        cards.innerHTML = '';
+        let done = false;
+        const pick = (i) => {
+            if (done || !options[i]) return;
+            done = true;
+            window.removeEventListener('keydown', key);
+            [...cards.children].forEach((c, k) => c.classList.add(k === i ? 'picked' : 'gone'));
+            const stars = cards.children[i].querySelectorAll('.up-stars i');
+            stars[options[i].level].classList.add('new');
+            onPick(options[i].id);
+            setTimeout(() => this.hideUpgrades(), 900);
+        };
+        const key = (e) => {
+            const n = ['Digit1', 'Digit2', 'Digit3', 'Numpad1', 'Numpad2', 'Numpad3'].indexOf(e.code);
+            if (n >= 0) pick(n % 3);
+        };
+        options.forEach((o, i) => {
+            const card = document.createElement('button');
+            card.className = 'up-card';
+            const stars = [0, 1, 2].map((k) => `<i class="${k < o.level ? 'on' : ''}"></i>`).join('');
+            card.innerHTML = `<i class="up-icon" style="background-image:var(--px-${o.icon})"></i><span class="up-name">${o.name}</span>`
+                + `<span class="up-desc">${o.desc}</span><span class="up-stars">${stars}</span><span class="up-key">[${i + 1}]</span>`;
+            card.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();
+                pick(i);
+            });
+            cards.appendChild(card);
+        });
+        window.addEventListener('keydown', key);
+        this.upKey = key;
+        box.classList.remove('hidden');
+    }
+
+    hideUpgrades() {
+        document.getElementById('upgrade').classList.add('hidden');
+        if (this.upKey) window.removeEventListener('keydown', this.upKey);
+    }
+
     // title: opcional (supervivencia muestra las oleadas en lugar de VICTORIA/DERROTA)
     showEnd(win, sub, title) {
+        this.hideUpgrades();
         document.getElementById('end-stars').classList.add('hidden');
         document.getElementById('end-tally').classList.add('hidden');
         clearTimeout(this.tallyTimer);

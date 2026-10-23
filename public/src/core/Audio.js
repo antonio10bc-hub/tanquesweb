@@ -169,6 +169,7 @@ export class Sfx {
             case 'storm': this.noise(1.4, 0.45, 3200); this.tone('triangle', 300, 900, 0.9, 0.08); break;
             case 'laser': this.tone('sawtooth', 1400, 300, 0.25, 0.16, pan); this.tone('square', 220, 220, 1.2, 0.08, pan, 0.2); break;
             case 'siren': for (let i = 0; i < 3; i++) { this.tone('square', 700, 1100, 0.2, 0.1, 0, i * 0.4); this.tone('square', 1100, 700, 0.2, 0.1, 0, i * 0.4 + 0.2); } break;
+            case 'plane': this.tone('sawtooth', 70, 110, 1.6, 0.07); this.tone('square', 140, 210, 1.6, 0.04); this.noise(1.4, 0.12, 900); break;
             case 'whoosh': this.tone('triangle', 1600, 200, 0.5, 0.12, pan); this.noise(0.4, 0.2, 5000, pan); break;
             case 'crash': this.noise(0.5, 0.7, 1600, pan); this.tone('square', 180, 50, 0.3, 0.3, pan); break;
             case 'candy': this.seq('square', [1047, 1319, 1568, 2093], 0.04, 0.1, 0.06); break;

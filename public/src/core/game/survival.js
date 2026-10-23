@@ -1,6 +1,7 @@
 import { CONFIG } from '../../config.js';
 import { SURVIVAL } from '../../content/index.js';
 import { waveSpecs, ENEMY_TYPES } from '../../content/survival.js';
+import { UPGRADES, rollUpgrades } from '../../content/upgrades.js';
 import { Profile } from '../Profile.js';
 import { clamp } from '../math.js';
 import { L } from '../I18n.js';
@@ -46,6 +47,12 @@ export const SurvivalPart = {
                 Profile.save();
             }
             this.events.emit('waveCleared', this.wave);
+            this.supply = { phase: 'wait', t: 0 };
+            return;
+        }
+        // Entre oleadas pasa el avión de suministros: hasta que eliges, no llega la siguiente
+        if (this.supply) {
+            this.updateSupply(dt);
             return;
         }
         this.waveTimer -= dt;
@@ -110,6 +117,54 @@ export const SurvivalPart = {
                 this.landed(d.tank);
                 this.dropping.splice(i, 1);
             }
+        }
+    },
+
+    // Avión de suministros: cruza la arena, suelta una caja cerca de ti y al abrirse eliges una
+    // de tres mejoras. Si ya están todas al máximo, no pasa.
+    updateSupply(dt) {
+        const s = this.supply, w = this.world, p = w.player;
+        s.t += dt;
+        if (s.phase === 'wait' && s.t > 0.9) {
+            s.options = rollUpgrades(this.upgrades);
+            if (!s.options.length) {
+                this.supply = null;
+                return;
+            }
+            const at = w.arena.randomFloorNear(p.x, p.z, 1, 2.2) || { x: p.x, z: p.z };
+            s.at = at;
+            this.plane.start(w.arena, at.x, at.z);
+            this.sfx.play('plane');
+            s.phase = 'plane';
+        }
+        if (s.phase === 'plane' || s.phase === 'choose' || s.phase === 'done') {
+            if (this.plane.update(dt, this.time) === 'landed') {
+                // La caja cae y se abre: polvo, chispas y las tres mejoras
+                this.sfx.play('drop', this.panOf(s.at.x));
+                this.sfx.play('itemSpawn', this.panOf(s.at.x));
+                this.particles.burst(s.at.x, 0.4, s.at.z, 26, [0xb8763a, 0xffd23f, 0xffffff], { speed: 3, up: 4, size: 0.12, ttl: 0.7, grav: 12 });
+                this.waves.spawn(s.at.x, s.at.z, 0xffffff, 1.6, 0.4);
+                s.phase = 'choose';
+                this.hud.showUpgrades(s.options.map((id) => ({ id, ...UPGRADES[id], level: this.upgrades[id] || 0 })), (id) => this.applyUpgrade(id));
+            }
+        }
+        if (s.phase === 'done' && s.t > s.until) {
+            this.plane.stop();
+            this.supply = null;
+            this.waveTimer = 0.8;
+        }
+    },
+
+    applyUpgrade(id) {
+        const p = this.world.player, lvl = (this.upgrades[id] = (this.upgrades[id] || 0) + 1);
+        UPGRADES[id].apply(p, lvl, this.upgradeBase);
+        this.sfx.play('heal');
+        this.particles.burst(p.x, 0.6, p.z, 30, [0xffd23f, 0xffffff, 0x23e0d6], { speed: 2.5, up: 5, size: 0.1, ttl: 0.8, grav: 8 });
+        this.markers.sprinkle(p.x, p.z, '+', 0xffd23f, this.theme.outline, 8);
+        this.events.emit('upgrade', id, lvl);
+        if (this.supply) {
+            this.supply.phase = 'done';
+            this.supply.until = this.supply.t + 1.0;
         }
     },
 };

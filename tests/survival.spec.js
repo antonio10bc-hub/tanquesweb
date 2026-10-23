@@ -11,7 +11,13 @@ async function jumpToWave(page, n) {
         }
     }, n);
     await page.waitForFunction(() => game.waveClear);
-    await page.evaluate(() => (game.waveTimer = 0));
+    // Sin esperar al avión de suministros (tiene su propia prueba)
+    await page.evaluate(() => {
+        game.supply = null;
+        game.plane.stop();
+        game.hud.hideUpgrades();
+        game.waveTimer = 0;
+    });
     await page.waitForFunction((n) => game.wave === n && game.dropping.length === 0, n, { timeout: 20_000 });
 }
 
@@ -70,5 +76,25 @@ test('en la oleada 25 llega el jefe secreto y vencerlo da su logro', async ({ pa
         game.world.hitTank(b, game.world.player, 99, 0, 1, b.x, b.z, 0xffffff, 'nuke');
     });
     await page.waitForFunction(() => JSON.parse(localStorage.getItem('tankless.profile')).achievements.pocket_prism);
+    noErrors(errors);
+});
+
+test('tras cada oleada pasa el avión de suministros y la mejora elegida se aplica', async ({ page }) => {
+    const errors = await openGame(page);
+    await page.evaluate(() => game.startSurvival(undefined, 'meadow'));
+    await waitState(page, 'play');
+    await page.evaluate(() => {
+        game.world.player.immortal = true;
+        for (const t of game.world.enemies()) {
+            t.hp = 0;
+            t.alive = false;
+        }
+    });
+    await expect(page.locator('.up-card')).toHaveCount(3, { timeout: 15_000 });
+    const id = await page.evaluate(() => game.supply.options[0]);
+    await page.keyboard.press('Digit1');
+    await page.waitForFunction(() => game.wave === 2, null, { timeout: 15_000 });
+    expect(await page.evaluate((id) => game.upgrades[id], id)).toBe(1);
+    await expect(page.locator('#upgrade')).toBeHidden();
     noErrors(errors);
 });

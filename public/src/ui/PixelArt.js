@@ -65,6 +65,23 @@ const SPRITES = {
             '.KWWWWWWWWK.', '..KWKWKWKK..', '..KWKWKWKK..', '...KKKKKK...'],
         pal: { K: INK, W: '#ffffff', R: '#ff1a3a' },
     },
+    // Mejoras de supervivencia (vida, recarga, daño, velocidad)
+    upHeart: {
+        rows: ['............', '..KK....KK..', '.KRRK..KRRK.', 'KRWRRKKRRRRK', 'KRWRRRRRRRRK', 'KRRRRRRRRRRK', '.KRRRRRRRRK.', '..KRRRRRRK..', '...KRRRRK...', '....KRRK....', '.....KK.....', '............'],
+        pal: { K: INK, R: '#ff3e5e', W: '#ffd0d8' },
+    },
+    upReload: {
+        rows: ['............', '.KK..KK..KK.', 'KYYKKYYKKYYK', 'KYYKKYYKKYYK', 'KOOKKOOKKOOK', 'KOOKKOOKKOOK', 'KOOKKOOKKOOK', 'KKKKKKKKKKKK', '........K...', 'KKKKKKKKWK..', 'KWWWWWWWWWK.', 'KKKKKKKKWK..'],
+        pal: { K: INK, Y: '#ffd23f', O: '#e6a400', W: '#ffffff' },
+    },
+    upDamage: {
+        rows: ['.....K......', '....KOK.....', '....KOOK.K..', '...KOOYOKOK.', '..KOOYYOOOK.', '.KOOYYWYOOK.', '.KOYYWWYYOK.', '.KOYYWWYYOK.', '.KOOYYYYOOK.', '..KOOOOOOK..', '...KKKKKK...', '............'],
+        pal: { K: INK, O: '#ff6a00', Y: '#ffd23f', W: '#ffffff' },
+    },
+    upSpeed: {
+        rows: ['............', '.KK...KK....', '.KCK..KCK...', '..KCK..KCK..', '...KCK..KCK.', '....KCK..KCK', '....KCK..KCK', '...KCK..KCK.', '..KCK..KCK..', '.KCK..KCK...', '.KK...KK....', '............'],
+        pal: { K: INK, C: '#23e0d6' },
+    },
     sparkA: {
         rows: ['...W...', '...W...', '...Y...', 'WWYWYWW', '...Y...', '...W...', '...W...'],
         pal: { W: '#ffffff', Y: '#ffe03a' },

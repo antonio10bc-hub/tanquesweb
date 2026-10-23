@@ -63,7 +63,9 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
   atraviesa) y bruto. Todos se visten del escenario: colores propios y un adorno (nieve,
   cactus, piruleta, roca de lava, sombrilla, flor, sirena de policía, cúpula espacial). Cada 5
   oleadas llega un **mini jefe**: el jefe de la campaña de ese escenario en pequeño, con su
-  ataque especial y su barra de vida (`content/survival.js`). En la oleada 25 aparece el **jefe
+  ataque especial y su barra de vida (`content/survival.js`). Tras cada oleada pasa un **avión de
+  suministros** que suelta una caja: eliges una de tres mejoras (+1 vida máxima, recarga rápida,
+  más daño, tanque más rápido), cada una hasta 3 estrellas por partida. En la oleada 25 aparece el **jefe
   secreto**: PRISMA en pequeño, con los ataques de todos los jefes, su música y un logro propio.
 - **Campaña**: un mapa voxel vertical que se recorre de abajo arriba, un mundo por temática (pradera,
   playa, desierto, caramelo, nieve, ciudad, volcán, espacio), cada uno sobre su propio mar y unidos
