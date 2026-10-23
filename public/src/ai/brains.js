@@ -1,6 +1,7 @@
 import { PlayerBrain } from './PlayerBrain.js';
 import { HunterBrain } from './HunterBrain.js';
 import { BossBrain } from './BossBrain.js';
+import { MinerBrain } from './MinerBrain.js';
 
 // Registro de cerebros. Un cerebro solo rellena tank.intent ({x, z}) cada paso;
 // las reglas (disparar al parar, visibilidad...) son iguales para todos.
@@ -10,6 +11,7 @@ export const BRAINS = {
     player2: (params, ctx) => new PlayerBrain(ctx.input2), // duelo en un móvil
     hunter: (params) => new HunterBrain(params),
     boss: (params) => new BossBrain(params),
+    miner: (params) => new MinerBrain(params),
     // Muñeco del tutorial: quieto, sin disparar y siempre a la vista
     dummy: () => ({
         update(tank) {

@@ -13,6 +13,7 @@ import { weatherParticle } from '../render/weather.js';
 import { CampaignMap } from '../ui/CampaignMap.js';
 import { drawMinimap } from '../ui/Minimap.js';
 import { Tutorial } from './Tutorial.js';
+import { waveSpecs, ENEMY_TYPES } from '../content/survival.js';
 import { COMMON_WALLS } from '../world/Arena.js';
 import { BulletSystem, FIRE as FLAMES } from '../world/Bullets.js';
 import { World } from '../world/World.js';
@@ -192,7 +193,9 @@ export class Game {
         this.hazardView.setOutline(theme.outline);
         this.sfx.setAmbience(theme.sound);
 
-        this.world = new World(def, theme, { events: this.events, bullets: this.bullets, input: this.input, input2: this.input2, seed, skin: Profile.data.skin, paint: Profile.data.paint, trail: Profile.data.trail });
+        // Supervivencia: la primera oleada ya va vestida del escenario (content/survival.js)
+        const level = def.survival ? { ...def, enemies: waveSpecs(1, this.themeId, SURVIVAL.maxEnemies).map((e) => ({ ...e, spawn: 'E' })) } : def;
+        this.world = new World(level, theme, { events: this.events, bullets: this.bullets, input: this.input, input2: this.input2, seed, skin: Profile.data.skin, paint: Profile.data.paint, trail: Profile.data.trail });
         this.scene.add(this.world.root);
         this.levelId = levelId;
         this.rig.setBounds(this.world.arena.cols, this.world.arena.rows);
@@ -295,8 +298,9 @@ export class Game {
         this.waveSize = this.world.enemies().length;
         this.waveClear = false;
         this.dropping = [];
-        this.runCoins = 0;
         this.newRecord = false;
+        this.miniBoss = null;
+        this.seenTypes = new Set(['grunt']); // tipos ya presentados en esta partida
         if (this.mode === 'survival') this.hud.setNames(this.world.player.def.name, L('WAVE 1', 'OLEADA 1'));
         this.events.emit('matchStart', this.mode);
         this.setState('intro');
@@ -585,7 +589,8 @@ export class Game {
         const p = w.player, e = w.enemies().find((t) => t.alive) || w.enemies()[0];
         this.hud.setHp('p', p.hp, p.maxHp);
         // Supervivencia: el panel del rival cuenta los enemigos que quedan en la oleada
-        if (this.mode === 'survival') this.hud.setHp('e', w.aliveEnemies(), this.waveSize);
+        if (this.miniBoss) this.hud.bossHp(this.miniBoss.hp / this.miniBoss.maxHp, this.miniBoss.angry, dt);
+        else if (this.mode === 'survival') this.hud.setHp('e', w.aliveEnemies(), this.waveSize);
         else if (this.boss) this.hud.bossHp(this.boss.hp / this.boss.maxHp, this.boss.angry, dt);
         else if (e) this.hud.setHp('e', e.hp, e.maxHp);
         let stealth = 'hidden';
@@ -601,8 +606,13 @@ export class Game {
         const w = this.world;
         if (!this.waveClear) {
             if (w.aliveEnemies() > 0 || this.dropping.length) return;
-            // Oleada superada: respiro, curación y, cada pocas oleadas, una moneda
+            // Oleada superada: respiro y curación (las minas que quedaban se desactivan)
             this.waveClear = true;
+            w.hazards.list = w.hazards.list.filter((h) => h.kind !== 'mine');
+            if (this.miniBoss) {
+                this.miniBoss = null;
+                this.hud.showBoss(null);
+            }
             this.waveTimer = SURVIVAL.pause;
             this.hud.banner(L(`WAVE ${this.wave}!`, `¡OLEADA ${this.wave}!`), 'go');
             this.sfx.play('win');
@@ -624,17 +634,38 @@ export class Game {
         if (this.waveTimer > 0) return;
         this.waveClear = false;
         this.wave++;
-        const specs = SURVIVAL.wave(this.wave);
+        const specs = waveSpecs(this.wave, this.themeId, SURVIVAL.maxEnemies);
         this.waveSize = specs.length;
         this.hud.setNames(w.player.def.name, L(`WAVE ${this.wave}`, `OLEADA ${this.wave}`));
-        this.hud.banner(L(`WAVE ${this.wave}`, `OLEADA ${this.wave}`));
-        this.sfx.play('go');
+        const boss = specs.find((s) => s.def.miniBoss);
+        if (boss) {
+            // Cada 5 oleadas, el jefe del escenario en pequeño, con su barra de vida
+            this.hud.banner(L(`WAVE ${this.wave}`, `OLEADA ${this.wave}`));
+            this.hud.showBoss(boss.def.name);
+            setTimeout(() => this.state === 'play' && this.hud.callout(L('MINI BOSS!', '¡MINI JEFE!')), 900);
+            this.sfx.play('warn');
+        } else {
+            this.hud.banner(L(`WAVE ${this.wave}`, `OLEADA ${this.wave}`));
+            this.sfx.play('go');
+        }
+        let intro = 0;
         specs.forEach((spec, i) => {
-            const tank = w.spawn(spec, 'enemy', spec.brain, w.farSpot(SURVIVAL.minSpawnDist));
+            const tank = w.spawn(spec, 'enemy', spec.brain, w.farSpot(spec.def.miniBoss ? SURVIVAL.minSpawnDist + 1 : SURVIVAL.minSpawnDist));
             tank.model.dropY = 9;
             tank.frozen = true;
             tank.reveal = 1.5; // al aterrizar se les ve un momento
             this.dropping.push({ tank, t: -i * 0.25 });
+            if (spec.def.miniBoss) this.miniBoss = tank;
+            // Un tipo nuevo se presenta: su nombre y cómo pelea, para que sepas qué hacer
+            if (spec.type && !this.seenTypes.has(spec.type)) {
+                this.seenTypes.add(spec.type);
+                const type = ENEMY_TYPES[spec.type], wait = 1300 + (intro++) * 2800;
+                setTimeout(() => {
+                    if (this.state !== 'play') return;
+                    this.hud.callout(L(`NEW: ${type.name}!`, `¡NUEVO: ${type.name}!`));
+                    if (type.tell) this.hud.toast(type.tell);
+                }, wait);
+            }
         });
     }
 
@@ -1125,7 +1156,18 @@ export class Game {
             if (a.id === 'summon') this.renderer.flash(0x2a6aff, 0.3);
         });
 
-        ev.on('bossPhase', (tank) => this.startPhaseScene(tank));
+        ev.on('bossPhase', (tank) => {
+            if (tank === this.boss) return this.startPhaseScene(tank);
+            // Mini jefe de supervivencia: se enfada sin parar la partida
+            tank.angry = true;
+            tank.flash = 1;
+            this.hud.callout(L('IT\'S ANGRY!', '¡SE HA ENFADADO!'));
+            this.sfx.play('roar', this.panOf(tank.x));
+            this.rig.shake(0.5);
+            this.waves.spawn(tank.x, tank.z, 0xff2a2a, 3 * tank.model.scale, 0.7);
+        });
+
+        ev.on('mineArmed', (h) => this.sfx.play('warn', this.panOf(h.x)));
 
         ev.on('hazardBoom', (h) => {
             this.recorder.note('hazardBoom', h);
@@ -1158,7 +1200,7 @@ export class Game {
     // y a la siguiente gana; en supervivencia supera la oleada; en el tutorial pasa de paso.
     // Impacto de algo que cae del cielo (meteorito, carámbano)
     hazardBoomFx(h) {
-        const cols = h.style === 'meteor' ? FIRE.concat([0x3a2a30]) : [0xffffff, 0x9fefff, 0x6fd0ff];
+        const cols = h.style === 'meteor' || h.style === 'mine' ? FIRE.concat([0x3a2a30]) : [0xffffff, 0x9fefff, 0x6fd0ff];
         this.particles.burst(h.x, 0.4, h.z, 26, cols, { speed: 4, up: 5, size: 0.16, ttl: 0.7, grav: 14 });
         this.waves.spawn(h.x, h.z, h.color, h.r + 0.5, 0.4);
         this.rig.shake(0.3);

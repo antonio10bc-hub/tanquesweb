@@ -47,8 +47,14 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
   personas en el mismo móvil, cada una con su joystick en su mitad de la pantalla; en el ordenador,
   WASD y flechas; como los dos miran la misma pantalla, escondido se ve solo una sombra tenue) y
   **Supervivencia** (cada
-  oleada trae un enemigo más, hasta 8, de soldados, exploradores y brutos, todos con 2 de vida;
-  recuperas 2 de vida al superar cada oleada y se guarda tu récord).
+  oleada trae un enemigo más, hasta 8; recuperas 2 de vida al superar cada oleada y se guarda tu
+  récord). Los tipos de enemigo van llegando de uno en uno y se presentan la primera vez:
+  soldado, explorador (rápido), francotirador (dispara de muy lejos), minador (deja minas que
+  pitan antes de estallar), acorazado (su escudo para las balas de frente; la bala de fuego lo
+  atraviesa) y bruto. Todos se visten del escenario: colores propios y un adorno (nieve,
+  cactus, piruleta, roca de lava, sombrilla, flor, sirena de policía, cúpula espacial). Cada 5
+  oleadas llega un **mini jefe**: el jefe de la campaña de ese escenario en pequeño, con su
+  ataque especial y su barra de vida (`content/survival.js`).
 - **Campaña**: un mapa voxel vertical que se recorre de abajo arriba, un mundo por temática (pradera,
   playa, desierto, caramelo, nieve, ciudad, volcán, espacio), cada uno sobre su propio mar y unidos
   por un camino de piedras. En cada mundo espera un **jefe**: un tanque gigante tematizado con su

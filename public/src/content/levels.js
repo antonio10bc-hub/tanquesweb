@@ -91,7 +91,7 @@ LEVELS.supervivencia = {
     pickups: { kinds: { heal: 3, power: 2, shield: 2, turbo: 1, cloak: 1, bounce: 1, radar: 1, triple: 2, decoy: 1, nuke: 1 }, lifetime: 6 },
     map: FALLBACK_MAP,
     player: { tank: 'hero', spawn: 'P' },
-    enemies: [{ tank: 'grunt', spawn: 'E', brain: 'hunter', hp: 2, params: { dodge: 0.25 } }],
+    enemies: [], // la primera oleada la pone Game con content/survival.js
 };
 
 // Tutorial de la primera partida (core/Tutorial.js): arena pequeña y fija.
@@ -132,26 +132,14 @@ LEVELS.duelo = {
     enemies: [{ tank: 'rival', spawn: 'E', brain: 'player2', noSkin: true }],
 };
 
-// Oleadas: cuántos enemigos y de qué tipo. La 1 es la del arquetipo (un soldado).
-// Todos los enemigos de supervivencia tienen 2 de vida: la gracia es destruir a muchos,
-// no un duelo largo. Cada oleada trae uno más, hasta el tope.
+// Ritmo de las oleadas. Cada oleada trae un enemigo más, hasta el tope; los tipos nuevos
+// van apareciendo poco a poco y cada 5 oleadas llega un mini jefe (content/survival.js).
 export const SURVIVAL = {
     heal: 2,          // vida que recuperas al superar una oleada
     pause: 2.4,       // segundos de respiro entre oleadas
     minSpawnDist: 6,  // los nuevos enemigos aparecen lejos de ti
-    enemyHp: 2,       // vida de cada enemigo, sea del tipo que sea
     maxEnemies: 8,    // tope de enemigos por oleada (más no caben con sentido en la arena)
-    wave(n) {
-        const count = Math.min(n, this.maxEnemies);
-        const out = [];
-        for (let i = 0; i < count; i++) {
-            let tank = 'grunt';
-            if (n >= 3 && i % 3 === 1) tank = 'scout';
-            if (n >= 5 && i % 3 === 2) tank = 'brute';
-            out.push({ tank, brain: 'hunter', hp: this.enemyHp, params: { dodge: Math.min(0.2 + n * 0.05, 0.7) } });
-        }
-        return out;
-    },
+    // Quién llega en cada oleada (y el mini jefe cada 5): content/survival.js
 };
 
 export const FIRST_LEVEL = 'clasico';

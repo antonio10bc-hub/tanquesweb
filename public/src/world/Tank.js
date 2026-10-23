@@ -205,7 +205,14 @@ export class Tank {
     }
 
     // Devuelve el daño realmente recibido (0 si lo para el escudo).
-    damage(amount, dirX, dirZ, world) {
+    damage(amount, dirX, dirZ, world, cause) {
+        // Acorazado: su escudo (delante de la torreta) para las balas normales que le llegan
+        // de frente; la bala de fuego lo atraviesa
+        if (this.def.frontArmor && (cause === 'bullet' || cause === 'bounce') && amount < 2 &&
+            -(dirX * Math.sin(this.aimYaw) + dirZ * Math.cos(this.aimYaw)) > 0.45) {
+            this.flash = 0.3;
+            return 0;
+        }
         if (this.shield > 0) {
             this.shield--;
             this.flash = 0.6;

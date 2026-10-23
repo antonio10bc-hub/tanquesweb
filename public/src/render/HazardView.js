@@ -214,6 +214,36 @@ export class HazardView {
         };
     }
 
+    // Mina: disco oscuro con una luz que parpadea; al pisarla, el radio de la explosión avisa.
+    mine(h) {
+        const { trash, cube, flat } = this.kit();
+        const group = new THREE.Group();
+        group.position.set(h.x, 0, h.z);
+        cube(group, 0.44, 0.09, 0.44, 0x2a2a34, 0, 0.045, 0);
+        cube(group, 0.28, 0.05, 0.28, 0x4a4a58, 0, 0.11, 0, false);
+        const light = cube(group, 0.1, 0.07, 0.1, 0xff2a2a, 0, 0.15, 0, false);
+        const ring = flat(new THREE.RingGeometry(h.r - 0.1, h.r, 14), 0xff2a2a, 0.85);
+        ring.position.y = 0.03;
+        const fill = flat(new THREE.CircleGeometry(h.r, 14), 0xff2a2a, 0.18);
+        fill.position.y = 0.025;
+        group.add(ring, fill);
+        return {
+            group, trash,
+            update: (hz, time) => {
+                const lit = hz.fuse !== undefined;
+                const armed = hz.t >= hz.arm;
+                // Aparece con un pequeño salto al soltarla
+                group.scale.setScalar(Math.min(1, 0.3 + hz.t * 3));
+                light.visible = lit ? Math.floor(time * 14) % 2 === 0 : armed && Math.floor(time * 2.5) % 2 === 0;
+                ring.visible = fill.visible = lit;
+                if (lit) {
+                    const k = 1 - Math.max(0, hz.fuse - hz.t) / hz.delay;
+                    fill.scale.setScalar(0.2 + k * 0.8);
+                }
+            },
+        };
+    }
+
     // Láser: aviso fino que parpadea y luego un rayo gordo con núcleo blanco.
     beam(h) {
         const { trash, own } = this.kit();

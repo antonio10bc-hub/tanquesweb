@@ -9,6 +9,8 @@
 //  wave    una ola cruza la arena de arriba abajo (dir 1) o al revés (dir -1). Los muros
 //          protegen: si tienes uno justo delante, la ola te pasa por encima.
 //  beam    rayo que sale del jefe y va girando; los muros lo cortan.
+//  mine    mina del MINADOR de supervivencia: se arma tras "arm" segundos; si un rival se
+//          acerca a "trigger", pita "fuse" segundos y estalla en un radio "r".
 export class Hazards {
     constructor(world) {
         this.world = world;
@@ -121,6 +123,29 @@ export class Hazards {
             this.hurt(h, t, 0, h.dir, 10);
         }
         return true;
+    }
+
+    mine(h) {
+        if (h.fuse === undefined) {
+            if (h.t >= h.life) return false;
+            if (h.t < h.arm) return true;
+            for (const t of this.world.tanks) {
+                if (!t.alive || t.team === h.owner.team) continue;
+                if (Math.hypot(t.x - h.x, t.z - h.z) < h.trigger + t.radius * 0.5) {
+                    h.fuse = h.t + h.delay;
+                    this.world.events.emit('mineArmed', h);
+                    break;
+                }
+            }
+            return true;
+        }
+        if (h.t < h.fuse) return true;
+        this.world.events.emit('hazardBoom', h);
+        for (const t of this.victims(h, (t) => Math.hypot(t.x - h.x, t.z - h.z) < h.r + t.radius * 0.5)) {
+            const d = Math.hypot(t.x - h.x, t.z - h.z) || 1;
+            this.hurt(h, t, (t.x - h.x) / d, (t.z - h.z) / d);
+        }
+        return false;
     }
 
     beam(h, dt) {

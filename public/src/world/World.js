@@ -39,7 +39,8 @@ export class World {
     }
 
     spawn(spec, team, brainId, at) {
-        let def = getDef(TANKS, spec.tank, 'tanque');
+        // spec.def: tanque hecho al vuelo (enemigos de supervivencia vestidos según el escenario)
+        let def = spec.def || getDef(TANKS, spec.tank, 'tanque');
         // La skin equipada solo la lleva el jugador; el dorado también tiñe sus balas
         const mine = team === 'player' && !spec.noSkin;
         const skin = mine ? SKIN_BY_ID[this.ctx.skin] || null : null;
@@ -51,7 +52,8 @@ export class World {
         at = at || this.arena.takeSpawn(spec.spawn);
         const tank = new Tank(def, team, at.x, at.z, createBrain(brainId, spec.params, this.ctx));
         if (mine) tank.trail = (TRAIL_BY_ID[this.ctx.trail] || {}).style || null;
-        const opts = def.boss ? { scale: def.scale, deco: def.deco, rainbow: def.rainbow, noBar: true } : {};
+        const opts = def.boss ? { scale: def.scale, deco: def.deco, rainbow: def.rainbow, noBar: true }
+            : def.deco ? { scale: def.scale, deco: def.deco } : {};
         tank.model = new TankModel(def.palette, this.theme.outline, tank.weapon.magazine, skin, opts);
         tank.model.addTo(this.root);
         for (const other of this.tanks) {
@@ -261,7 +263,7 @@ export class World {
     // cause: 'bullet' | 'bounce' | 'nuke' | 'ram' | 'hazard' (para los logros)
     hitTank(tank, owner, damage, dirX, dirZ, x, z, color, cause = 'bullet') {
         if (tank.decoy) return this.popDecoy(tank);
-        const dealt = tank.damage(damage, dirX, dirZ, this);
+        const dealt = tank.damage(damage, dirX, dirZ, this, cause);
         if (!dealt) {
             this.events.emit('shieldBreak', tank, x, z);
             return;

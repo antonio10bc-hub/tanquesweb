@@ -86,10 +86,11 @@ export class TankModel {
             this.antenna.visible = false;
         }
 
-        // Jefes: piezas temáticas sobre el casco y la torreta (sustituyen a la antena)
+        // Jefes y enemigos de supervivencia: piezas temáticas sobre el casco, la torreta y el
+        // cañón (sustituyen a la antena)
         this.decoAnim = null;
         if (opts.deco) {
-            const targets = { body: this.body, turret: this.turret };
+            const targets = { body: this.body, turret: this.turret, barrel: this.barrel };
             const extra = opts.deco((target, w, h, d, color, x, y, z, outlined = true) => this.part(targets[target], w, h, d, mat(color), x, y, z, outlined));
             this.decoAnim = extra && extra.animate;
             this.antenna.visible = false;
