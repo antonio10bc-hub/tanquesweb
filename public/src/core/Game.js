@@ -9,6 +9,7 @@ import { Markers } from '../render/Markers.js';
 import { PickupView } from '../render/PickupView.js';
 import { NukeView } from '../render/NukeView.js';
 import { HazardView } from '../render/HazardView.js';
+import { SkullWisps } from '../render/SkullWisps.js';
 import { CampaignMap } from '../ui/CampaignMap.js';
 import { drawMinimap } from '../ui/Minimap.js';
 import { Tutorial } from './Tutorial.js';
@@ -58,6 +59,7 @@ export class Game {
         this.pickupView = new PickupView(this.scene);
         this.nukeView = new NukeView(this.scene);
         this.hazardView = new HazardView(this.scene, this.particles);
+        this.skulls = new SkullWisps(this.scene, this.particles); // bordes del modo difícil
         this.bullets = new BulletSystem(this.scene, this.events, this.particles);
         this.recorder = new ReplayRecorder(3);
 
@@ -208,7 +210,7 @@ export class Game {
         this.hud.ready();
         this.hud.showBoss(null);
         this.hud.showDuel(false);
-        this.renderer.setGrade(1, 1, 1, 0);
+        this.skulls.start(null);
         this.input.setSide(null);
         this.input2.setSide(null);
         this.rig.zoomTarget = 1.15;
@@ -268,7 +270,8 @@ export class Game {
             b.evil = true;
             b.model.setEvil(true);
         }
-        this.renderer.setGrade(1.35, 0.42, 0.48, this.hard ? 0.6 : 0);
+        // Modo difícil: calaveras en los bordes de la arena (sin teñir la pantalla)
+        this.skulls.start(this.hard ? this.world.arena : null);
         this.playTime = 0;
         this.damageTaken = 0;
         this.hud.showBoss(this.boss ? this.boss.def.name : null);

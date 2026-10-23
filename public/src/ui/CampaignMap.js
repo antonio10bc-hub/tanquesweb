@@ -469,8 +469,8 @@ export class CampaignMap {
         this.el.skull.classList.toggle('hidden', !Profile.hardUnlocked || fresh);
         this.el.skull.classList.toggle('on', this.hard);
         this.el.root.classList.toggle('hard', this.hard);
-        // Modo difícil: todo teñido de rojo y negro y los jefes con su aura maligna
-        this.game.renderer.setGrade(1.35, 0.42, 0.48, this.hard ? 0.6 : 0);
+        // Modo difícil: los jefes con su aura maligna
+        this.game.skulls.start(null);
         for (const b of this.bosses) b.model.setEvil(this.hard);
         this.at = this.frontier();
         this.route = null;

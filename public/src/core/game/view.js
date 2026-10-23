@@ -16,6 +16,7 @@ export const ViewPart = {
         this.pickupView.sync(item, w.pickups && w.pickups.rules, this.time);
         this.nukeView.sync(w.nukes, this.time);
         this.hazardView.sync(w.hazards.list, this.time, dt, w.arena);
+        this.skulls.update(dt, this.time);
         this.tutorial.animate(this.time);
         // El objeto de la bala de fuego también echa llamas
         if (item && item.kind === 'power' && (this.itemFireT = (this.itemFireT || 0) - dt) <= 0) {
