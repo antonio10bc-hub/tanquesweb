@@ -121,16 +121,16 @@ export class ModeArt {
 
         // Supervivencia: enjambre en cuña; el escenario se elige al pintar
         this.buildSwarm(S.survival.theme || SWARM_THEMES[0]);
-        S.survival.camera.position.set(0, 1.7, 4.6);
-        S.survival.camera.lookAt(0, 0.3, 0);
+        S.survival.camera.position.set(0, 2.1, 4.6);
+        S.survival.camera.lookAt(0, 0.7, 0);
 
         // Duelo: tú contra el rival, cara a cara
         this.clear(S.duel);
         this.add(S.duel, hero.def, -0.95, 0, Math.PI / 2, {}, hero.skin);
         this.add(S.duel, TANKS.rival, 0.95, 0, -Math.PI / 2);
         S.duel.shots = [this.shot(S.duel, hero.def.palette.bullet), this.shot(S.duel, TANKS.rival.palette.bullet)];
-        S.duel.camera.position.set(0, 1.35, 3.25);
-        S.duel.camera.lookAt(0, 0.3, 0);
+        S.duel.camera.position.set(0, 1.85, 3.25);
+        S.duel.camera.lookAt(0, 0.8, 0);
     }
 
     buildSwarm(theme) {
