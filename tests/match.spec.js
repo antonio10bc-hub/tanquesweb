@@ -1,15 +1,16 @@
 const { test, expect } = require('@playwright/test');
 const { openGame, waitState, secretWin, profile, noErrors } = require('./helpers');
 
-test('partida rápida: se gana, sale la repetición y no da monedas', async ({ page }) => {
+test('partida rápida: se gana, sale la repetición y da una moneda', async ({ page }) => {
     const errors = await openGame(page);
     await page.click('#btn-play');
     await waitState(page, 'play');
     await secretWin(page);
     await waitState(page, 'end');
-    await expect(page.locator('#end-title')).toHaveText('¡VICTORIA!');
+    // Primero la moneda vuela al contador y luego sale el final
+    await expect(page.locator('#end-title')).toHaveText('¡VICTORIA!', { timeout: 20_000 });
     const p = await profile(page);
-    expect(p.coins || 0).toBe(0);
+    expect(p.coins).toBe(1);
     expect(p.stats.matches).toBe(1);
     expect(p.stats.victories).toBe(1);
     noErrors(errors);

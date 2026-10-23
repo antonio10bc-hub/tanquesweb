@@ -42,13 +42,6 @@ const BUILDERS = {
         arrow(0.12, def.accent);
         arrow(-0.2, def.color);
     },
-    // Fantasmita: invisibilidad
-    cloak(add, def) {
-        add(0.44, 0.42, 0.3, def.color, 0, 0.02, 0);
-        add(0.32, 0.12, 0.28, def.color, 0, 0.28, 0);
-        for (const x of [-0.15, 0, 0.15]) add(0.12, 0.12, 0.28, def.color, x, -0.24, 0);
-        for (const x of [-0.09, 0.09]) add(0.07, 0.1, 0.04, def.accent, x, 0.08, 0.16, false);
-    },
     // Pelota saltarina con brillo: rebote
     bounce(add, def) {
         add(0.42, 0.42, 0.42, def.color, 0, 0, 0);

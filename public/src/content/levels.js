@@ -46,7 +46,7 @@ export const LEVELS = {
         tagline: L('THE GRASS HIDES', 'LA HIERBA ESCONDE'),
         themes: ['meadow', 'beach', 'desert'],
         generator: { pieces: [4, 6], density: [0.1, 0.22], materials: { '#': 2, B: 2 }, bushes: [5, 7], bushSize: [3, 6] },
-        pickups: { kinds: { radar: 2, cloak: 1, heal: 2, decoy: 2, nuke: 1 } },
+        pickups: { kinds: { radar: 2, heal: 2, decoy: 3, nuke: 1 } },
     },
     demolicion: {
         name: L('DEMOLITION', 'DEMOLICIÓN'),
@@ -74,7 +74,7 @@ export const LEVELS = {
         tagline: L('NOBODY IS SEEN', 'NADIE SE VE'),
         themes: ['city', 'space', 'volcano'],
         generator: { materials: { '#': 2, B: 2, D: 1 }, bushes: [3, 5], bushSize: [2, 4] },
-        pickups: { kinds: { cloak: 2, radar: 2, heal: 1, decoy: 2, nuke: 1 } },
+        pickups: { kinds: { radar: 3, heal: 1, decoy: 3, nuke: 1 } },
     },
 };
 
@@ -88,7 +88,7 @@ LEVELS.supervivencia = {
     survival: true,
     themes: ['snow', 'desert', 'candy', 'volcano', 'beach', 'meadow', 'city', 'space'],
     generator: { materials: { '#': 3, B: 2, D: 2 }, bushes: [2, 4] },
-    pickups: { kinds: { heal: 3, power: 2, shield: 2, turbo: 1, cloak: 1, bounce: 1, radar: 1, triple: 2, decoy: 1, nuke: 1 }, lifetime: 6 },
+    pickups: { kinds: { heal: 3, power: 2, shield: 2, turbo: 1, bounce: 1, radar: 1, triple: 2, decoy: 1, nuke: 1 }, lifetime: 6 },
     map: FALLBACK_MAP,
     player: { tank: 'hero', spawn: 'P' },
     enemies: [], // la primera oleada la pone Game con content/survival.js

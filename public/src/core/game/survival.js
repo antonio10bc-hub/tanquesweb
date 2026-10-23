@@ -33,6 +33,13 @@ export const SurvivalPart = {
                 p.hp = healed;
                 this.markers.sprinkle(p.x, p.z, '+', 0x17d65a, this.theme.outline, 10);
             }
+            // Monedas: la oleada n da n (1, luego 2, luego 3...: 1, 3, 6... en total)
+            const coins = this.wave;
+            this.runCoins += coins;
+            Profile.addCoins(coins);
+            this.events.emit('coin', Profile.coins);
+            this.sfx.play('coin');
+            this.hud.toast(L(`+${coins} GOLD COIN${coins > 1 ? 'S' : ''}`, `+${coins} MONEDA${coins > 1 ? 'S' : ''} DE ORO`), 'coin');
             if (this.wave > Profile.data.stats.bestWave) {
                 Profile.data.stats.bestWave = this.wave;
                 this.newRecord = true;

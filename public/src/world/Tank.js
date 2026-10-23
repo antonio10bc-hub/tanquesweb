@@ -196,7 +196,6 @@ export class Tank {
         if (def.damageMult) this.damageMult = Math.max(this.damageMult, def.damageMult);
         if (def.shield) this.shield = Math.max(this.shield, def.shield);
         if (def.turbo) { this.turbo = def.turbo; this.speedMult = def.speedMult || 1.5; }
-        if (def.cloak) this.cloak = def.cloak;
         if (def.bounce) this.bounceNext = Math.max(this.bounceNext, def.bounce);
         if (def.radar) this.radar = def.radar;
         if (def.nuke) this.nukeNext = def.nuke;

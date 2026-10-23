@@ -6,6 +6,9 @@ import { CONFETTI, REPLAY, STARS } from './constants.js';
 
 // Final de partida: cámara lenta, repetición del golpe final y pantalla de resultado (récords, estrellas, monedas).
 // Métodos de Game (se mezclan en su prototipo desde core/Game.js): "this" es la partida.
+// Monedas por ganar una partida rápida (las de supervivencia: survival.js; campaña: estrellas)
+const QUICK_COIN = 1;
+
 export const EndingPart = {
     endMatch(win) {
         // El impacto final puede caer entre dos fotogramas de la grabación: se graba siempre,
@@ -72,6 +75,22 @@ export const EndingPart = {
         ], (final) => this.sfx.play(final ? 'reloaded' : 'tick'));
     },
 
+    // Ceremonia de monedas antes del final: aparecen, vuelan al contador y suman; después then().
+    // Sin monedas que dar, then() va directo.
+    payCoins(n, then) {
+        if (n <= 0) return then();
+        const before = Profile.coins, token = ++this.endToken;
+        Profile.addCoins(n);
+        this.events.emit('coin', Profile.coins);
+        this.sfx.play('coin');
+        this.hud.coinReward(before, Profile.coins, {
+            onFly: () => this.sfx.play('itemSpawn'),
+            onLand: () => this.sfx.play('reloaded'),
+        }).then(() => {
+            if (this.endToken === token && this.state === 'end') then();
+        });
+    },
+
     showEnd() {
         const win = this.result;
         this.setState('end');
@@ -118,21 +137,8 @@ export const EndingPart = {
                     // Primera victoria en difícil: su gorro y su pintura ya están en Mi Tanque
                     if (hard && first) setTimeout(() => this.state === 'end' && this.hud.toast(L('NEW HAT AND PAINT IN MY TANK!', '¡NUEVO GORRO Y PINTURA EN MI TANQUE!'), 'trophy'), 2600);
                 };
-                if (reward > 0) {
-                    // Primero las monedas vuelan al contador; después, con calma, el final con las estrellas
-                    const before = Profile.coins, token = ++this.endToken;
-                    Profile.addCoins(reward);
-                    this.events.emit('coin', Profile.coins);
-                    this.sfx.play('coin');
-                    this.hud.coinReward(before, Profile.coins, {
-                        onFly: () => this.sfx.play('itemSpawn'),
-                        onLand: () => this.sfx.play('reloaded'),
-                    }).then(() => {
-                        if (this.endToken === token && this.state === 'end') end();
-                    });
-                } else {
-                    end();
-                }
+                // Una moneda por cada estrella nueva; primero vuelan al contador y luego el final
+                this.payCoins(reward, end);
             } else {
                 this.hud.showEnd(false, L('TRY AGAIN!', '¡INTÉNTALO OTRA VEZ!'));
                 this.showTally();
@@ -140,18 +146,24 @@ export const EndingPart = {
         } else if (this.mode === 'survival') {
             const reached = this.wave - (this.waveClear ? 0 : 1);
             const sub = this.newRecord ? L('NEW RECORD!', '¡NUEVO RÉCORD!') : L(`RECORD: ${st.bestWave} WAVES`, `RÉCORD: ${st.bestWave} OLEADAS`);
-            this.hud.showEnd(false, sub, L(`${reached} WAVE${reached === 1 ? '' : 'S'}`, `${reached} OLEADA${reached === 1 ? '' : 'S'}`));
+            // Las monedas de las oleadas ya se cobraron al superarlas: aquí se recuerda el total
+            const coins = this.runCoins ? L(` · +${this.runCoins} COINS`, ` · +${this.runCoins} MONEDAS`) : '';
+            this.hud.showEnd(false, sub + coins, L(`${reached} WAVE${reached === 1 ? '' : 'S'}`, `${reached} OLEADA${reached === 1 ? '' : 'S'}`));
             this.showTally();
         } else {
             st.streak = win ? st.streak + 1 : 0;
             if (win) st.wins++;
             Profile.save();
             if (win) {
-                this.hud.showEnd(true, '');
+                // Partida rápida ganada: una moneda de oro
+                this.payCoins(QUICK_COIN, () => {
+                    this.hud.showEnd(true, '');
+                    this.showTally();
+                });
             } else {
                 this.hud.showEnd(false, L('NEXT TIME!', '¡A LA PRÓXIMA!'));
+                this.showTally();
             }
-            this.showTally();
         }
         this.events.emit('matchEnd', { win, mode: this.mode, wave: this.wave, world: this.worldId });
         this.sfx.play(win ? 'win' : 'lose');

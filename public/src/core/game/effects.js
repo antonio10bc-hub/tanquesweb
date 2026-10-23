@@ -66,7 +66,7 @@ export const EffectsPart = {
             this.waves.spawn(item.x, item.z, d.color, 1.6, 0.4);
             if (me || tank.viewFade > 0.5) this.pickupFx(tank, item);
             if (me) {
-                const SOUNDS = { heal: 'heal', power: 'power', shield: 'shieldGet', turbo: 'turbo', cloak: 'cloak', bounce: 'bounceGet', radar: 'radar', nuke: 'nukeGet', triple: 'triple', decoy: 'decoy' };
+                const SOUNDS = { heal: 'heal', power: 'power', shield: 'shieldGet', turbo: 'turbo', bounce: 'bounceGet', radar: 'radar', nuke: 'nukeGet', triple: 'triple', decoy: 'decoy' };
                 this.sfx.play(SOUNDS[item.kind] || 'heal');
                 this.renderer.flash(d.color, 0.25);
                 vibrate('pickup');
@@ -239,9 +239,6 @@ export const EffectsPart = {
                 break;
             case 'turbo':
                 this.particles.burst(x, 0.3, z, 24, TURBO, { speed: 5, up: 1, size: 0.1, ttl: 0.4, grav: 0 });
-                break;
-            case 'cloak':
-                this.particles.burst(x, 0.5, z, 30, [0xffffff, d.color, 0xcfc8e8], { speed: 2, up: 2, size: 0.22, ttl: 0.8, grav: -1 });
                 break;
             case 'bounce':
                 this.particles.burst(x, 0.6, z, 24, SPARKS, { speed: 3, up: 5, size: 0.1, ttl: 0.6, grav: 10 });

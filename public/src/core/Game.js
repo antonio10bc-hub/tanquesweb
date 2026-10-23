@@ -283,6 +283,7 @@ export class Game {
         this.waveClear = false;
         this.dropping = [];
         this.newRecord = false;
+        this.runCoins = 0; // monedas ganadas en esta partida de supervivencia
         this.miniBoss = null;
         this.seenTypes = new Set(['grunt']); // tipos ya presentados en esta partida
         if (this.mode === 'survival') this.hud.setNames(this.world.player.def.name, L('WAVE 1', 'OLEADA 1'));

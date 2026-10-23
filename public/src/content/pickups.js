@@ -33,13 +33,6 @@ export const PICKUPS = {
         useful: (t) => t.turbo <= 0,
         desc: (d) => L(`You go much faster for ${d.turbo} seconds.`, `Vas mucho más rápido durante ${d.turbo} segundos.`),
     },
-    cloak: {
-        name: L('INVISIBLE', 'INVISIBLE'),
-        cloak: 3.5,           // segundos invisible aunque dispares (solo te ven pegados a ti)
-        color: 0xe2dcff, accent: 0x1b0b33,
-        useful: (t) => t.cloak <= 0,
-        desc: (d) => L(`For ${d.cloak} seconds nobody can see you, not even when you fire. Only if they touch you.`, `Durante ${String(d.cloak).replace('.', ',')} segundos nadie te ve, ni siquiera al disparar. Solo si te tocan.`),
-    },
     bounce: {
         name: L('BOUNCE', 'REBOTE'),
         bounce: 5,            // tu siguiente bala rebota en las paredes este número de veces

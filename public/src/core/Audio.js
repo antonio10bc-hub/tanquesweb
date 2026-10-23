@@ -146,7 +146,6 @@ export class Sfx {
             case 'shield': this.tone('square', 1200, 300, 0.2, 0.15, pan); this.noise(0.2, 0.3, 5000, pan); break;
             case 'shieldGet': this.seq('triangle', [392, 523, 659, 784], 0.05, 0.16, 0.12); break;
             case 'turbo': this.tone('sawtooth', 200, 1200, 0.3, 0.12); break;
-            case 'cloak': this.tone('sine', 900, 200, 0.4, 0.18); this.noise(0.4, 0.2, 3000); break;
             case 'bounceGet': this.seq('square', [523, 784, 659, 1047], 0.05, 0.12, 0.08); break;
             case 'radar': this.tone('sine', 1320, 1320, 0.08, 0.15); this.tone('sine', 1320, 1320, 0.08, 0.1, 0, 0.25); break;
             case 'pause': this.tone('square', 660, 440, 0.08, 0.12); break;

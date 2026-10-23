@@ -41,7 +41,7 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
 - **Objetos**: aparece uno cada vez, dura 5 s y salta a otro sitio. Nunca aparece pegado a un tanque
   y, si puede, a distancia parecida de los dos. La IA también va a por ellos.
   - **Vida**: cura 2. **Bala de fuego**: la siguiente bala hace el doble. **Escudo**: para un impacto.
-  - **Turbo**: más velocidad 4 s. **Invisible**: 3,5 s sin que te vean ni disparando.
+  - **Turbo**: más velocidad 4 s.
   - **Rebote**: la siguiente bala rebota 5 veces. **Triple disparo**: el siguiente disparo sale en abanico de 3 balas. **Señuelo**: deja una copia de tu tanque que atrae a los rivales 6 s mientras te vuelves invisible un momento. **Radar**: ves al rival 2,5 s esté donde esté.
   - **Bomba nuclear**: el siguiente disparo lanza una bomba por encima de los muros a la última
     posición donde viste al rival; un círculo rojo avisa de dónde cae. Arrasa 3 casillas a la
@@ -81,8 +81,9 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
   ganar en menos de 75 s. Al terminar la campaña aparece una **calavera** en el mapa: el **modo
   difícil**, con calaveras que brotan en los bordes de la arena y los jefes con aura maligna, más vida, más velocidad
   y especiales más seguidos (con su propio progreso y estrellas).
-- **Monedas y skins**: las monedas de oro solo se ganan en la campaña, una por cada estrella nueva
-  de un jefe (normal o difícil). En **Mi Tanque** se compran y equipan, en tres pestañas: 8 gorros voxel y el **tanque
+- **Monedas y skins**: las monedas de oro se ganan al ganar una partida rápida (1),
+  al superar oleadas de supervivencia (la oleada n da n: 1, 3, 6... en total) y en la campaña,
+  una por cada estrella nueva de un jefe (normal o difícil). En **Mi Tanque** se compran y equipan, en tres pestañas: 8 gorros voxel y el **tanque
   dorado** (aura, pilar de luz, chispas y balas de oro), 7 **pinturas** y 5 **estelas de bala**
   (arcoíris, llamarada, estrellas, burbujas, confeti), con una bala de muestra en el escaparate.
   Los gorros se ven a escala 1.4. Cada jefe vencido en **modo difícil** regala su gorro y su
@@ -114,7 +115,7 @@ public/src/
     levels.js          arquetipos de escenario: temas + generador + objetos + rivales
     tiles.js           leyenda de los mapas
     themes.js          temas visuales (colores, clima, música): no cambian las reglas
-    pickups.js         objetos (vida, fuego, escudo, turbo, invisible, rebote, radar, bomba) y reglas
+    pickups.js         objetos (vida, fuego, escudo, turbo, rebote, triple, señuelo, radar, bomba) y reglas
     skins.js           gorros y tanque dorado (precio, construcción voxel)
     achievements.js    logros
     campaign.js        campaña: mundos, jefes (tanque, piezas, ataque, dificultad) y su arena

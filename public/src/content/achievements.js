@@ -14,7 +14,7 @@ export const ACHIEVEMENTS = [
     { id: 'bounce_kill', name: L('TRICK SHOT', 'CARAMBOLA'), desc: L('Finish off a rival with a bounced shot.', 'Remata a un rival con una bala rebotada.') },
     { id: 'bush_kill', name: L('AMBUSH', 'EMBOSCADA'), desc: L('Finish off a rival from the tall grass.', 'Remata a un rival desde la hierba alta.') },
     { id: 'demolisher', name: L('DEMOLISHER', 'DEMOLEDOR'), desc: L('Break 25 walls.', 'Rompe 25 muros.'), progress: (s) => [s.cratesBroken, 25] },
-    { id: 'collector', name: L('COLLECTOR', 'COLECCIONISTA'), desc: L(`Collect all ${KINDS} kinds of item.`, `Recoge los ${KINDS} tipos de objeto.`), progress: (s) => [s.pickupKinds.length, KINDS] },
+    { id: 'collector', name: L('COLLECTOR', 'COLECCIONISTA'), desc: L(`Collect all ${KINDS} kinds of item.`, `Recoge los ${KINDS} tipos de objeto.`), progress: (s) => [s.pickupKinds.filter((k) => k in PICKUPS).length, KINDS] }, // solo los que siguen en el juego
     { id: 'wave5', name: L('SURVIVOR', 'SUPERVIVIENTE'), desc: L('Clear 5 waves in survival.', 'Supera 5 oleadas en supervivencia.'), progress: (s) => [s.bestWave, 5] },
     { id: 'wave10', name: L('UNSTOPPABLE', 'IMPARABLE'), desc: L('Clear 10 waves in survival.', 'Supera 10 oleadas en supervivencia.'), progress: (s) => [s.bestWave, 10] },
     { id: 'rich', name: L('PIGGY BANK', 'HUCHA'), desc: L('Earn 5 gold coins.', 'Consigue 5 monedas de oro.'), progress: (s) => [s.coinsEarned, 5] },

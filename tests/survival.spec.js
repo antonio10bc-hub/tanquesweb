@@ -32,6 +32,8 @@ test('supervivencia: los tipos nuevos se presentan y cada 5 oleadas llega un min
 
     await jumpToWave(page, 6);
     expect(await page.evaluate(() => game.miniBoss)).toBeNull();
+    // Monedas: superar la oleada n da n (aquí se han superado la 4 y la 5 al saltar)
+    expect(await page.evaluate(() => game.runCoins)).toBe(3 + 4 + 5);
     await expect(page.locator('#bossbar')).toBeHidden();
     noErrors(errors);
 });
