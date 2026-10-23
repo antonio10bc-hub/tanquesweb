@@ -130,6 +130,28 @@ export class RetroRenderer {
         this.uniforms.uTintAmt.value = Math.max(this.uniforms.uTintAmt.value, amount);
     }
 
+    // Pantalla partida (duelo): "bottom" en la mitad de abajo y "top" en la de arriba, con el
+    // mismo pixelado y la misma trama que el resto
+    renderSplit(scene, bottom, top, dt) {
+        const tint = this.uniforms.uTintAmt;
+        tint.value = Math.max(0, tint.value - dt * 2.5);
+        const t = this.target, w = this.width, h = this.height, hb = Math.floor(h / 2);
+        this.gl.setRenderTarget(t);
+        this.gl.clear();
+        t.scissorTest = true;
+        for (const [cam, y, hh] of [[bottom, 0, hb], [top, hb, h - hb]]) {
+            t.viewport.set(0, y, w, hh);
+            t.scissor.set(0, y, w, hh);
+            this.gl.setRenderTarget(t); // aplica el nuevo recorte
+            this.gl.render(scene, cam);
+        }
+        t.scissorTest = false;
+        t.viewport.set(0, 0, w, h);
+        t.scissor.set(0, 0, w, h);
+        this.gl.setRenderTarget(null);
+        this.gl.render(this.postScene, this.postCamera);
+    }
+
     render(scene, camera, dt) {
         const tint = this.uniforms.uTintAmt;
         tint.value = Math.max(0, tint.value - dt * 2.5);

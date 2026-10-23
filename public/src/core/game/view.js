@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { CONFIG } from '../../config.js';
 import { GOLD_SPARKS } from '../../content/index.js';
 import { weatherParticle } from '../../render/weather.js';
@@ -33,7 +34,38 @@ export const ViewPart = {
         this.markers.update(dt, this.time);
         this.updateCamera();
         this.rig.update(dt);
-        this.renderer.render(this.scene, this.rig.camera, dt);
+        if (this.mode === 'duel' && ['intro', 'play', 'outro', 'replay', 'end'].includes(this.state)) this.renderDuel(dt);
+        else {
+            const aspect = this.renderer.width / this.renderer.height;
+            if (this.rig.camera.aspect !== aspect) this.rig.resize(aspect); // al salir del duelo
+            this.renderer.render(this.scene, this.rig.camera, dt);
+        }
+    },
+
+    // Duelo a pantalla partida: cada jugador ve la arena entera desde su lado. El de abajo, como
+    // siempre; el de arriba desde el lado contrario y girado 180° en pantalla, para quien coge
+    // el móvil por el otro extremo. Los dos ven lo mismo a la misma distancia.
+    renderDuel(dt) {
+        const r = this.renderer, a = this.world.arena, cfg = this.rig.cfg;
+        const hb = Math.floor(r.height / 2), aspect = r.width / hb;
+        const cams = (this.duelCams ||= [this.rig.camera, new THREE.PerspectiveCamera(cfg.fov, 1, 0.5, 400)]);
+        const tanV = Math.tan((cfg.fov * Math.PI) / 360), tanH = tanV * aspect;
+        const p = (cfg.pitch * Math.PI) / 180, sinP = Math.sin(p), cosP = Math.cos(p);
+        const d = Math.max((a.cols / 2 + 0.5) / tanH, ((a.rows / 2 + 1.1) * sinP) / tanV);
+        const s = this.rig.trauma * this.rig.trauma * 0.3;
+        const cx = a.cols / 2 + (Math.random() * 2 - 1) * s, cz = a.rows / 2 + (Math.random() * 2 - 1) * s;
+        cams.forEach((cam, i) => {
+            const side = i === 0 ? 1 : -1;
+            if (cam.aspect !== aspect) {
+                cam.aspect = aspect;
+                cam.updateProjectionMatrix();
+            }
+            cam.position.set(cx, sinP * d, cz + side * cosP * d);
+            cam.up.set(0, 1, 0);
+            cam.lookAt(cx, 0, cz);
+            if (i === 1) cam.rotateZ(Math.PI);
+        });
+        r.renderSplit(this.scene, cams[0], cams[1], dt);
     },
 
     // Clima del tema: nieve, hojas o destellos alrededor de la zona visible.

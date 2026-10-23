@@ -154,7 +154,8 @@ export class TankModel {
         // Barra de vida flotante (siempre mirando a cámara)
         this.bar = new THREE.Group();
         const barMat = (c, order) => {
-            const m = own(new THREE.MeshBasicMaterial({ color: c, depthTest: false, transparent: true }));
+            // Por las dos caras: en el duelo, el jugador 2 la ve desde el otro lado
+            const m = own(new THREE.MeshBasicMaterial({ color: c, depthTest: false, transparent: true, side: THREE.DoubleSide }));
             return [m, order];
         };
         const plane = (w, h, [m, order]) => {

@@ -1173,9 +1173,18 @@ html[lang="en"] .toggle.off::after { content: ' OFF'; }
     border: 3px solid var(--ink);
     box-shadow: 0 4px 0 rgba(27, 11, 51, .45);
 }
-.duel-label.p1 { bottom: max(18px, env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--cyan); color: var(--ink); }
-.duel-label.p2 { top: calc(var(--safe-top) + 64px); transform: translateX(-50%) rotate(180deg); background: var(--pink); color: #fff; }
-.duel-line { position: absolute; left: 0; right: 0; top: 50%; border-top: 3px dashed rgba(255, 255, 255, .35); }
+.duel-label.p1 { top: calc(50% + 34px); transform: translateX(-50%); background: var(--cyan); color: var(--ink); }
+.duel-label.p2 { bottom: calc(50% + 34px); transform: translateX(-50%) rotate(180deg); background: var(--pink); color: #fff; }
+/* Las etiquetas explican de quién es cada mitad al empezar y luego se apartan */
+.duel-label { animation: duelLabelOut .4s steps(3) 4.5s forwards; }
+@keyframes duelLabelOut { to { opacity: 0; visibility: hidden; } }
+/* Pantalla partida: una franja gruesa separa las dos mitades */
+.duel-line { position: absolute; left: 0; right: 0; top: 50%; height: 6px; transform: translateY(-50%); background: var(--ink); border-top: 2px solid #fff; border-bottom: 2px solid #fff; }
+/* Cada jugador tiene su vida en su mitad: la del J2 arriba y girada hacia él */
+.hud.duel-mode .team-p { position: fixed; left: 10px; bottom: calc(max(10px, env(safe-area-inset-bottom)) + 4px); }
+.hud.duel-mode .team-e { position: fixed; left: 10px; top: var(--safe-top); transform: rotate(180deg); text-align: left; }
+.hud.duel-mode .team-e .pips { justify-content: flex-start; }
+.hud.duel-mode .pause-btn { top: 50%; transform: translate(-50%, -50%); z-index: 12; }
 .joy-p2 .joy-thumb { background: var(--pink); }
 .hud.duel-mode .stealth, .hud.duel-mode .hint { display: none; }
 

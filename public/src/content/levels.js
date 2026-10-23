@@ -119,15 +119,30 @@ LEVELS.tutorial = {
     enemies: [],
 };
 
-// Duelo local: dos personas en el mismo móvil. No entra en la rotación de partidas rápidas.
+// Arena fija de respaldo del duelo (15x9: ancha y baja, como cada media pantalla)
+const DUEL_MAP = [
+    '###############',
+    '#......E......#',
+    '#.............#',
+    '#..##.....##..#',
+    '#......B......#',
+    '#..##.....##..#',
+    '#.............#',
+    '#......P......#',
+    '###############',
+];
+
+// Duelo local: dos personas en el mismo móvil, cada una con su media pantalla. La arena es
+// ancha y baja (cabe entera en cada mitad) y con pocos obstáculos, para tener sitio donde
+// moverse. No entra en la rotación de partidas rápidas.
 LEVELS.duelo = {
     name: L('DUEL', 'DUELO'),
     tagline: L('ONE ON ONE', 'UNO CONTRA UNO'),
     duel: true,
     themes: ['snow', 'desert', 'candy', 'volcano', 'beach', 'meadow', 'city', 'space'],
-    generator: { materials: { '#': 3, B: 2, D: 1 }, bushes: [2, 3] },
+    generator: { cols: 15, rows: 9, pieces: [2, 4], density: [0.04, 0.1], materials: { '#': 2, B: 3, D: 1 }, bushes: [2, 3], bushSize: [2, 3], spawnClear: 1 },
     pickups: { kinds: { heal: 2, power: 2, shield: 1, bounce: 1, triple: 1, turbo: 1, nuke: 1 } },
-    map: FALLBACK_MAP,
+    map: DUEL_MAP,
     player: { tank: 'hero', spawn: 'P' },
     enemies: [{ tank: 'rival', spawn: 'E', brain: 'player2', noSkin: true }],
 };

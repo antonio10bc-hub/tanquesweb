@@ -53,7 +53,9 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
   TNT** (desierto, volcán, ciudad, playa, pradera: rojos, con un cartel de llama encima) que revientan de un disparo, dañan a los
   tanques cercanos, rompen muros y estallan en cadena.
 - **Cuatro modos**: **Partida rápida** (duelo contra un rival), **Campaña**, **Duelo a dos** (dos
-  personas en el mismo móvil, cada una con su joystick en su mitad de la pantalla; en el ordenador,
+  personas en el mismo móvil a **pantalla partida**: cada una ve la arena entera desde su lado,
+  la de arriba girada hacia quien coge el móvil por el otro extremo, en una arena ancha y baja con
+  pocos obstáculos; cada una con su joystick en su mitad; en el ordenador,
   WASD y flechas; como los dos miran la misma pantalla, escondido se ve solo una sombra tenue) y
   **Supervivencia** (cada
   oleada trae un enemigo más, hasta 8; recuperas 2 de vida al superar cada oleada y se guarda tu
