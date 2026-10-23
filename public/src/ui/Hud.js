@@ -55,7 +55,7 @@ export class Hud {
 
     ready() {
         this.el.play.disabled = false;
-        this.el.play.textContent = L('QUICK MATCH', 'PARTIDA RÁPIDA');
+        this.el.play.querySelector('.mode-label').textContent = L('QUICK MATCH', 'PARTIDA RÁPIDA');
         document.getElementById('btn-survival').disabled = false;
         document.getElementById('btn-campaign').disabled = false;
         document.getElementById('btn-duel').disabled = false;

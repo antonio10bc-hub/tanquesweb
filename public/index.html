@@ -123,10 +123,11 @@
             </p>
         </div>
         <div class="play-col">
-            <button id="btn-play" class="btn" disabled data-es="CARGANDO...">LOADING...</button>
-            <button id="btn-campaign" class="btn btn-camp" disabled data-es="CAMPAÑA">CAMPAIGN</button>
-            <button id="btn-survival" class="btn btn-alt" disabled data-es="SUPERVIVENCIA">SURVIVAL</button>
-            <button id="btn-duel" class="btn btn-duel" disabled data-es="DUELO A DOS">TWO-PLAYER DUEL</button>
+            <!-- Cada modo con su escenita voxel (ui/ModeArt.js) -->
+            <button id="btn-play" class="btn mode-btn" disabled><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="CARGANDO...">LOADING...</span></button>
+            <button id="btn-campaign" class="btn btn-camp mode-btn" disabled><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="CAMPAÑA">CAMPAIGN</span></button>
+            <button id="btn-survival" class="btn btn-alt mode-btn" disabled><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="SUPERVIVENCIA">SURVIVAL</span></button>
+            <button id="btn-duel" class="btn btn-duel mode-btn" disabled><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="DUELO A DOS">TWO-PLAYER DUEL</span></button>
         </div>
     </div>
 

@@ -5,6 +5,7 @@ import { Hud } from './ui/Hud.js';
 import { Glossary } from './ui/Glossary.js';
 import { Garage } from './ui/Garage.js';
 import { Trophies } from './ui/Trophies.js';
+import { ModeArt } from './ui/ModeArt.js';
 import { Profile } from './core/Profile.js';
 import { Achievements, achievementCount } from './core/Achievements.js';
 import { trackGame, trackGarage } from './core/GameAnalytics.js';
@@ -110,6 +111,7 @@ document.getElementById('btn-tutorial').addEventListener('click', () => {
     game.startTutorial();
 });
 new Glossary(sfx);
+new ModeArt();
 new Trophies(sfx);
 const garage = new Garage(sfx);
 trackGarage(garage);

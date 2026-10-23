@@ -334,7 +334,25 @@ html, body {
     box-shadow: 0 7px 0 var(--ink), inset 0 -6px 0 #5a3ad6, inset 0 4px 0 #b4a0ff;
     animation: none;
 }
-.play-col .btn-duel { font-size: clamp(11px, 3.6vw, 15px); }
+.play-col .mode-btn.btn-duel { font-size: clamp(9px, 3vw, 13px); }
+/* Botones de modo: la escenita voxel asoma por la izquierda (sale un poco del botón) y el
+   texto se centra en el resto */
+.play-col .mode-btn { position: relative; display: flex; align-items: center; justify-content: center; padding-left: 86px; font-size: clamp(11px, 3.4vw, 14px); white-space: nowrap; }
+.mode-art {
+    position: absolute;
+    left: -20px;
+    bottom: 1px;
+    width: 112px;
+    height: 60px;
+    image-rendering: pixelated;
+    pointer-events: none;
+}
+.mode-btn:disabled .mode-art { opacity: .5; }
+/* Móviles muy estrechos: escenita algo más pequeña para que no pise el texto */
+@media (max-width: 360px) {
+    .mode-art { width: 84px; height: 45px; left: -16px; }
+    .play-col .mode-btn { padding-left: 64px; }
+}
 .trophy-btn { display: flex; align-items: center; gap: 8px; }
 .trophy {
     display: inline-block;
@@ -692,6 +710,7 @@ html, body {
     .menu-top { gap: 12px; }
     .play-col { gap: 10px; }
     .play-col .btn { padding: 10px 12px; }
+    .play-col .mode-btn { padding-left: 86px; }
     .items-btn { padding: 6px 6px 8px; gap: 5px; }
 }
 
