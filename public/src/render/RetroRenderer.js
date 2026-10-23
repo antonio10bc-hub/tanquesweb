@@ -76,11 +76,35 @@ export class RetroRenderer {
 
         this.onResize = null;
         window.addEventListener('resize', () => this.resize());
+        // iOS (sobre todo la app guardada en la pantalla de inicio) da a veces una altura menor
+        // que la real al abrir y no avisa cuando la corrige: se vuelve a medir en esos momentos
+        window.addEventListener('orientationchange', () => setTimeout(() => this.resize(), 250));
+        window.addEventListener('pageshow', () => this.resize());
+        if (window.visualViewport) window.visualViewport.addEventListener('resize', () => this.resize());
+        for (const ms of [100, 400, 1200]) setTimeout(() => this.resize(), ms);
+    }
+
+    // Tamaño de la pantalla: lo que ocupa de verdad un elemento fijo a pantalla completa
+    // (cubre también la zona del indicador de inicio), nunca menos que innerWidth/innerHeight
+    screenSize() {
+        let probe = document.getElementById('screen-probe');
+        if (!probe) {
+            probe = document.createElement('div');
+            probe.id = 'screen-probe';
+            probe.style.cssText = 'position:fixed;inset:0;visibility:hidden;pointer-events:none';
+            document.body.appendChild(probe);
+        }
+        const r = probe.getBoundingClientRect();
+        return [Math.max(window.innerWidth, Math.round(r.width)), Math.max(window.innerHeight, Math.round(r.height))];
     }
 
     resize() {
-        const w = Math.max(1, window.innerWidth);
-        const h = Math.max(1, window.innerHeight);
+        const [sw, sh] = this.screenSize();
+        if (sw === this.lastW && sh === this.lastH && this.width) return;
+        this.lastW = sw;
+        this.lastH = sh;
+        const w = Math.max(1, sw);
+        const h = Math.max(1, sh);
         const { targetPixels, maxScale } = this.cfg;
         const scale = Math.min(maxScale, Math.max(1, Math.round(Math.min(w, h) / targetPixels)));
         const lw = Math.ceil(w / scale);

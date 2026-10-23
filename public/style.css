@@ -25,7 +25,8 @@ html, body {
     margin: 0;
     height: 100%;
     overflow: hidden;
-    background: var(--sea);
+    /* Mismo tono oscuro que el menú: si algo no cubre la pantalla, no asoma una franja clara */
+    background: var(--ink);
     color: #fff;
     font-family: var(--font);
     touch-action: none;
@@ -326,7 +327,7 @@ html, body {
 .pill-icon { flex: none; width: 18px; height: 20px; background: center / contain no-repeat; image-rendering: pixelated; }
 .trophy-icon { background-image: var(--px-trophy); }
 /* Un poco de aire sobre los modos: sus escenitas asoman por encima de cada botón */
-.menu-top .play-col { margin-top: 6px; }
+.menu-top .play-col { margin-top: clamp(6px, 3.2vh, 34px); }
 .play-col { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .play-col .btn { width: min(300px, 82vw); font-size: clamp(13px, 4.4vw, 18px); padding: 13px 14px; }
 .btn-alt {
