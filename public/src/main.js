@@ -9,7 +9,7 @@ import { ModeArt } from './ui/ModeArt.js';
 import { Profile } from './core/Profile.js';
 import { Achievements, achievementCount } from './core/Achievements.js';
 import { trackGame, trackGarage } from './core/GameAnalytics.js';
-import { L, applyHtmlTexts } from './core/I18n.js';
+import { L, applyHtmlTexts, switchLang } from './core/I18n.js';
 import { DEV_CHANGED } from './core/Dev.js';
 import { Settings } from './core/Settings.js';
 import { analyticsAvailable, setAnalyticsConsent } from './core/Analytics.js';
@@ -93,9 +93,24 @@ const answer = (on) => {
 document.getElementById('consent-yes').addEventListener('click', () => answer(true));
 document.getElementById('consent-no').addEventListener('click', () => answer(false));
 
+// Idioma: el botón de Ajustes cambia entre español e inglés (y recarga)
+document.getElementById('btn-lang').addEventListener('click', () => {
+    sfx.play('ui');
+    switchLang();
+});
+
 game.showMenu();
 // Aviso al encender o apagar las herramientas de desarrollo con ?dev=
 if (DEV_CHANGED !== null) hud.toast(DEV_CHANGED ? L('DEV MODE ON', 'MODO DEV ACTIVADO') : L('DEV MODE OFF', 'MODO DEV APAGADO'));
+// Tras cambiar de idioma se vuelve a Ajustes, que es donde estabas
+try {
+    if (sessionStorage.getItem('tankless.reopenSettings')) {
+        sessionStorage.removeItem('tankless.reopenSettings');
+        hud.showSettings(true);
+    }
+} catch {
+    /* nada */
+}
 // Primera vez que se abre el juego: directo al tutorial
 if (!Profile.data.tutorialDone) game.startTutorial();
 document.getElementById('btn-tut-skip').addEventListener('click', () => {

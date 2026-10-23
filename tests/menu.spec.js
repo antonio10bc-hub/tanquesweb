@@ -45,3 +45,20 @@ test('en inglés los textos salen en inglés', async ({ browser }) => {
     noErrors(errors);
     await ctx.close();
 });
+
+test('el idioma se cambia en Ajustes y se queda guardado', async ({ page }) => {
+    const errors = await openGame(page);
+    await page.click('#btn-settings');
+    await expect(page.locator('#btn-lang')).toHaveText('IDIOMA: ESPAÑOL');
+    await page.click('#btn-lang');
+    await page.waitForFunction(() => window.game && !document.getElementById('btn-campaign').disabled);
+    // Tras recargar sigue en Ajustes, ya en inglés
+    await expect(page.locator('#settings')).toBeVisible();
+    await expect(page.locator('#btn-lang')).toHaveText('LANGUAGE: ENGLISH');
+    await page.click('#btn-settings-close');
+    await expect(page.locator('#btn-play')).toHaveText('QUICK MATCH');
+    await page.reload();
+    await page.waitForFunction(() => window.game && !document.getElementById('btn-campaign').disabled);
+    await expect(page.locator('#btn-play')).toHaveText('QUICK MATCH');
+    noErrors(errors);
+});
