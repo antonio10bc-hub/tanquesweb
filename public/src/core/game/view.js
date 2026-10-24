@@ -21,6 +21,7 @@ export const ViewPart = {
         this.nukeView.sync(w.nukes, this.time);
         this.hazardView.sync(w.hazards.list, this.time, dt, w.arena);
         this.skulls.update(dt, this.time);
+        this.tracks.update(dt);
         this.tutorial.animate(this.time);
         // El objeto de la bala de fuego también echa llamas
         if (item && item.kind === 'power' && (this.itemFireT = (this.itemFireT || 0) - dt) <= 0) {
@@ -120,6 +121,13 @@ export const ViewPart = {
             this.rig.zoomTarget = back ? 1 : 0.5;
             this.rig.yawTarget = back ? 0 : 0.25;
             this.rig.focus(back ? w.player.x : c.boss.x, back ? w.player.z : c.boss.z);
+        } else if (this.state === 'dance' && this.dance) {
+            // Baile de victoria: primer plano del ganador (el jugador 2 del duelo, desde su lado)
+            const t = this.dance.tank;
+            this.rig.free = true;
+            this.rig.zoomTarget = 0.42;
+            this.rig.yawTarget = (this.mode === 'duel' && t !== w.player ? Math.PI : 0) + 0.3;
+            this.rig.focus(t.x, t.z);
         } else if ((this.state === 'outro' || this.state === 'replay') && this.fallen) {
             this.rig.zoomTarget = this.state === 'replay' ? 0.7 : 0.8;
             this.rig.focus(this.fallen.x, this.fallen.z);
@@ -129,7 +137,7 @@ export const ViewPart = {
             this.rig.yawTarget = 0;
             this.rig.focus(w.player.x, w.player.z);
         }
-        if (!this.cutscene && this.mode !== 'duel' && this.mode !== 'tutorial' && !(this.state === 'intro' && this.boss && this.stateTime < BOSS_INTRO.back)) this.rig.free = false;
+        if (!this.cutscene && this.state !== 'dance' && this.mode !== 'duel' && this.mode !== 'tutorial' && !(this.state === 'intro' && this.boss && this.stateTime < BOSS_INTRO.back)) this.rig.free = false;
     },
 
     // Visibilidad desde el punto de vista del jugador + animación de modelos y sus efectos.
@@ -147,6 +155,7 @@ export const ViewPart = {
             else target = player.intel.get(tank)?.visible ? 1 : 0;
             tank.viewFade = approach(tank.viewFade, target, stealth.fadeSpeed * dt);
             tank.model.sync(dt, tank, tank.viewFade, this.rig.camera);
+            if (tank.pet) tank.pet.sync(dt, tank, tank.viewFade, w.arena);
             if (!tank.alive) {
                 this.markers.hideGhost(tank.id);
                 continue;
@@ -175,9 +184,18 @@ export const ViewPart = {
                     (Math.random() - 0.5) * 0.6, 1.6, (Math.random() - 0.5) * 0.6, 0.12 + Math.random() * 0.1, 0.7, Math.random() < 0.5 ? 0xffffff : 0xff6a6a, -1);
             }
 
-            // La hierba se mueve al pasar: la tuya siempre, la del rival solo si está cerca.
-            if (playing && tank.inBush && tank.moving && (tank === player || Math.hypot(tank.x - player.x, tank.z - player.z) < 4)) {
+            // Huellas en la nieve y la arena: las deja cualquier tanque, también escondido
+            if (tank.model.dropY === 0) this.tracks.follow(tank, tank.model.scale);
+
+            // La hierba se mueve siempre que un tanque la atraviesa (también los escondidos):
+            // así se adivina por dónde va. Suelta alguna hojita para que se note de lejos.
+            if (tank.inBush && tank.moving && (playing || this.state === 'replay')) {
                 w.arena.rustle(tank.x, tank.z);
+                if (Math.random() < dt * 7) {
+                    const leaf = this.theme.bush[(Math.random() * this.theme.bush.length) | 0];
+                    this.particles.spawn(tank.x + (Math.random() - 0.5) * 0.6, 0.55, tank.z + (Math.random() - 0.5) * 0.6,
+                        (Math.random() - 0.5) * 1.2, 1.4 + Math.random(), (Math.random() - 0.5) * 1.2, 0.07 + Math.random() * 0.04, 0.6, leaf, 5);
+                }
             }
 
             // Orugas: tu tanque siempre; los rivales cercanos también se oyen aunque no se vean

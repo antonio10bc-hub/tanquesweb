@@ -168,7 +168,7 @@
 
     <div id="garage" class="screen garage hidden">
         <h2 class="end-title" data-es="MI TANQUE">MY TANK</h2>
-        <div class="garage-tabs"><button class="tab on" data-es="GORROS">HATS</button><button class="tab" data-es="PINTURA">PAINT</button><button class="tab" data-es="ESTELA">TRAIL</button></div>
+        <div class="garage-tabs"><button class="tab on" data-es="GORROS">HATS</button><button class="tab" data-es="PINTURA">PAINT</button><button class="tab" data-es="ESTELA">TRAIL</button><button class="tab" data-es="BAILE">DANCE</button><button class="tab" data-es="MASCOTA">PET</button></div>
         <div class="coins-badge static"><span class="coin"></span><span id="garage-coins">0</span></div>
         <div class="garage-stage">
             <button id="garage-prev" class="arrow" aria-label="Previous" data-es-aria="Anterior">&lt;</button>
@@ -180,7 +180,20 @@
         <div id="garage-count" class="garage-count"></div>
         <button id="garage-action" class="btn" data-es="USAR">USE</button>
         <div id="garage-hint" class="garage-hint off" data-es="GANA MONEDAS EN PARTIDAS RÁPIDAS,<br>OLEADAS Y ESTRELLAS DE LA CAMPAÑA">EARN COINS IN QUICK MATCHES,<br>WAVES AND CAMPAIGN STARS</div>
-        <button id="btn-garage-close" class="btn btn-small" data-es="VOLVER">BACK</button>
+        <div class="garage-foot">
+            <button id="btn-garage-close" class="btn btn-small" data-es="VOLVER">BACK</button>
+            <button id="btn-postcard" class="btn btn-small" data-es="POSTAL">POSTCARD</button>
+        </div>
+    </div>
+
+    <!-- Postal de tu tanque para compartir -->
+    <div id="postcard" class="screen postcard hidden">
+        <img id="postcard-img" class="postcard-img" alt="">
+        <div class="postcard-btns">
+            <button id="postcard-share" class="btn btn-small" data-es="COMPARTIR">SHARE</button>
+            <button id="postcard-save" class="btn btn-small" data-es="GUARDAR">SAVE</button>
+            <button id="postcard-close" class="btn btn-small" data-es="VOLVER">BACK</button>
+        </div>
     </div>
 
     <div id="trophies" class="screen glossary hidden">

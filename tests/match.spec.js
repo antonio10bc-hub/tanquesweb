@@ -57,3 +57,16 @@ test('la repetición del golpe final incluye los ataques del jefe', async ({ pag
     await page.waitForFunction(() => game.hazardView.views.size > 0, null, { timeout: 10_000 });
     noErrors(errors);
 });
+
+test('al ganar baila con el baile equipado (con su mascota) y luego vuelve a caer en el final', async ({ page }) => {
+    const errors = await openGame(page, { tutorialDone: true, owned: ['none', 'd_flip', 'pet_chick'], dance: 'd_flip', pet: 'pet_chick' });
+    await page.click('#btn-play');
+    await waitState(page, 'play');
+    expect(await page.evaluate(() => !!game.world.player.pet)).toBe(true);
+    await secretWin(page);
+    await waitState(page, 'dance');
+    expect(await page.evaluate(() => game.dance.def.id)).toBe('d_flip');
+    await waitState(page, 'end');
+    await page.waitForFunction(() => !game.landing && game.world.player.model.dropY === 0);
+    noErrors(errors);
+});

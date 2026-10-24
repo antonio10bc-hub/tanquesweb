@@ -184,7 +184,7 @@ export const SKINS = [
     {
         id: 'gold',
         name: L('GOLDEN TANK', 'TANQUE DORADO'),
-        price: 1,
+        price: 999,
         gold: true,
         palette: { body: 0xffc21a, accent: 0xfff2a0, tread: 0x9a6200, barrel: 0xffe680, bullet: 0xffe680 },
     },

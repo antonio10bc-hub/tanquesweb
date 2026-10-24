@@ -25,7 +25,7 @@ export const EndingPart = {
     startReplay() {
         if (this.recorder.duration < 0.5) {
             this.world.hazards.clear();
-            return this.showEnd();
+            return this.afterReplay();
         }
         this.setState('replay');
         this.timeScale = 1;
@@ -52,7 +52,7 @@ export const EndingPart = {
             this.replayAlive[i] = tank.alive;
         });
         // Se queda un poco más tras el golpe para ver la explosión entera
-        if (this.stateTime * REPLAY.speed > this.replayLen + 0.8) this.showEnd();
+        if (this.stateTime * REPLAY.speed > this.replayLen + 0.8) this.afterReplay();
     },
 
     // Lo que cuenta el resumen final (solo lo que hace tu tanque)

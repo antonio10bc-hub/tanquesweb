@@ -359,7 +359,7 @@ export class Arena {
             const s = k <= 0 || p.gone ? 0.0001 : easeOutBack(k);
             const kick = p.kick ? 1 + p.kick * 0.12 : 1;
             _d.position.set(p.x + (p.jx || 0), p.y - (1 - k) * 3, p.z + (p.jz || 0));
-            _d.rotation.set(0, p.ry || 0, 0);
+            _d.rotation.set(p.rx || 0, p.ry || 0, p.rz || 0);
             if (p.gone) _d.scale.setScalar(0.0001); // roto: desaparece del todo (también su contorno)
             else _d.scale.set((p.sx || 1) * kick, (p.sy || 1) * s * kick, (p.sz || 1) * kick);
             _d.updateMatrix();
@@ -477,8 +477,11 @@ export class Arena {
         if (this.bushView && (moved || this.wasShaking)) {
             for (const entry of this.bushView) for (const p of entry.positions) {
                 const sh = this.shake[p.tile];
-                p.jx = sh ? Math.sin(time * 40 + p.k) * 0.06 * sh : 0;
-                p.jz = sh ? Math.cos(time * 37 + p.k) * 0.04 * sh : 0;
+                // Se sacuden y se doblan de lado a lado (cada mata con su fase)
+                p.jx = sh ? Math.sin(time * 40 + p.k) * 0.08 * sh : 0;
+                p.jz = sh ? Math.cos(time * 37 + p.k) * 0.06 * sh : 0;
+                p.rx = sh ? Math.sin(time * 22 + p.k * 2) * 0.35 * sh : 0;
+                p.rz = sh ? Math.cos(time * 19 + p.k * 2) * 0.35 * sh : 0;
             }
             if (!intro) for (const entry of this.bushView) this.layout(entry, this.introT);
         }

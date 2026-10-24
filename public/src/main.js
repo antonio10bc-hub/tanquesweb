@@ -4,6 +4,7 @@ import { Sfx } from './core/Audio.js';
 import { Hud } from './ui/Hud.js';
 import { Glossary } from './ui/Glossary.js';
 import { Garage } from './ui/Garage.js';
+import { Postcard } from './ui/Postcard.js';
 import { Trophies } from './ui/Trophies.js';
 import { ModeArt } from './ui/ModeArt.js';
 import { Profile } from './core/Profile.js';
@@ -130,6 +131,7 @@ new Glossary(sfx);
 new ModeArt();
 new Trophies(sfx);
 const garage = new Garage(sfx);
+new Postcard(garage, sfx);
 trackGarage(garage);
 garage.onEquip = (id) => {
     achievements.equipped(id);

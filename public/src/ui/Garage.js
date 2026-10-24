@@ -4,17 +4,25 @@ import { trailParticle, TRAIL_RATE } from '../render/trails.js';
 import { TankModel } from '../render/TankModel.js';
 import { Particles } from '../render/Particles.js';
 import { box, toon, outline, OUTLINE } from '../render/materials.js';
+import { DANCES, DANCE_BY_ID } from '../content/dances.js';
+import { PETS, PET_BY_ID } from '../content/pets.js';
+import { DANCE_TIME, dancePose, danceFx, newPose } from '../render/dance.js';
+import { Pet } from '../render/Pet.js';
 import { Profile } from '../core/Profile.js';
 import { L } from '../core/I18n.js';
 
-// "Mi Tanque": tu tanque en 3D sobre un pedestal. Tres pestañas (gorros, pinturas y estelas de
-// bala); flechas para pasar, comprar y usar. La vista previa combina lo que llevas puesto con
+// "Mi Tanque": tu tanque en 3D sobre un pedestal. Cinco pestañas (gorros, pinturas, estelas de
+// bala, bailes de victoria y mascotas); flechas para pasar, comprar y usar. La vista previa combina lo que llevas puesto con
 // lo que estás mirando. El botón del menú enseña en pequeño el tanque equipado.
 const CATS = [
     { key: 'skin', items: SKINS },
     { key: 'paint', items: PAINTS },
     { key: 'trail', items: TRAILS },
+    { key: 'dance', items: DANCES },
+    { key: 'pet', items: PETS },
 ];
+// Escaparate del baile: baila, sale volando, vuelve a caer y espera un poco
+const DANCE_LOOP = DANCE_TIME + 1.4;
 export class Garage {
     constructor(sfx, px = 112) {
         const $ = (id) => document.getElementById(id);
@@ -50,6 +58,8 @@ export class Garage {
             hp: 6, maxHp: 6, ammo: 3, reloading: 0, reloadProgress: 1,
         };
         this.models = new Map();
+        this.pets = new Map();
+        this.danceT = 0;
 
         this.cat = 0;
         this.index = 0;
@@ -130,6 +140,8 @@ export class Garage {
             skin: SKIN_BY_ID[d.skin] || SKINS[0],
             paint: PAINT_BY_ID[d.paint] || PAINTS[0],
             trail: TRAIL_BY_ID[d.trail] || TRAILS[0],
+            dance: DANCE_BY_ID[d.dance] || DANCES[0],
+            pet: PET_BY_ID[d.pet] || PETS[0],
         };
         if (browsing) look[CATS[this.cat].key] = this.skin;
         return look;
@@ -142,6 +154,7 @@ export class Garage {
         this.tabs.forEach((t, k) => t.classList.toggle('on', k === i));
         this.sfx.play('tick');
         this.particles.clear();
+        this.danceT = 0;
         this.refresh();
     }
 
@@ -164,6 +177,7 @@ export class Garage {
         this.sfx.play('tick');
         this.particles.clear();
         this.pop = 0;
+        this.danceT = 0;
         this.refresh();
     }
 
@@ -224,7 +238,34 @@ export class Garage {
         for (const other of this.models.values()) other.root.visible = other.shadow.visible = other === m;
         const f = this.fake;
         f.yaw = f.aimYaw = 0.6 + Math.sin(performance.now() / 1400) * 0.5;
+        // Pestaña de bailes: el tanque enseña el que miras una y otra vez
+        const dancing = ctx === this.ctx && CATS[this.cat].key === 'dance';
+        m.pose = null;
+        m.dropY = 0;
+        if (dancing) {
+            this.danceT = (this.danceT + dt) % DANCE_LOOP;
+            const t = this.danceT;
+            if (t < dt) this.dancePose = newPose();
+            if (t < DANCE_TIME) {
+                m.pose = dancePose(look.dance, t, this.dancePose ||= newPose(), (kind, y) => danceFx(this.particles, kind, 0, y, 0));
+            } else {
+                const k = Math.min(1, (t - DANCE_TIME) / 0.4);
+                m.dropY = 6 * (1 - k) * (1 - k);
+            }
+        }
         m.sync(dt, f, 1, this.camera);
+        // Mascota: a un lado del pedestal, mirando a la cámara
+        for (const p of this.pets.values()) p.root.visible = p.shadow.visible = false;
+        if (look.pet.build) {
+            let pet = this.pets.get(look.pet.id);
+            if (!pet) {
+                pet = new Pet(look.pet, 0x1b0b33);
+                pet.addTo(this.scene);
+                this.pets.set(look.pet.id, pet);
+            }
+            pet.step(dt, 0.72, 0.45, 1, !!m.pose);
+            pet.shadow.position.y = 0.002;
+        }
         m.bar.visible = false;
         if (skin.gold) {
             this.sparkT = (this.sparkT || 0) - dt;
@@ -268,6 +309,17 @@ export class Garage {
         this.gl.render(this.scene, this.camera);
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.drawImage(this.gl.domElement, 0, 0, ctx.canvas.width, ctx.canvas.height);
+    }
+
+    // Foto del tanque equipado (con su mascota) para la postal, a size x size píxeles
+    snapshot(size) {
+        const c = document.createElement('canvas');
+        c.width = c.height = size;
+        this.gl.setSize(size, size, false);
+        this.particles.clear();
+        this.draw(this.preview(false), 1 / 60, c.getContext('2d'));
+        this.gl.setSize(this.px, this.px, false);
+        return c;
     }
 
     tick(now) {

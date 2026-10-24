@@ -3,6 +3,8 @@
 import { BOSS_REWARDS } from '../content/skins.js';
 
 const KEY = 'tankless.profile';
+// Lo que viene de serie en cada pestaña de "Mi Tanque"
+const FREE = ['p_default', 't_default', 'd_rocket', 'pet_none'];
 
 const fresh = () => ({
     coins: 0,
@@ -10,6 +12,8 @@ const fresh = () => ({
     skin: 'none',        // gorro equipado (o el tanque dorado)
     paint: 'p_default',  // pintura equipada
     trail: 't_default',  // estela de bala equipada
+    dance: 'd_rocket',   // baile de victoria equipado
+    pet: 'pet_none',     // mascota equipada
     achievements: {},    // id -> fecha de desbloqueo
     tutorialDone: false, // el tutorial sale solo la primera vez
     // Campaña: jefes derrotados y estrellas (1-3) por mundo; "hard" lo mismo en modo difícil
@@ -95,7 +99,7 @@ export const Profile = {
     owns(id) {
         // Los trofeos de los jefes son tuyos en cuanto vences a ese jefe en modo difícil
         if (BOSS_REWARDS[id]) return this.data.campaign.hard.beaten.includes(BOSS_REWARDS[id]);
-        return this.data.owned.includes(id) || id === 'p_default' || id === 't_default';
+        return this.data.owned.includes(id) || FREE.includes(id);
     },
 
     // Compra una skin si hay monedas. Devuelve true si se ha comprado.
@@ -107,7 +111,7 @@ export const Profile = {
         return true;
     },
 
-    // key: 'skin' (gorros), 'paint' o 'trail'
+    // key: 'skin' (gorros), 'paint', 'trail', 'dance' o 'pet'
     equip(id, key = 'skin') {
         if (!this.owns(id)) return false;
         this.data[key] = id;

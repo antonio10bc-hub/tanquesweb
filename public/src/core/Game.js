@@ -11,6 +11,7 @@ import { NukeView } from '../render/NukeView.js';
 import { HazardView } from '../render/HazardView.js';
 import { SkullWisps } from '../render/SkullWisps.js';
 import { SupplyPlane } from '../render/SupplyPlane.js';
+import { Tracks } from '../render/Tracks.js';
 import { CampaignMap } from '../ui/CampaignMap.js';
 import { drawMinimap } from '../ui/Minimap.js';
 import { Tutorial } from './Tutorial.js';
@@ -33,13 +34,15 @@ import { EffectsPart } from './game/effects.js';
 import { BossPart } from './game/boss.js';
 import { SurvivalPart } from './game/survival.js';
 import { EndingPart } from './game/ending.js';
+import { DancePart } from './game/dance.js';
 
 // Orquesta todo: bucle, estados de partida, cámara, efectos, música y HUD.
 // Este archivo lleva el flujo (menú, cargar, empezar, pausa, bucle e intro); el resto de
 // métodos vive en core/game/ por áreas y se mezcla en el prototipo al final del archivo:
 //   view.js (dibujo y cámara) · effects.js (efectos de los eventos) · boss.js (jefes)
 //   survival.js (oleadas) · ending.js (cámara lenta, repetición y pantalla final)
-// Estados: menu -> intro -> play -> outro -> replay -> end -> (intro...)
+//   dance.js (baile de victoria)
+// Estados: menu -> intro -> play -> outro -> replay -> (dance) -> end -> (intro...)
 // Cada partida elige un arquetipo (content/levels.js) y uno de sus temas visuales.
 export class Game {
     constructor({ canvas, hud, input, sfx }) {
@@ -62,6 +65,7 @@ export class Game {
         this.hazardView = new HazardView(this.scene, this.particles);
         this.skulls = new SkullWisps(this.scene, this.particles); // bordes del modo difícil
         this.plane = new SupplyPlane(this.scene, this.particles); // suministros de supervivencia
+        this.tracks = new Tracks(this.scene); // huellas de las orugas en nieve y arena
         this.bullets = new BulletSystem(this.scene, this.events, this.particles);
         this.recorder = new ReplayRecorder(3);
 
@@ -144,9 +148,10 @@ export class Game {
             }
         });
         document.addEventListener('visibilitychange', () => document.hidden && this.pause());
-        // Toca durante la repetición para saltarla
+        // Toca durante la repetición o el baile para saltarlos
         window.addEventListener('pointerdown', () => {
-            if (this.state === 'replay' && this.stateTime > 0.4) this.showEnd();
+            if (this.state === 'replay' && this.stateTime > 0.4) this.afterReplay();
+            else if (this.state === 'dance' && this.stateTime > 0.3) this.endDance();
         });
     }
 
@@ -167,6 +172,8 @@ export class Game {
     // seed / themeId: opcionales, para repetir un mapa concreto (game.world.seed, game.themeId).
     load(levelId = this.randomLevel(), seed, themeId) {
         if (this.world) this.world.dispose();
+        this.dance = null;
+        this.landing = null;
         this.bullets.clear();
         this.particles.clear();
         this.waves.clear();
@@ -191,10 +198,11 @@ export class Game {
 
         // Supervivencia: la primera oleada ya va vestida del escenario (content/survival.js)
         const level = def.survival ? { ...def, enemies: waveSpecs(1, this.themeId, SURVIVAL.maxEnemies).map((e) => ({ ...e, spawn: 'E' })) } : def;
-        this.world = new World(level, theme, { events: this.events, bullets: this.bullets, input: this.input, input2: this.input2, seed, skin: Profile.data.skin, paint: Profile.data.paint, trail: Profile.data.trail });
+        this.world = new World(level, theme, { events: this.events, bullets: this.bullets, input: this.input, input2: this.input2, seed, skin: Profile.data.skin, paint: Profile.data.paint, trail: Profile.data.trail, pet: Profile.data.pet });
         this.scene.add(this.world.root);
         this.levelId = levelId;
         this.rig.setBounds(this.world.arena.cols, this.world.arena.rows);
+        this.tracks.start(theme, this.world.arena);
         this.recorder.reset();
 
         const enemy = this.world.enemies()[0];
@@ -454,8 +462,12 @@ export class Game {
             case 'replay':
                 this.updateReplay();
                 break;
+            case 'dance':
+                this.updateDance();
+                break;
             case 'end':
                 this.stepWorld(simDt, false);
+                this.updateLanding(dt);
                 break;
         }
 
@@ -517,4 +529,4 @@ export class Game {
 
 }
 
-Object.assign(Game.prototype, ViewPart, EffectsPart, BossPart, SurvivalPart, EndingPart);
+Object.assign(Game.prototype, ViewPart, EffectsPart, BossPart, SurvivalPart, EndingPart, DancePart);

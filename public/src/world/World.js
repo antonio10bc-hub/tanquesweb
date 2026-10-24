@@ -3,6 +3,8 @@ import { CONFIG } from '../config.js';
 import { TANKS, SKIN_BY_ID, PAINT_BY_ID, TRAIL_BY_ID, getDef } from '../content/index.js';
 import { createBrain } from '../ai/brains.js';
 import { TankModel } from '../render/TankModel.js';
+import { Pet } from '../render/Pet.js';
+import { PET_BY_ID } from '../content/pets.js';
 import { Arena } from './Arena.js';
 import { Tank } from './Tank.js';
 import { generateArena } from './MapGen.js';
@@ -56,6 +58,12 @@ export class World {
             : def.deco ? { scale: def.scale, deco: def.deco } : {};
         tank.model = new TankModel(def.palette, this.theme.outline, tank.weapon.magazine, skin, opts);
         tank.model.addTo(this.root);
+        // Tu mascota te sigue a todas partes
+        const pet = mine && PET_BY_ID[this.ctx.pet];
+        if (pet && pet.build) {
+            tank.pet = new Pet(pet, this.theme.outline);
+            tank.pet.addTo(this.root);
+        }
         for (const other of this.tanks) {
             if (other.team === team) continue;
             other.know(tank);
@@ -273,7 +281,10 @@ export class World {
     }
 
     dispose() {
-        for (const t of this.tanks) t.model.dispose();
+        for (const t of this.tanks) {
+            t.model.dispose();
+            if (t.pet) t.pet.dispose();
+        }
         this.arena.dispose();
         this.root.removeFromParent();
     }

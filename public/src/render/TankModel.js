@@ -233,15 +233,27 @@ export class TankModel {
     sync(dt, tank, fade, camera) {
         this.t += dt;
         const moving = tank.moving && tank.alive;
-        const k = tank.recoil;
+        // Baile de victoria (render/dance.js): pose que se suma a la normal
+        const P = this.pose;
+        const k = P ? Math.max(tank.recoil, P.recoil) : tank.recoil;
 
         this.root.position.set(tank.x, this.dropY, tank.z);
-        this.root.rotation.y = tank.yaw;
+        this.root.rotation.set(0, tank.yaw, 0);
         this.turret.rotation.y = wrapAngle(tank.aimYaw - tank.yaw);
+        if (P) {
+            // Las volteretas giran por el centro del tanque, no por la base
+            const h = 0.35 * this.scale;
+            this.root.position.y += P.y + h * (1 - Math.cos(P.rx));
+            this.root.position.x -= Math.sin(tank.yaw + P.ry) * h * Math.sin(P.rx);
+            this.root.position.z -= Math.cos(tank.yaw + P.ry) * h * Math.sin(P.rx);
+            this.root.rotation.set(P.rx, tank.yaw + P.ry, P.rz, 'YXZ');
+            this.turret.rotation.y += P.turret;
+        }
 
         this.body.position.y = moving ? Math.abs(Math.sin(this.t * 18)) * 0.05 : Math.sin(this.t * 3) * 0.012;
         this.body.rotation.x = moving ? 0.07 : -k * 0.12;
         this.body.scale.set(1 + k * 0.12, 1 - k * 0.15, 1 + k * 0.06);
+        if (P) this.body.scale.multiply({ x: P.sx, y: P.sy, z: P.sx });
         this.barrel.position.z = 0.17 - k * 0.14;
         this.antenna.rotation.x = Math.sin(this.t * 10) * (moving ? 0.3 : 0.08) - (moving ? 0.35 : 0);
 
@@ -285,7 +297,7 @@ export class TankModel {
         this.root.visible = shown;
         this.shadow.visible = shown;
         this.shadow.position.set(tank.x, 0.012, tank.z);
-        this.shadow.scale.setScalar(this.scale / (1 + this.dropY * 0.25));
+        this.shadow.scale.setScalar(this.scale / (1 + (this.dropY + (P ? P.y : 0)) * 0.25));
         this.shadowMat.opacity = 0.3 * Math.min(1, fade * 1.5);
 
         const ratio = tank.hp / tank.maxHp;
@@ -293,7 +305,7 @@ export class TankModel {
         this.lastRatio = ratio;
         this.healPulse = Math.max(0, (this.healPulse || 0) - dt * 2.5);
         this.barRatio = damp(this.barRatio, ratio, this.barRatio < ratio ? 3 : 5, dt);
-        this.bar.visible = shown && fade > 0.4 && !this.noBar;
+        this.bar.visible = shown && fade > 0.4 && !this.noBar && !P;
         this.bar.position.set(tank.x, 1.55 + this.dropY, tank.z);
         this.bar.quaternion.copy(camera.quaternion);
         // Daño: la barra cae al momento y un tramo blanco se vacía detrás.
