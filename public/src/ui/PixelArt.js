@@ -95,6 +95,32 @@ const SPRITES = {
         rows: ['............', '.KK...KK....', '.KCK..KCK...', '..KCK..KCK..', '...KCK..KCK.', '....KCK..KCK', '....KCK..KCK', '...KCK..KCK.', '..KCK..KCK..', '.KCK..KCK...', '.KK...KK....', '............'],
         pal: { K: INK, C: '#23e0d6' },
     },
+    // Pestañas de "Mi Tanque": gorro, pintura, estela, baile y mascota
+    tabHat: {
+        rows: ['.....KK.....', '....KWWK....', '.....KK.....', '....KPPK....', '....KYYK....', '...KPPPPK...',
+            '...KYYYYK...', '..KPPPPPPK..', '..KYYYYYYK..', '.KPPPPPPPPK.', 'KKKKKKKKKKKK', '............'],
+        pal: { K: INK, W: '#ffffff', P: '#ff3e8e', Y: '#ffe03a' },
+    },
+    tabPaint: {
+        rows: ['...KKKKKK...', '..K......K..', '.KKKKKKKKKK.', '.KPPPPPPPPK.', '.KPPPPPPPPK.', '.KKPKKKKPKK.',
+            '.KWPWWWWPLK.', '.KWPWWWWWLK.', '.KWWWWWWWLK.', '.KWWWWWWWLK.', '..KKKKKKKK..', '............'],
+        pal: { K: INK, W: '#e2dcff', L: '#b9b0d8', P: '#23e0d6' },
+    },
+    tabTrail: {
+        rows: ['............', '............', '.......KKKK.', 'PPPP..KWWYYK', '......KWYYYK', '.YYYYYKYYYYK',
+            '......KYYYOK', 'CCCC..KYYOOK', '.......KKKK.', '............', '............', '............'],
+        pal: { K: INK, W: '#fff4b0', Y: '#ffd23f', O: '#e6a400', P: '#ff3e8e', C: '#23e0d6' },
+    },
+    tabDance: {
+        rows: ['...KKKKKKKK.', '...KPPPPPPK.', '...KPKKKKPK.', '...KPK..KPK.', '...KPK..KPK.', '...KPK..KPK.',
+            '.KKKPK.KKPK.', 'KPPPPKKPPPK.', 'KPPPPKPPPPK.', 'KPPPKKPPPK..', '.KKK..KKK...', '............'],
+        pal: { K: INK, P: '#7b5cff' },
+    },
+    tabPet: {
+        rows: ['..KKK..KKK..', '..KPK..KPK..', '..KKK..KKK..', 'KKK......KKK', 'KPK.KKKK.KPK', 'KKKKPPPPKKKK',
+            '...KPPPPK...', '..KPPPPPPK..', '..KPPPPPPK..', '..KPPPPPPK..', '...KKKKKK...', '............'],
+        pal: { K: INK, P: '#ff9a1f' },
+    },
     sparkA: {
         rows: ['...W...', '...W...', '...Y...', 'WWYWYWW', '...Y...', '...W...', '...W...'],
         pal: { W: '#ffffff', Y: '#ffe03a' },

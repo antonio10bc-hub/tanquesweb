@@ -1504,3 +1504,13 @@ html[lang="en"] .toggle.off::after { content: ' OFF'; }
     box-shadow: 6px 6px 0 var(--ink);
 }
 .postcard-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+/* Mi Tanque: pestañas con iconos pixelados, cuadradas y en una sola fila */
+.icon-tabs { flex-wrap: nowrap; gap: 8px; }
+.icon-tabs .tab { width: clamp(44px, 13vw, 54px); height: clamp(44px, 13vw, 54px); padding: 0; display: flex; align-items: center; justify-content: center; }
+.tab-ico { display: block; width: 66%; height: 66%; background: center / contain no-repeat; image-rendering: pixelated; }
+.ico-hat { background-image: var(--px-tab-hat); }
+.ico-paint { background-image: var(--px-tab-paint); }
+.ico-trail { background-image: var(--px-tab-trail); }
+.ico-dance { background-image: var(--px-tab-dance); }
+.ico-pet { background-image: var(--px-tab-pet); }
