@@ -62,8 +62,18 @@
             <div id="bb-name" class="bb-name"></div>
             <div class="bb-track"><i id="bb-trail" class="bb-trail"></i><i id="bb-fill" class="bb-fill"></i><b class="bb-mark"></b></div>
         </div>
-        <button id="btn-pause" class="pause-btn" aria-label="Pause" data-es-aria="Pausa"><span></span><span></span></button>
+        <button id="btn-pause" class="pause-btn" data-kbd="ESC" data-pad="START" aria-label="Pause" data-es-aria="Pausa"><span></span><span></span></button>
         <div id="stealth" class="stealth" data-es="OCULTO">HIDDEN</div>
+        <!-- Ordenador apaisado: en los lados que la arena deja libres, el mapa y tu estado -->
+        <div id="side-l" class="side side-l">
+            <div class="side-card"><div class="side-h" data-es="MAPA">MAP</div><canvas id="side-map" class="side-map"></canvas></div>
+        </div>
+        <div id="side-r" class="side side-r">
+            <div class="side-card"><div id="side-mode-h" class="side-h"></div><div id="side-mode" class="side-big"></div><div id="side-mode-s" class="side-sub"></div></div>
+            <div class="side-card"><div class="side-h" data-es="MUNICIÓN">AMMO</div><div id="side-ammo" class="side-ammo"></div><div class="side-bar"><i id="side-reload"></i></div></div>
+            <div class="side-card"><div class="side-h" data-es="OBJETOS">ITEMS</div><div id="side-powers" class="side-powers"></div></div>
+            <div class="side-card"><div class="side-h" data-es="TIEMPO">TIME</div><div id="side-time" class="side-big">0:00</div></div>
+        </div>
         <div id="hint" class="hint" data-es="ARRASTRA PARA MOVER&lt;br&gt;SUELTA PARA DISPARAR">DRAG TO MOVE<br>RELEASE TO FIRE</div>
     </div>
 
@@ -145,7 +155,7 @@
             </div>
             <div class="play-col">
                 <!-- Cada modo con su escenita voxel (ui/ModeArt.js) -->
-                <button id="btn-play" class="btn mode-btn" disabled data-nav-first="1"><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="CARGANDO...">LOADING...</span></button>
+                <button id="btn-play" class="btn mode-btn" disabled data-nav-first="1" data-kbd="ENTER" data-pad="A"><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="CARGANDO...">LOADING...</span></button>
                 <button id="btn-campaign" class="btn btn-camp mode-btn" disabled><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="CAMPAÑA">CAMPAIGN</span></button>
                 <button id="btn-survival" class="btn btn-alt mode-btn" disabled><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="SUPERVIVENCIA">SURVIVAL</span></button>
                 <button id="btn-duel" class="btn btn-duel mode-btn" disabled><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="DUELO A DOS">TWO-PLAYER DUEL</span></button>
@@ -155,7 +165,7 @@
 
     <!-- Campaña: el mapa se dibuja en el canvas del juego; esto es la interfaz encima -->
     <div id="campaign" class="campaign hidden">
-        <button id="btn-campaign-back" class="corner-btn corner-left" data-es="VOLVER">BACK</button>
+        <button id="btn-campaign-back" class="corner-btn corner-left" data-kbd="ESC" data-pad="B" data-es="VOLVER">BACK</button>
         <button id="btn-hard" class="skull-btn hidden" aria-label="Hard mode" data-es-aria="Modo difícil"></button>
         <div id="hard-tip" class="hard-tip hidden" data-es="¡AQUÍ!">HERE!</div>
         <div id="camp-region" class="camp-region"></div>
@@ -164,7 +174,7 @@
             <div id="camp-boss" class="camp-boss"></div>
             <div id="camp-stars" class="camp-stars"></div>
             <div id="camp-tell" class="camp-tell"></div>
-            <button id="camp-go" class="btn" data-nav-first="1" data-es="¡A LUCHAR!">FIGHT!</button>
+            <button id="camp-go" class="btn" data-nav-first="1" data-kbd="ENTER" data-pad="A" data-es="¡A LUCHAR!">FIGHT!</button>
         </div>
     </div>
 
@@ -183,7 +193,7 @@
         <button id="garage-action" class="btn" data-nav-first="1" data-es="USAR">USE</button>
         <div id="garage-hint" class="garage-hint off" data-es="GANA MONEDAS EN PARTIDAS RÁPIDAS,<br>OLEADAS Y ESTRELLAS DE LA CAMPAÑA">EARN COINS IN QUICK MATCHES,<br>WAVES AND CAMPAIGN STARS</div>
         <div class="garage-foot">
-            <button id="btn-garage-close" class="btn btn-small" data-es="VOLVER">BACK</button>
+            <button id="btn-garage-close" class="btn btn-small" data-kbd="ESC" data-pad="B" data-es="VOLVER">BACK</button>
             <button id="btn-postcard" class="btn btn-small" data-es="POSTAL">POSTCARD</button>
         </div>
     </div>
@@ -194,7 +204,7 @@
         <div class="postcard-btns">
             <button id="postcard-share" class="btn btn-small" data-nav-first="1" data-es="COMPARTIR">SHARE</button>
             <button id="postcard-save" class="btn btn-small" data-es="GUARDAR">SAVE</button>
-            <button id="postcard-close" class="btn btn-small" data-es="VOLVER">BACK</button>
+            <button id="postcard-close" class="btn btn-small" data-kbd="ESC" data-pad="B" data-es="VOLVER">BACK</button>
         </div>
     </div>
 
@@ -205,7 +215,7 @@
         <div id="trophies-pips" class="t-pips"></div>
         <div id="trophies-list" class="glossary-list" tabindex="0"></div>
         <div id="stats-list" class="glossary-list hidden" tabindex="0"></div>
-        <button id="btn-trophies-close" class="btn btn-small" data-es="VOLVER">BACK</button>
+        <button id="btn-trophies-close" class="btn btn-small" data-kbd="ESC" data-pad="B" data-es="VOLVER">BACK</button>
     </div>
 
     <div id="toast" class="toast"></div>
@@ -255,7 +265,7 @@
     <div id="glossary" class="screen glossary hidden">
         <h2 class="end-title" data-es="OBJETOS">ITEMS</h2>
         <div id="glossary-list" class="glossary-list" tabindex="0"></div>
-        <button id="btn-glossary-close" class="btn btn-small" data-es="VOLVER">BACK</button>
+        <button id="btn-glossary-close" class="btn btn-small" data-kbd="ESC" data-pad="B" data-es="VOLVER">BACK</button>
     </div>
 
     <div id="settings" class="screen settings hidden">
@@ -268,9 +278,13 @@
         <div class="set-col">
             <button id="btn-lang" class="btn btn-small set-btn" data-es="IDIOMA: ESPAÑOL">LANGUAGE: ENGLISH</button>
             <button id="btn-tutorial" class="btn btn-small set-btn" data-es="VER TUTORIAL">WATCH TUTORIAL</button>
+            <!-- Solo en el ordenador -->
+            <button id="btn-fullscreen" class="btn btn-small set-btn pc-only" data-kbd="F" data-es="PANTALLA COMPLETA">FULL SCREEN</button>
+            <button id="btn-uisize" class="btn btn-small set-btn pc-only"></button>
+            <button id="btn-controls" class="btn btn-small set-btn pc-only" data-es="CONTROLES">CONTROLS</button>
         </div>
         <!-- Volver, bien grande: es lo que más se pulsa aquí -->
-        <button id="btn-settings-close" class="btn home-btn"><span class="home-icon"></span><span data-es="VOLVER">BACK</span></button>
+        <button id="btn-settings-close" class="btn home-btn" data-kbd="ESC" data-pad="B"><span class="home-icon"></span><span data-es="VOLVER">BACK</span></button>
         <!-- Lo que casi nunca se toca va abajo del todo y en pequeño -->
         <div class="set-foot">
             <button class="toggle mini hidden" data-key="analytics" data-es="ESTADÍSTICAS">STATS</button>
@@ -278,10 +292,17 @@
         </div>
     </div>
 
+    <!-- Controles (Ajustes, en el ordenador): qué hace cada tecla y cada botón del mando -->
+    <div id="controls" class="screen glossary hidden">
+        <h2 class="end-title" data-es="CONTROLES">CONTROLS</h2>
+        <div id="controls-list" class="controls-list" tabindex="0"></div>
+        <button id="btn-controls-close" class="btn btn-small" data-kbd="ESC" data-pad="B" data-es="VOLVER">BACK</button>
+    </div>
+
     <div id="pause" class="screen hidden">
         <h2 class="end-title" data-es="PAUSA">PAUSED</h2>
         <canvas id="pause-map" class="pause-map"></canvas>
-        <button id="btn-resume" class="btn" data-nav-first="1" data-es="SEGUIR">RESUME</button>
+        <button id="btn-resume" class="btn" data-nav-first="1" data-kbd="ESC" data-pad="START" data-es="SEGUIR">RESUME</button>
         <div class="toggles">
             <button class="toggle" data-key="music" data-es="MÚSICA">MUSIC</button>
             <button class="toggle" data-key="sfx" data-es="SONIDO">SOUND</button>
@@ -299,7 +320,7 @@
             <div class="stars-row"><i class="star"></i><i class="star"></i><i class="star"></i></div>
             <div id="stars-why" class="stars-why"></div>
         </div>
-        <button id="btn-again" class="btn" data-nav-first="1" data-es="OTRA VEZ">PLAY AGAIN</button>
+        <button id="btn-again" class="btn" data-nav-first="1" data-kbd="ENTER" data-pad="A" data-es="OTRA VEZ">PLAY AGAIN</button>
         <button id="btn-end-menu" class="btn btn-small" data-es="MENÚ PRINCIPAL">MAIN MENU</button>
     </div>
 

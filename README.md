@@ -121,6 +121,16 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
   y Enter o Espacio lo pulsan, en todas las pantallas (menú, Mi Tanque, Objetos, Logros, Ajustes,
   pausa, final, postal y la campaña). Cada pantalla conserva sus teclas: en Mi Tanque
   izquierda/derecha cambian de objeto, en la campaña arriba/abajo cambian de mundo, y Escape vuelve.
+- **Mando** (`core/Gamepad.js`, distribución estándar): stick o cruceta mueven el tanque (en el duelo,
+  un mando por jugador); fuera de la partida se traduce a teclas: cruceta → flechas, A → Enter,
+  B → Escape, Start → pausa. Con un mando conectado, las etiquetas de los botones enseñan A/B/START.
+- **Ajustes del ordenador** (`ui/PcSettings.js`): pantalla completa (también con F), tamaño de la
+  interfaz (pequeña, normal, grande) y una pantalla de controles con teclado y mando. Los botones
+  llevan su tecla al lado ([ESC], [ENTER]...), el cursor es una flecha pixelada y la partida se
+  pausa también al irse a otra ventana.
+- **Paneles a los lados** (ordenador apaisado, si la arena deja sitio): a la izquierda el minimapa
+  (lo que tú sabes, como el de la pausa) y a la derecha el modo (oleada, rival o jefe), la
+  munición con la recarga, los objetos que llevas y el tiempo.
 - **En el ordenador** (`core/Device.js`: hay ratón): la interfaz, pensada para el móvil en
   vertical, se agranda según la pantalla (`--ui`, a saltos de 0,25; ×1,5 en 1080p) con `zoom` en
   cada pieza y no en la página, así que el canvas y el joystick siguen en píxeles reales. Mi Tanque

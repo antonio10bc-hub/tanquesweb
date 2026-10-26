@@ -308,6 +308,38 @@ export class Hud {
         this.el.stealth.className = `stealth ${state === 'hidden' ? '' : state}${this.replaying ? ' hidden' : ''}`;
     }
 
+    // Paneles de los lados en el ordenador (core/game/view.js decide cuándo caben)
+    showSide(on) {
+        if (this.sideOn === on) return;
+        this.sideOn = on;
+        for (const id of ['side-l', 'side-r']) document.getElementById(id).classList.toggle('on', on);
+    }
+
+    // mode: [título, valor, subtítulo] · powers: [[icono, nombre]] · reload: 0..1 o -1 si no recarga
+    updateSide({ mode, ammo, magazine, reload, powers, time }) {
+        const $ = (id) => document.getElementById(id);
+        const set = (id, text) => {
+            const el = $(id);
+            if (el.textContent !== String(text)) el.textContent = text;
+        };
+        set('side-mode-h', mode[0]);
+        set('side-mode', mode[1]);
+        set('side-mode-s', mode[2]);
+        set('side-time', time);
+        const box = $('side-ammo');
+        if (box.children.length !== magazine) box.innerHTML = '<i></i>'.repeat(magazine);
+        [...box.children].forEach((b, i) => b.classList.toggle('off', i >= ammo));
+        $('side-reload').style.width = `${Math.round((reload < 0 ? 1 : reload) * 100)}%`;
+        $('side-reload').classList.toggle('loading', reload >= 0);
+        const key = powers.map((p) => p.join()).join('|');
+        if (key !== this.sidePowers) {
+            this.sidePowers = key;
+            $('side-powers').innerHTML = powers.length
+                ? powers.map(([icon, name]) => `<div class="side-pw"><i style="background-image:var(--px-${icon})"></i><span>${name}</span></div>`).join('')
+                : `<div class="side-none">${L('NONE', 'NINGUNO')}</div>`;
+        }
+    }
+
     showHint(on) {
         this.el.hint.classList.toggle('gone', !on);
     }

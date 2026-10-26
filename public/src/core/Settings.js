@@ -1,8 +1,9 @@
-// Preferencias del jugador (música, sonido, vibración, estadísticas anónimas). Se guardan en el navegador;
+// Preferencias del jugador (música, sonido, vibración, estadísticas anónimas, tamaño de interfaz). Se guardan en el navegador;
 // si el almacenamiento no está disponible, simplemente no se recuerdan.
 const KEY = 'tanques.settings';
 // analytics: null mientras no ha contestado al aviso; true/false después
-const DEFAULTS = { music: true, sfx: true, vibration: true, analytics: null };
+// uiSize: tamaño de la interfaz en el ordenador ('small' | 'normal' | 'large')
+const DEFAULTS = { music: true, sfx: true, vibration: true, analytics: null, uiSize: 'normal' };
 
 export const Settings = {
     ...DEFAULTS,

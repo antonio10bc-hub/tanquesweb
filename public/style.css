@@ -1655,3 +1655,108 @@ html.pc #garage-view { width: 280px; height: 280px; }
 #pause { z-index: 30; }
 body:has(#pause:not(.hidden)) .upgrade { visibility: hidden; }
 html.pc .up-card.sel { outline: 4px solid var(--cyan); outline-offset: 3px; filter: brightness(1.08); }
+
+/* ---------- ORDENADOR: CURSOR, TECLAS, PANELES Y CONTROLES ---------- */
+/* Lo que solo tiene sentido con teclado y ratón */
+.pc-only { display: none !important; }
+html.pc .pc-only { display: revert !important; }
+
+/* Cursor pixelado (core/Device.js): flecha amarilla, cian sobre lo que se pulsa */
+html.pc, html.pc body { cursor: var(--cursor); }
+html.pc button, html.pc .tab, html.pc .up-card { cursor: var(--cursor-hand); }
+
+/* Tecla de cada botón ([ESC], [ENTER]...) y, con un mando conectado, su botón (A, B, START) */
+html.pc [data-kbd]::after {
+    content: attr(data-kbd);
+    display: inline-block;
+    margin-left: 10px;
+    padding: 3px 4px 2px;
+    font-size: 7px;
+    line-height: 1;
+    vertical-align: middle;
+    color: currentColor;
+    border: 2px solid currentColor;
+    opacity: .6;
+    text-shadow: none;
+}
+html.pc.pad [data-pad]::after { content: attr(data-pad); }
+/* La pausa es un cuadradito: su tecla va al lado */
+html.pc .pause-btn::after {
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 6px);
+    margin: 0;
+    transform: translateY(-50%);
+    color: #fff;
+    background: var(--ink);
+    opacity: .8;
+}
+
+/* Paneles de los lados: el minimapa a la izquierda y tu estado a la derecha */
+.side {
+    position: absolute;
+    top: 50%;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    width: 176px;
+    transform: translateY(-50%);
+}
+.side.on { display: flex; }
+.side-l { left: 20px; }
+.side-r { right: 20px; }
+.side-card {
+    padding: 8px 10px 10px;
+    background: var(--ink);
+    border: 3px solid #fff;
+    box-shadow: 0 4px 0 rgba(27, 11, 51, .45);
+}
+.side-h { margin-bottom: 8px; font-size: 8px; color: var(--yellow); text-shadow: 2px 2px 0 #000; }
+.side-big { font-size: 13px; line-height: 1.4; color: #fff; text-shadow: 2px 2px 0 #000; overflow-wrap: anywhere; }
+.side-sub { margin-top: 6px; font-size: 7px; line-height: 1.6; color: #cfc8ea; }
+.side-map { display: block; width: 100%; image-rendering: pixelated; border: 2px solid #3b2d6b; }
+.side-ammo { display: flex; gap: 5px; }
+.side-ammo i { width: 18px; height: 20px; background: var(--px-pw-bullet) center / contain no-repeat; image-rendering: pixelated; }
+.side-ammo i.off { opacity: .2; filter: grayscale(1); }
+.side-bar { height: 8px; margin-top: 8px; background: #3b2d6b; border: 2px solid #000; }
+.side-bar i { display: block; height: 100%; width: 100%; background: var(--cyan); }
+.side-bar i.loading { background: var(--orange); }
+.side-powers { display: flex; flex-direction: column; gap: 6px; }
+.side-pw { display: flex; align-items: center; gap: 8px; font-size: 7px; line-height: 1.5; color: #fff; text-align: left; }
+.side-pw i { flex: none; width: 24px; height: 24px; background: center / contain no-repeat; image-rendering: pixelated; }
+.side-none { font-size: 8px; color: #6a6488; }
+
+/* Controles: acción, teclado y mando, con las teclas como teclas */
+.controls-list {
+    display: grid;
+    gap: 6px;
+    width: min(760px, calc((100vw - 48px) / var(--ui, 1)));
+    max-height: calc(70vh / var(--ui, 1));
+    overflow-y: auto;
+}
+.c-head, .c-row { display: grid; grid-template-columns: 1.1fr 1.3fr 1.1fr; gap: 12px; align-items: center; text-align: left; }
+.c-head { padding: 0 12px; font-size: 8px; color: var(--yellow); }
+.c-row { padding: 6px 12px; font-size: 8px; line-height: 1.6; color: #fff; background: var(--ink); border: 3px solid #fff; box-shadow: 0 4px 0 rgba(0, 0, 0, .35); }
+.c-what { color: var(--cyan); }
+.c-row kbd {
+    display: inline-block;
+    margin: 2px 2px 2px 0;
+    padding: 4px 6px 3px;
+    font-family: var(--font);
+    font-size: 7px;
+    color: var(--ink);
+    background: #fff;
+    border: 2px solid var(--ink);
+    box-shadow: 0 3px 0 #8e86a8;
+}
+.c-none { color: #6a6488; }
+
+/* Ajustes en el ordenador: los interruptores y los botones en dos columnas (son más que en el
+   móvil) y sitio abajo para BORRAR PROGRESO, que no tape nada en pantallas bajas */
+html.pc .settings { padding-bottom: calc(60px * var(--ui)); }
+html.pc .toggles-col, html.pc .set-col { display: grid; grid-template-columns: 1fr 1fr; width: min(560px, 100%); }
+html.pc .toggles-col .toggle { font-size: 11px; }
+html.pc .set-col .set-btn { font-size: 10px; }
+/* Logros: la lista ocupa lo que dejan el título, las pestañas y Volver (con la interfaz muy
+   grande no se sale por arriba) */
+html.pc #trophies .glossary-list { max-height: min(calc(70vh / var(--ui)), calc(100vh / var(--ui) - 330px)); }

@@ -5,6 +5,8 @@ import { Sfx } from './core/Audio.js';
 import { Hud } from './ui/Hud.js';
 import { Glossary } from './ui/Glossary.js';
 import { KeyNav } from './ui/KeyNav.js';
+import { PcSettings } from './ui/PcSettings.js';
+import { Gamepads } from './core/Gamepad.js';
 import { Garage } from './ui/Garage.js';
 import { Postcard } from './ui/Postcard.js';
 import { Trophies } from './ui/Trophies.js';
@@ -137,11 +139,19 @@ document.getElementById('btn-tutorial').addEventListener('click', () => {
 });
 new Glossary(sfx);
 // Flechas y Enter por todos los menús
-new KeyNav(() => sfx.play('tick'));
+const nav = new KeyNav(() => sfx.play('tick'));
+// Ordenador: pantalla completa, tamaño de interfaz y controles
+new PcSettings(sfx);
+// Mandos: mueven el tanque (uno por jugador en el duelo) y, fuera de la partida, los menús
+new Gamepads({
+    inputs: () => [input, game.input2, game.mode === 'duel'],
+    menus: () => !!nav.screen() || !document.getElementById('upgrade').classList.contains('hidden'),
+    onConnect: (on) => hud.toast(on ? L('GAMEPAD CONNECTED', 'MANDO CONECTADO') : L('GAMEPAD DISCONNECTED', 'MANDO DESCONECTADO')),
+});
 new ModeArt();
 new Trophies(sfx);
 const garage = new Garage(sfx);
-new Postcard(garage, sfx);
+new Postcard(garage, sfx).onToast = (text) => hud.toast(text);
 trackGarage(garage);
 garage.onEquip = (id) => {
     achievements.equipped(id);

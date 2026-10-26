@@ -1,13 +1,17 @@
 import * as THREE from 'three';
 import { CONFIG } from '../../config.js';
-import { GOLD_SPARKS } from '../../content/index.js';
+import { GOLD_SPARKS, PICKUPS } from '../../content/index.js';
 import { weatherParticle } from '../../render/weather.js';
 import { FIRE as FLAMES } from '../../world/Bullets.js';
 import { approach } from '../math.js';
+import { drawMinimap } from '../../ui/Minimap.js';
+import { L } from '../I18n.js';
 const _echo = new THREE.Vector3();
+// Paneles de los lados (ordenador apaisado): ancho de cada uno sin agrandar y cada cuánto se repintan
+const SIDE = { width: 176, gap: 20, every: 0.1 };
 // Ecos en el borde: distancia al borde de la pantalla y, arriba, por debajo de los marcadores
 const ECHO = { margin: 34, top: 150 };
-import { sharedDuel } from '../Device.js';
+import { PC, sharedDuel } from '../Device.js';
 import { SPARKS, TURBO, NUKE, TRIPLE, REPLAY, PHASE, BOSS_INTRO, SCOUT } from './constants.js';
 
 // Vista: dibujar cada fotograma, clima, cámara y tanques (fundido de sigilo, marcas).
@@ -43,6 +47,7 @@ export const ViewPart = {
         this.updateCamera();
         this.rig.update(dt);
         this.edgeEchoes();
+        this.sidePanels(dt);
         // (en el ordenador con la pantalla apaisada, los dos comparten una sola vista)
         if (this.mode === 'duel' && !sharedDuel() && ['intro', 'play', 'outro', 'replay', 'end'].includes(this.state)) this.renderDuel(dt);
         else {
@@ -120,6 +125,51 @@ export const ViewPart = {
             el.remove();
             echoes.delete(tank);
         }
+    },
+
+    // Ordenador con la pantalla apaisada: si la arena deja sitio a los lados, a la izquierda el
+    // minimapa (lo que tú sabes, como el de la pausa) y a la derecha tu estado: modo, munición,
+    // objetos que llevas y tiempo.
+    sidePanels(dt) {
+        const on = PC && ['intro', 'play', 'outro'].includes(this.state) && this.mode !== 'duel' && this.mode !== 'tutorial' && this.sideRoom();
+        this.hud.showSide(on);
+        if (!on || (this.sideT = (this.sideT || 0) - dt) > 0) return;
+        this.sideT = SIDE.every;
+        const w = this.world, p = w.player;
+        drawMinimap((this.sideMap ||= document.getElementById('side-map')), w, this.theme);
+        const foes = w.enemies().filter((e) => e.alive && !e.decoy);
+        const mode = this.mode === 'survival' ? [L('WAVE', 'OLEADA'), this.wave, L(`${foes.length} LEFT`, `QUEDAN ${foes.length}`)]
+            : this.boss ? [L('BOSS', 'JEFE'), this.boss.def.name, this.theme.name]
+            : [L('RIVAL', 'RIVAL'), foes[0] ? foes[0].def.name : '—', this.def.name];
+        const secs = (t) => `${Math.ceil(t)}s`;
+        const powers = [
+            p.damageMult > 1 && ['up-damage', PICKUPS.power.name],
+            p.bounceNext > 0 && ['pw-bounce', PICKUPS.bounce.name],
+            p.tripleNext > 0 && ['pw-triple', PICKUPS.triple.name],
+            p.nukeNext && ['pw-nuke', PICKUPS.nuke.name],
+            p.shield > 0 && ['up-shield', p.shield > 1 ? `${PICKUPS.shield.name} x${p.shield}` : PICKUPS.shield.name],
+            p.turbo > 0 && ['up-speed', `${PICKUPS.turbo.name} ${secs(p.turbo)}`],
+            p.radar > 0 && ['pw-radar', `${PICKUPS.radar.name} ${secs(p.radar)}`],
+            p.cloak > 0 && ['pw-cloak', `${L('INVISIBLE', 'INVISIBLE')} ${secs(p.cloak)}`],
+        ].filter(Boolean);
+        const t = Math.floor(this.playTime || 0);
+        this.hud.updateSide({
+            mode, powers,
+            ammo: p.ammo, magazine: p.weapon.magazine, reload: p.reloading > 0 ? p.reloadProgress : -1,
+            time: `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`,
+        });
+    },
+
+    // ¿Caben los paneles al lado de la arena? Se mira dónde caen en pantalla los bordes de la
+    // arena a la altura del centro de la pantalla
+    sideRoom() {
+        const a = this.world.arena, cam = this.rig.camera, W = window.innerWidth;
+        const ui = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui')) || 1;
+        const x = (wx) => ((_echo.set(wx, 0, this.rig.z).project(cam).x + 1) / 2) * W;
+        const free = Math.min(x(0), W - x(a.cols));
+        // Con un poco de margen para no ir encendiendo y apagando en el límite
+        const need = (SIDE.width + SIDE.gap * 2) * ui + (this.hud.sideOn ? 0 : 12);
+        return free >= need;
     },
 
     // Clima del tema: nieve, hojas o destellos alrededor de la zona visible.

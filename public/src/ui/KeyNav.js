@@ -6,7 +6,7 @@
 // de mundo. Las listas largas (logros) también se pueden enfocar y se desplazan con arriba/abajo.
 
 // Pantallas, de la que queda más arriba a la de más abajo
-const SCREENS = ['postcard', 'pause', 'garage', 'trophies', 'glossary', 'settings', 'consent', 'end', 'menu', 'campaign'];
+const SCREENS = ['postcard', 'pause', 'garage', 'trophies', 'glossary', 'controls', 'settings', 'consent', 'end', 'menu', 'campaign'];
 // Teclas que se quedan para la pantalla (si el foco no está en uno de los elementos "keep")
 const OWN = {
     garage: { keys: ['ArrowLeft', 'ArrowRight'], keep: '.tab, .garage-foot .btn' },
@@ -38,8 +38,8 @@ export class KeyNav {
 
     items(screen) {
         // Las listas, solo si tienen algo que desplazar
-        const scrolls = (el) => !el.classList.contains('glossary-list') || el.scrollHeight > el.clientHeight + 1;
-        return [...screen.querySelectorAll('button, .glossary-list')].filter((el) => !el.disabled && !el.dataset.navSkip && shown(el) && scrolls(el));
+        const scrolls = (el) => el.tagName === 'BUTTON' || el.scrollHeight > el.clientHeight + 1;
+        return [...screen.querySelectorAll('button, .glossary-list, .controls-list')].filter((el) => !el.disabled && !el.dataset.navSkip && shown(el) && scrolls(el));
     }
 
     key(e) {
@@ -67,7 +67,7 @@ export class KeyNav {
             return;
         }
         // Lista enfocada: arriba/abajo la desplazan mientras quede por ver
-        if (cur.classList.contains('glossary-list') && dir[1]) {
+        if (cur.tagName !== 'BUTTON' && dir[1]) {
             const room = dir[1] < 0 ? cur.scrollTop > 0 : cur.scrollTop + cur.clientHeight < cur.scrollHeight - 1;
             if (room) {
                 cur.scrollBy({ top: dir[1] * 140 });
@@ -81,21 +81,24 @@ export class KeyNav {
         }
     }
 
-    // El más cercano en esa dirección: lo que está de frente cuenta más que lo que está de lado
+    // El más cercano en esa dirección. Primero los que quedan en línea (se solapan con el
+    // actual mirando de frente), luego los que caen en un cono y si no, cualquiera por ese lado;
+    // dentro de cada grupo, lo que está de frente cuenta más que lo que está de lado
     nearest(cur, items, [dx, dy]) {
-        const [cx, cy] = center(cur);
-        let best = null, bestScore = Infinity, bestInCone = false;
+        const [cx, cy] = center(cur), r0 = cur.getBoundingClientRect();
+        let best = null, bestScore = Infinity, bestTier = -1;
         for (const el of items) {
             if (el === cur) continue;
-            const [x, y] = center(el);
+            const [x, y] = center(el), r = el.getBoundingClientRect();
             const ahead = (x - cx) * dx + (y - cy) * dy, side = Math.abs((x - cx) * dy) + Math.abs((y - cy) * dx);
             if (ahead <= 4) continue;
-            const inCone = side <= ahead * 2;
+            const inLine = dx ? r.top < r0.bottom && r.bottom > r0.top : r.left < r0.right && r.right > r0.left;
+            const tier = inLine ? 2 : side <= ahead * 2 ? 1 : 0;
             const score = ahead + side * 2.5;
-            if ((inCone && !bestInCone) || (inCone === bestInCone && score < bestScore)) {
+            if (tier > bestTier || (tier === bestTier && score < bestScore)) {
                 best = el;
                 bestScore = score;
-                bestInCone = inCone;
+                bestTier = tier;
             }
         }
         return best;
@@ -105,7 +108,7 @@ export class KeyNav {
         if (!el) return;
         this.last[screen.id] = el;
         el.focus();
-        if (el.classList.contains('glossary-list')) return;
+        if (el.tagName !== 'BUTTON') return;
         el.scrollIntoView({ block: 'nearest' });
     }
 }

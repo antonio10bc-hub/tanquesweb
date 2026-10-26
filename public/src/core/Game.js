@@ -149,6 +149,8 @@ export class Game {
             }
         });
         document.addEventListener('visibilitychange', () => document.hidden && this.pause());
+        // También al irse a otra ventana (Alt+Tab en el ordenador): la pestaña sigue visible
+        window.addEventListener('blur', () => this.pause());
         // Toca durante la repetición o el baile para saltarlos
         window.addEventListener('pointerdown', () => {
             if (this.state === 'replay' && this.stateTime > 0.4) this.afterReplay();

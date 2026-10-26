@@ -121,22 +121,28 @@ export class Tutorial {
         this.point(null);
     }
 
-    // Flecha grande que bota encima de donde hay que ir, solo en el primer paso (null: la quita)
+    // Flecha grande que bota encima de donde hay que ir, solo en el primer paso (null: la quita).
+    // Una flecha de verdad, plana como un cartel pero con grosor: palo y punta en escalones
+    // pixelados, de cara a la cámara
     point(at) {
         if (!this.arrow) {
             const g = new THREE.Group(), yellow = toon(0xffe03a), hull = outline(0x1b0b33);
-            const add = (w, h, d, y, mat = yellow) => {
+            const D = 0.24; // grosor
+            const add = (w, h, y, mat = yellow, d = D, z = 0) => {
                 const m = new THREE.Mesh(box(w, h, d), mat);
-                m.position.y = y;
+                m.position.set(0, y, z);
+                g.add(m);
+                if (mat !== yellow) return m;
                 const o = new THREE.Mesh(box(w + OUTLINE * 2, h + OUTLINE * 2, d + OUTLINE * 2), hull);
-                o.position.y = y;
-                g.add(m, o);
+                o.position.set(0, y, z);
+                g.add(o);
+                return m;
             };
-            add(0.34, 0.7, 0.34, 1.05);                     // palo
-            add(0.9, 0.22, 0.9, 0.62);                      // punta, en escalones
-            add(0.62, 0.2, 0.62, 0.42);
-            add(0.34, 0.18, 0.34, 0.24);
-            add(0.12, 0.12, 0.12, 0.12, toon(0xffffff));
+            add(0.38, 0.7, 1.16);                                      // palo
+            [[1.14, 0.74], [0.86, 0.58], [0.58, 0.42], [0.3, 0.26]].forEach(([w, y]) => add(w, 0.18, y)); // punta
+            // Brillo en la cara de delante
+            add(0.1, 0.5, 1.2, toon(0xfff7a8), 0.02, D / 2 + 0.005).position.x = -0.09;
+            add(0.5, 0.06, 0.78, toon(0xfff7a8), 0.02, D / 2 + 0.005).position.x = -0.2;
             this.arrow = g;
         }
         this.target = at;
@@ -148,7 +154,9 @@ export class Tutorial {
     animate(time) {
         if (!this.target || !this.arrow) return;
         this.arrow.position.set(this.target.x, 0.5 + Math.abs(Math.sin(time * 4)) * 0.6, this.target.z);
-        this.arrow.rotation.y = time * 2;
+        // Siempre casi de frente: se balancea un poco (girando entera se vería de canto) y
+        // echada hacia atrás para mirar a la cámara, que la ve desde arriba
+        this.arrow.rotation.set(-0.85, Math.sin(time * 2.2) * 0.4, 0, 'YXZ');
         this.arrow.scale.setScalar(1.3);
     }
 

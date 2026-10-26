@@ -121,6 +121,31 @@ const SPRITES = {
             '...KPPPPK...', '..KPPPPPPK..', '..KPPPPPPK..', '..KPPPPPPK..', '...KKKKKK...', '............'],
         pal: { K: INK, P: '#ff9a1f' },
     },
+    // Panel lateral del ordenador: bala del cargador y objetos que llevas
+    pwBullet: {
+        rows: ['..KKK...', '.KWYYK..', '.KYYYK..', '.KYYOK..', '.KYYOK..', 'KKKKKKK.', 'KOOOOOK.', 'KOOOOOK.', 'KKKKKKK.'],
+        pal: { K: INK, W: '#fff4b0', Y: '#ffd23f', O: '#e6a400' },
+    },
+    pwBounce: {
+        rows: ['...KKKKKK...', '..KPPPPPPK..', '.KPWWPPPPPK.', '.KPWPPPPPPK.', '.KPPPPPPPPK.', '.KPPPPPPPPK.', '..KPPPPPPK..', '...KKKKKK...', '............', '.K..K..K..K.', '..KK.KK.KK..', '............'],
+        pal: { K: INK, P: '#ff4fd8', W: '#ffffff' },
+    },
+    pwTriple: {
+        rows: ['.KK..KK..KK.', 'KCCKKCCKKCCK', 'KWCKKWCKKWCK', 'KCCKKCCKKCCK', 'KCCKKCCKKCCK', 'KBBKKBBKKBBK', 'KBBKKBBKKBBK', 'KKKKKKKKKKKK', '............', '.K...K...K..', 'K...K....K..', '............'],
+        pal: { K: INK, C: '#6ff6ff', W: '#ffffff', B: '#2a8bff' },
+    },
+    pwNuke: {
+        rows: ['.......KK...', '......KYK...', '....KKKK....', '...KYYYYK...', '..KYKKKKYK..', '.KYKYYYYKYK.', '.KYKYKKYKYK.', '.KYKYKKYKYK.', '.KYKYYYYKYK.', '..KYKKKKYK..', '...KYYYYK...', '....KKKK....'],
+        pal: { K: INK, Y: '#ffe600' },
+    },
+    pwRadar: {
+        rows: ['KKKKKKKKKKKK', 'KDDDDDDDDDDK', 'KDDDDGDDDDDK', 'KDDDDGDDDWDK', 'KDDDDGDDDDDK', 'KDGGGGGGGGDK', 'KDDDDGDDDDDK', 'KDWDDGDDDDDK', 'KDDDDGDDDDDK', 'KDDDDDDDDDDK', 'KKKKKKKKKKKK', '............'],
+        pal: { K: INK, D: '#0b3d22', G: '#7dff4a', W: '#ffffff' },
+    },
+    pwCloak: {
+        rows: ['...KKKKKK...', '..KLLLLLLK..', '.KLLLLLLLLK.', '.KLKKLLKKLK.', '.KLKKLLKKLK.', '.KLLLLLLLLK.', '.KLLLLLLLLK.', '.KLLLLLLLLK.', '.KLLLLLLLLK.', '.KLKLLKLLKK.', '.KK.KK.KK...', '............'],
+        pal: { K: INK, L: '#e2dcff' },
+    },
     sparkA: {
         rows: ['...W...', '...W...', '...Y...', 'WWYWYWW', '...Y...', '...W...', '...W...'],
         pal: { W: '#ffffff', Y: '#ffe03a' },

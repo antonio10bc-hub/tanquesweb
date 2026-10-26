@@ -123,3 +123,63 @@ test('los menús se recorren con las flechas y Enter', async ({ page }) => {
     await expect(page.locator('#menu')).toBeVisible();
     noErrors(errors);
 });
+
+test('ajustes del ordenador: tamaño de interfaz, controles y paneles a los lados en partida', async ({ page }) => {
+    const errors = await openGame(page);
+    const ui = () => page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--ui').trim());
+    await page.click('#btn-settings');
+    await expect(page.locator('#btn-uisize')).toHaveText(/NORMAL/);
+    await page.click('#btn-uisize');
+    await expect(page.locator('#btn-uisize')).toHaveText(/GRANDE/);
+    expect(await ui()).toBe('1.75');
+    await page.click('#btn-uisize'); // pequeña
+    await page.click('#btn-uisize'); // normal otra vez
+    expect(await ui()).toBe('1.5');
+    // Controles: Escape vuelve a Ajustes, no al menú
+    await page.click('#btn-controls');
+    await expect(page.locator('#controls .c-row').first()).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#controls')).toBeHidden();
+    await expect(page.locator('#settings')).toBeVisible();
+    await page.click('#btn-settings-close');
+    // En partida, con sitio a los lados: minimapa y estado
+    await page.click('#btn-survival');
+    await waitState(page, 'play');
+    await expect(page.locator('#side-l')).toBeVisible();
+    await expect(page.locator('#side-mode-h')).toHaveText('OLEADA');
+    // Irse a otra ventana pausa la partida
+    await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+    await expect(page.locator('#pause')).toBeVisible();
+    noErrors(errors);
+});
+
+test('con mando: el stick mueve el tanque, Start pausa y A pulsa en los menús', async ({ page }) => {
+    // Un mando de mentira que la prueba maneja desde window.pad
+    await page.addInitScript(() => {
+        const pad = { index: 0, connected: true, mapping: 'standard', axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0 })) };
+        window.pad = pad;
+        navigator.getGamepads = () => [pad];
+    });
+    const errors = await openGame(page);
+    const press = async (b) => {
+        await page.evaluate((b) => (window.pad.buttons[b].pressed = true), b);
+        await page.waitForTimeout(80);
+        await page.evaluate((b) => (window.pad.buttons[b].pressed = false), b);
+        await page.waitForTimeout(80);
+    };
+    await page.click('#btn-play');
+    await waitState(page, 'play');
+    await page.evaluate(() => (window.pad.axes[0] = 1));
+    await page.waitForFunction(() => game.input.move.x > 0.9);
+    await page.evaluate(() => (window.pad.axes[0] = 0));
+    await press(9);
+    await expect(page.locator('#pause')).toBeVisible();
+    // En la pausa: abajo hasta Salir y A
+    await page.evaluate(() => (window.pad.buttons[13].pressed = true));
+    await page.waitForFunction(() => document.activeElement.id === 'btn-resume');
+    await page.evaluate(() => (window.pad.buttons[13].pressed = false));
+    for (let i = 0; i < 4 && (await page.evaluate(() => document.activeElement.id)) !== 'btn-quit'; i++) await press(13);
+    await press(0);
+    await expect(page.locator('#menu')).toBeVisible();
+    noErrors(errors);
+});

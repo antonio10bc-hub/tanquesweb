@@ -2,6 +2,7 @@ import { SKINS, SKIN_BY_ID, PAINTS, PAINT_BY_ID, ACHIEVEMENTS, WORLDS } from '..
 import { PETS, PET_BY_ID } from '../content/pets.js';
 import { Profile } from '../core/Profile.js';
 import { L } from '../core/I18n.js';
+import { PC } from '../core/Device.js';
 
 // Postal de tu tanque: una imagen vertical (9:16, lista para historias) con tu tanque tal cual
 // lo llevas (gorro, pintura y mascota) y tus récords. Se dibuja en pequeño, píxel a píxel, y se
@@ -35,7 +36,10 @@ export class Postcard {
         this.file = this.blob && new File([this.blob], 'tankless-postcard.png', { type: 'image/png' });
         this.el.img.src = this.canvas.toDataURL('image/png');
         const canShare = !!(this.file && navigator.canShare && navigator.canShare({ files: [this.file] }));
-        this.el.share.classList.toggle('hidden', !canShare);
+        // En el ordenador es más útil copiarla (para pegarla en un chat) que el menú de compartir
+        this.copy = PC && !!(this.blob && navigator.clipboard && navigator.clipboard.write && window.ClipboardItem);
+        this.el.share.textContent = this.copy ? L('COPY', 'COPIAR') : L('SHARE', 'COMPARTIR');
+        this.el.share.classList.toggle('hidden', !this.copy && !canShare);
         this.el.screen.classList.remove('hidden');
     }
 
@@ -46,6 +50,16 @@ export class Postcard {
 
     async share() {
         this.sfx.play('ui');
+        if (this.copy) {
+            try {
+                await navigator.clipboard.write([new ClipboardItem({ 'image/png': this.blob })]);
+                this.sfx.play('reloaded');
+                this.onToast?.(L('POSTCARD COPIED!', '¡POSTAL COPIADA!'));
+            } catch {
+                this.onToast?.(L('COULD NOT COPY: USE SAVE', 'NO SE PUDO COPIAR: USA GUARDAR'));
+            }
+            return;
+        }
         try {
             await navigator.share({ files: [this.file], title: 'Tank-less', text: L('My tank in Tank-less! tanquesweb.vercel.app', '¡Mi tanque en Tank-less! tanquesweb.vercel.app') });
         } catch {

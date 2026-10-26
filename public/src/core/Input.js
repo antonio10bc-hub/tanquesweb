@@ -20,6 +20,7 @@ export class Input {
         this.jx = 0;
         this.jy = 0;
         this.keys = { l: false, r: false, u: false, d: false };
+        this.pad = { x: 0, z: 0 }; // mando (core/Gamepad.js): stick o cruceta, ya sin zona muerta
         this.joy = joyEl;
         this.thumb = joyEl.querySelector('.joy-thumb');
         this.base = joyEl.querySelector('.joy-base');
@@ -140,6 +141,10 @@ export class Input {
             } else {
                 x = (this.keys.r ? 1 : 0) - (this.keys.l ? 1 : 0);
                 z = (this.keys.d ? 1 : 0) - (this.keys.u ? 1 : 0);
+                if (!x && !z) {
+                    x = this.pad.x;
+                    z = this.pad.z;
+                }
                 const l = Math.hypot(x, z);
                 if (l > 0) { x /= l; z /= l; }
             }
