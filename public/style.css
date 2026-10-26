@@ -1550,6 +1550,27 @@ html.pc .glossary-list {
     max-height: calc(70vh / var(--ui));
 }
 html.pc #stats-list { align-items: start; }
+/* Objetos: son 9, en tres columnas caben enteros sin desplazar */
+html.pc #glossary-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: min(1300px, calc((100vw - 48px) / var(--ui)));
+    max-height: calc(82vh / var(--ui));
+}
+/* Logros: muchos, se desplazan con una barra pixelada como el resto del juego */
+html.pc .glossary-list { padding-right: 10px; }
+html.pc .glossary-list::-webkit-scrollbar { width: 22px; }
+html.pc .glossary-list::-webkit-scrollbar-track { background: #3b2d6b; border: 3px solid var(--ink); box-shadow: inset 2px 2px 0 rgba(0, 0, 0, .4); }
+html.pc .glossary-list::-webkit-scrollbar-thumb {
+    min-height: 48px;
+    background: var(--yellow);
+    border: 3px solid var(--ink);
+    box-shadow: inset -3px -3px 0 #ffb300, inset 3px 3px 0 #fff7a8;
+}
+html.pc .glossary-list::-webkit-scrollbar-thumb:hover { background: #fff07a; }
+html.pc .glossary-list::-webkit-scrollbar-button { display: none; }
+@supports not selector(::-webkit-scrollbar) {
+    html.pc .glossary-list { scrollbar-color: var(--yellow) #3b2d6b; }
+}
 html.pc .t-pips { max-width: min(940px, 100%); }
 html.pc .pause-map { height: calc(32vh / var(--ui)); }
 html.pc .postcard-img { height: calc(72vh / var(--ui)); }
@@ -1592,3 +1613,43 @@ html.pc #garage-view { width: 280px; height: 280px; }
 .duel-labels.shared .duel-label.p1 { top: auto; bottom: 24px; left: 24px; transform: none; }
 .duel-labels.shared .duel-label.p2 { bottom: 24px; left: auto; right: 24px; transform: none; }
 .hud.duel-shared .stealth, .hud.duel-shared .hint { display: none; }
+
+/* ---------- ECOS: RIVAL FUERA DE LA PANTALLA ----------
+   Dos rombos que se abren a saltos, como un sónar, y una flechita hacia el rival */
+.echoes { position: fixed; inset: 0; z-index: 11; pointer-events: none; overflow: hidden; }
+.echo { position: absolute; width: 0; height: 0; transform: scale(var(--ui, 1)); }
+.echo i {
+    position: absolute;
+    left: -13px;
+    top: -13px;
+    width: 26px;
+    height: 26px;
+    border: 4px solid var(--pink);
+    box-shadow: 0 0 0 3px rgba(27, 11, 51, .55);
+    opacity: 0;
+    animation: echoRing 1s steps(6) forwards;
+}
+.echo i + i { animation-delay: .3s; }
+.echo b {
+    position: absolute;
+    left: -9px;
+    top: -9px;
+    width: 18px;
+    height: 18px;
+    background: var(--pink);
+    border: 3px solid var(--ink);
+    clip-path: polygon(0 0, 100% 50%, 0 100%, 25% 50%);
+    transform: rotate(var(--a, 0rad));
+    animation: echoArrow 1.2s steps(2) forwards;
+}
+@keyframes echoRing {
+    0% { opacity: 1; transform: rotate(45deg) scale(.3); }
+    100% { opacity: 0; transform: rotate(45deg) scale(2.2); }
+}
+@keyframes echoArrow { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+
+/* Supervivencia: la pausa va por encima de los suministros (para poder salir) y la carta
+   elegida con las flechas se marca */
+#pause { z-index: 30; }
+body:has(#pause:not(.hidden)) .upgrade { visibility: hidden; }
+html.pc .up-card.sel { outline: 4px solid var(--cyan); outline-offset: 3px; filter: brightness(1.08); }

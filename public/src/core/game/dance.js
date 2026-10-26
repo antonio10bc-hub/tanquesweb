@@ -1,5 +1,5 @@
 import { DANCES, DANCE_BY_ID } from '../../content/dances.js';
-import { DANCE_TIME, dancePose, danceFx, newPose } from '../../render/dance.js';
+import { danceTime, dancePose, danceFx, newPose, DANCE_SFX, DANCE_SHAKE } from '../../render/dance.js';
 import { Profile } from '../Profile.js';
 
 // Baile de victoria: tras la repetición, la cámara se acerca al ganador, baila y sale volando;
@@ -33,14 +33,12 @@ export const DancePart = {
 
     updateDance() {
         const d = this.dance, t = Math.max(0, this.stateTime - LEAD);
-        dancePose(d.def, t, d.pose, (kind, y) => {
-            if (kind === 'blast') {
-                this.sfx.play('turbo');
-                this.rig.shake(0.3);
-            } else if (kind === 'firework') this.sfx.play('crateBreak');
-            danceFx(this.particles, kind, d.tank.x, y, d.tank.z, d.tank.model.scale);
+        dancePose(d.def, t, d.pose, (kind, y, a) => {
+            if (DANCE_SFX[kind]) this.sfx.play(DANCE_SFX[kind]);
+            if (DANCE_SHAKE[kind]) this.rig.shake(DANCE_SHAKE[kind]);
+            danceFx(this.particles, kind, d.tank.x + d.pose.dx, y, d.tank.z + d.pose.dz, d.tank.model.scale, a);
         });
-        if (t >= DANCE_TIME) this.endDance();
+        if (t >= danceTime(d.def)) this.endDance();
     },
 
     endDance() {

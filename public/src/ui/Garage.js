@@ -6,7 +6,7 @@ import { Particles } from '../render/Particles.js';
 import { box, toon, outline, OUTLINE } from '../render/materials.js';
 import { DANCES, DANCE_BY_ID } from '../content/dances.js';
 import { PETS, PET_BY_ID } from '../content/pets.js';
-import { DANCE_TIME, dancePose, danceFx, newPose } from '../render/dance.js';
+import { danceTime, dancePose, danceFx, newPose } from '../render/dance.js';
 import { Pet } from '../render/Pet.js';
 import { Profile } from '../core/Profile.js';
 import { L } from '../core/I18n.js';
@@ -22,7 +22,6 @@ const CATS = [
     { key: 'pet', items: PETS },
 ];
 // Escaparate del baile: baila, sale volando, vuelve a caer y espera un poco
-const DANCE_LOOP = DANCE_TIME + 1.4;
 export class Garage {
     constructor(sfx, px = 112) {
         const $ = (id) => document.getElementById(id);
@@ -52,7 +51,7 @@ export class Garage {
         this.camera.position.set(0, 2.05, 4.05);
         this.camera.lookAt(0, 0.52, 0);
         this.buildPedestal();
-        this.particles = new Particles(this.scene, 160);
+        this.particles = new Particles(this.scene, 600);
         this.fake = {
             x: 0, z: 0, yaw: 0.6, aimYaw: 0.6, moving: false, alive: true, recoil: 0, flash: 0, shield: 0,
             hp: 6, maxHp: 6, ammo: 3, reloading: 0, reloadProgress: 1,
@@ -243,13 +242,17 @@ export class Garage {
         m.pose = null;
         m.dropY = 0;
         if (dancing) {
-            this.danceT = (this.danceT + dt) % DANCE_LOOP;
+            // Cada baile dura lo suyo; después vuelve a caer al pedestal y empieza otra vez
+            const T = danceTime(look.dance);
+            this.danceT = (this.danceT + dt) % (T + 1.4);
             const t = this.danceT;
             if (t < dt) this.dancePose = newPose();
-            if (t < DANCE_TIME) {
-                m.pose = dancePose(look.dance, t, this.dancePose ||= newPose(), (kind, y) => danceFx(this.particles, kind, 0, y, 0));
+            if (t < T) {
+                const pose = (this.dancePose ||= newPose());
+                // Aquí se ve de cerca: los efectos del cielo, más bajos y más juntos
+                m.pose = dancePose(look.dance, t, pose, (kind, y, a) => danceFx(this.particles, kind, pose.dx, y, pose.dz, 1, a, 1.6));
             } else {
-                const k = Math.min(1, (t - DANCE_TIME) / 0.4);
+                const k = Math.min(1, (t - T) / 0.4);
                 m.dropY = 6 * (1 - k) * (1 - k);
             }
         }

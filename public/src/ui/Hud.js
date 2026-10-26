@@ -480,7 +480,8 @@ export class Hud {
     }
 
     // Supervivencia: las mejoras del avión. options: [{ id, name, desc, icon, level }];
-    // onPick(id) al elegir (tocando o con 1, 2, 3). La elegida brilla, gana su estrella y se va.
+    // onPick(id) al elegir (tocando, con 1, 2, 3 o moviéndose con las flechas y Enter). La
+    // elegida brilla, gana su estrella y se va.
     showUpgrades(options, onPick) {
         const box = document.getElementById('upgrade'), cards = document.getElementById('up-cards');
         cards.innerHTML = '';
@@ -495,9 +496,23 @@ export class Hud {
             onPick(options[i].id);
             setTimeout(() => this.hideUpgrades(), 900);
         };
+        // Con el teclado: la carta marcada empieza en la del medio
+        let sel = Math.floor(options.length / 2);
+        const born = performance.now();
+        const mark = (i) => {
+            sel = (i + options.length) % options.length;
+            [...cards.children].forEach((c, k) => c.classList.toggle('sel', k === sel));
+        };
         const key = (e) => {
+            if (!document.getElementById('pause').classList.contains('hidden')) return; // en pausa, nada
             const n = ['Digit1', 'Digit2', 'Digit3', 'Numpad1', 'Numpad2', 'Numpad3'].indexOf(e.code);
             if (n >= 0) pick(n % 3);
+            else if (e.code === 'ArrowLeft' || e.code === 'KeyA') mark(sel - 1), this.onUpgradeMove?.();
+            else if (e.code === 'ArrowRight' || e.code === 'KeyD') mark(sel + 1), this.onUpgradeMove?.();
+            else if (e.code === 'Enter' || e.code === 'Space' || e.code === 'NumpadEnter') {
+                e.preventDefault();
+                pick(sel);
+            }
         };
         options.forEach((o, i) => {
             const card = document.createElement('button');
@@ -509,8 +524,11 @@ export class Hud {
                 e.stopPropagation();
                 pick(i);
             });
+            // El ratón también la marca (no mientras entran las cartas: pasarían solas por debajo)
+            card.addEventListener('pointerenter', () => performance.now() - born > 500 && mark(i));
             cards.appendChild(card);
         });
+        mark(sel);
         window.addEventListener('keydown', key);
         this.upKey = key;
         box.classList.remove('hidden');

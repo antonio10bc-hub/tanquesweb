@@ -44,3 +44,37 @@ test('en el ordenador las ayudas hablan de teclas y el duelo se juega en una vis
     await expect(page.locator('.duel-label.p2')).toContainText('FLECHAS');
     noErrors(errors);
 });
+
+test('en el ordenador la cámara enseña al rival que no se ve y avisa con ecos si se va de la pantalla', async ({ page }) => {
+    const errors = await openGame(page);
+    await page.click('#btn-play');
+    expect(await page.evaluate(() => !!game.scout)).toBe(true);
+    await waitState(page, 'play');
+    // Rival visto hace un momento y fuera de la pantalla: eco en el borde
+    await page.evaluate(() => {
+        const e = game.world.enemies()[0], info = game.world.player.intel.get(e);
+        info.x = e.x;
+        info.z = e.z;
+        info.age = 0.2;
+    });
+    await expect(page.locator('#echoes .echo').first()).toBeAttached();
+    noErrors(errors);
+});
+
+test('suministros: se eligen con las flechas y Enter, y la pausa va por encima', async ({ page }) => {
+    const errors = await openGame(page);
+    await page.click('#btn-survival');
+    await waitState(page, 'play');
+    await page.evaluate(() => game.hud.showUpgrades(['a', 'b', 'c'].map((id) => ({ id, name: id, desc: id, icon: 'heal', level: 0 })), (id) => (window.picked = id)));
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('.up-card').nth(2)).toHaveClass(/sel/);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#pause')).toBeVisible();
+    await page.keyboard.press('Enter'); // en pausa no elige nada
+    expect(await page.evaluate(() => window.picked)).toBeUndefined();
+    await page.click('#btn-resume');
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('Enter');
+    expect(await page.evaluate(() => window.picked)).toBe('b');
+    noErrors(errors);
+});

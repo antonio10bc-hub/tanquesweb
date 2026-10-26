@@ -28,7 +28,7 @@ import { Profile } from './Profile.js';
 import { vibrate } from './Haptics.js';
 import { clamp, pick } from './math.js';
 import { L } from './I18n.js';
-import { BOSS_INTRO, HARD } from './game/constants.js';
+import { BOSS_INTRO, HARD, SCOUT } from './game/constants.js';
 import { ViewPart } from './game/view.js';
 import { EffectsPart } from './game/effects.js';
 import { BossPart } from './game/boss.js';
@@ -134,6 +134,7 @@ export class Game {
             this.sfx.play('ui');
         };
         this.input.onMove = () => hud.showHint(false);
+        hud.onUpgradeMove = () => this.sfx.play('tick');
 
         window.addEventListener('keydown', (e) => {
             if ((e.code === 'Enter' || e.code === 'Space') && (this.state === 'menu' || this.state === 'end') && !document.activeElement?.closest?.('button')) {
@@ -325,7 +326,25 @@ export class Game {
         this.rig.snap();
         this.rig.zoomTarget = 1;
         this.rig.yawTarget = 0;
+        this.scout = this.scoutTarget();
         this.startMusic();
+    }
+
+    // Partida rápida y supervivencia: si los rivales caen donde la cámara de salida no llega,
+    // a dónde mirar para enseñárselos (el centro de todos); si no, null
+    scoutTarget() {
+        if (this.mode !== 'quick' && this.mode !== 'survival') return null;
+        const foes = this.world.enemies();
+        if (!foes.length) return null;
+        const rig = this.rig, p = this.world.player;
+        const free = rig.free;
+        rig.free = false; // dónde quedará la cámara de juego, aunque venga de una escena
+        const cz = rig.clampZ(p.z), hd = rig.halfDepth * 0.9;
+        rig.free = free;
+        if (!foes.some((e) => Math.abs(e.z - cz) > hd)) return null;
+        const x = foes.reduce((s, e) => s + e.x, 0) / foes.length;
+        const z = foes.reduce((s, e) => s + e.z, 0) / foes.length;
+        return { x, z, shown: false };
     }
 
     // Los jefes tienen su propio tema (y otro para la fase 2); el resto, la música del escenario.
@@ -490,8 +509,17 @@ export class Game {
         const m = CONFIG.match;
         const t = this.stateTime;
         // Jefes: antes de la cuenta atrás, su presentación
-        const extra = this.boss ? BOSS_INTRO.extra : 0;
+        const extra = this.boss ? BOSS_INTRO.extra : this.scout ? SCOUT.extra : 0;
         if (this.boss) this.updateBossIntro(t);
+        // Rival fuera de la pantalla: al llegar la cámara, su "!" y un anillo
+        if (this.scout && !this.scout.shown && t >= SCOUT.at + 0.35) {
+            this.scout.shown = true;
+            for (const e of this.world.enemies()) {
+                this.markers.pop(e.x, 1.6, e.z, '!', 0xffe03a, this.theme.outline);
+                this.waves.spawn(e.x, e.z, 0xff3e8e, 2.2, 0.6);
+            }
+            this.sfx.play('spot');
+        }
         // Tutorial: sin cuenta atrás, en cuanto aterriza ya puedes moverte
         if (this.mode === 'tutorial' && t >= 0.9) {
             this.world.forceReveal = false;

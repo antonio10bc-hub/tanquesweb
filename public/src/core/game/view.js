@@ -4,8 +4,11 @@ import { GOLD_SPARKS } from '../../content/index.js';
 import { weatherParticle } from '../../render/weather.js';
 import { FIRE as FLAMES } from '../../world/Bullets.js';
 import { approach } from '../math.js';
+const _echo = new THREE.Vector3();
+// Ecos en el borde: cada cuánto se repite el de un mismo rival y hasta cuándo vale lo que sabes de él
+const ECHO = { every: 0.9, memory: 2.5, margin: 34, top: 150 };
 import { sharedDuel } from '../Device.js';
-import { SPARKS, TURBO, NUKE, TRIPLE, REPLAY, PHASE, BOSS_INTRO } from './constants.js';
+import { SPARKS, TURBO, NUKE, TRIPLE, REPLAY, PHASE, BOSS_INTRO, SCOUT } from './constants.js';
 
 // Vista: dibujar cada fotograma, clima, cámara y tanques (fundido de sigilo, marcas).
 // Métodos de Game (se mezclan en su prototipo desde core/Game.js): "this" es la partida.
@@ -39,6 +42,7 @@ export const ViewPart = {
         this.markers.update(dt, this.time);
         this.updateCamera();
         this.rig.update(dt);
+        this.edgeEchoes(dt);
         // (en el ordenador con la pantalla apaisada, los dos comparten una sola vista)
         if (this.mode === 'duel' && !sharedDuel() && ['intro', 'play', 'outro', 'replay', 'end'].includes(this.state)) this.renderDuel(dt);
         else {
@@ -80,6 +84,37 @@ export const ViewPart = {
         r.renderSplit(this.scene, cams[0], cams[1], dt);
     },
 
+    // Rival fuera de la pantalla del que sabes algo (lo ves o lo acabas de ver: al disparar se
+    // delata): ecos en el borde de la pantalla, del lado por donde queda. Solo una pista: si
+    // está escondido y hace rato que no lo ves, nada.
+    edgeEchoes(dt) {
+        const layer = (this.echoLayer ||= document.getElementById('echoes'));
+        const player = this.world.player;
+        if (this.state !== 'play' || this.mode === 'duel' || this.mode === 'tutorial' || !player.alive) return;
+        const W = window.innerWidth, H = window.innerHeight, m = ECHO.margin;
+        const ui = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui')) || 1;
+        const top = ECHO.top * ui; // por debajo de los marcadores y la pausa
+        for (const tank of this.world.enemies()) {
+            if (!tank.alive || tank.decoy) continue;
+            tank.echoT = (tank.echoT || 0) - dt;
+            const info = player.intel.get(tank);
+            if (!info || info.age > ECHO.memory || tank.echoT > 0) continue;
+            _echo.set(info.x, 0.4, info.z).project(this.rig.camera);
+            const sx = ((_echo.x + 1) / 2) * W, sy = ((1 - _echo.y) / 2) * H;
+            if (sx > 0 && sx < W && sy > top * 0.5 && sy < H) continue; // se ve en pantalla: no hace falta
+            tank.echoT = ECHO.every;
+            const el = document.createElement('div');
+            el.className = 'echo';
+            el.style.left = `${Math.min(W - m, Math.max(m, sx))}px`;
+            el.style.top = `${Math.min(H - m, Math.max(top, sy))}px`;
+            // La flechita apunta hacia el rival
+            el.style.setProperty('--a', `${Math.atan2(sy - H / 2, sx - W / 2)}rad`);
+            el.innerHTML = '<i></i><i></i><b></b>';
+            layer.appendChild(el);
+            setTimeout(() => el.remove(), 1300);
+        }
+    },
+
     // Clima del tema: nieve, hojas o destellos alrededor de la zona visible.
     weather(dt) {
         const amb = this.theme.ambient;
@@ -111,6 +146,11 @@ export const ViewPart = {
             this.rig.yawTarget = 0;
             this.rig.zoomTarget = Math.max(1, (w.arena.rows + 1.5) / (2 * this.rig.halfDepth)); // ancho y alto enteros
             this.rig.focus(w.arena.cols / 2, w.arena.rows / 2);
+        } else if (this.state === 'intro' && this.scout && this.stateTime >= SCOUT.at && this.stateTime < SCOUT.back) {
+            // Presentación del rival que no se ve desde tu sitio
+            this.rig.free = true;
+            this.rig.zoomTarget = 0.8;
+            this.rig.focus(this.scout.x, this.scout.z);
         } else if (this.state === 'intro' && this.boss && this.stateTime < BOSS_INTRO.back) {
             this.rig.free = true;
             this.rig.zoomTarget = this.stateTime > 0.5 ? 0.5 : 1;
@@ -139,7 +179,8 @@ export const ViewPart = {
             this.rig.yawTarget = 0;
             this.rig.focus(w.player.x, w.player.z);
         }
-        if (!this.cutscene && this.state !== 'dance' && this.mode !== 'duel' && this.mode !== 'tutorial' && !(this.state === 'intro' && this.boss && this.stateTime < BOSS_INTRO.back)) this.rig.free = false;
+        const scouting = this.state === 'intro' && this.scout && this.stateTime >= SCOUT.at && this.stateTime < SCOUT.back;
+        if (!this.cutscene && !scouting && this.state !== 'dance' && this.mode !== 'duel' && this.mode !== 'tutorial' && !(this.state === 'intro' && this.boss && this.stateTime < BOSS_INTRO.back)) this.rig.free = false;
     },
 
     // Visibilidad desde el punto de vista del jugador + animación de modelos y sus efectos.

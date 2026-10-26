@@ -68,7 +68,7 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
   oleadas llega un **mini jefe**: el jefe de la campaña de ese escenario en pequeño, con su
   ataque especial y su barra de vida (`content/survival.js`). Tras cada oleada pasa un **avión de
   suministros** que suelta una caja: eliges una de tres mejoras (+1 vida máxima, recarga rápida,
-  más daño, escudo al empezar cada oleada, imán que atrae los objetos, tanque más rápido), cada una hasta 3 estrellas por partida. En la oleada 25 aparece el **jefe
+  más daño, escudo al empezar cada oleada, imán que atrae los objetos, tanque más rápido), cada una hasta 3 estrellas por partida; se elige tocándola, con 1/2/3 o con las flechas y Enter, y la pausa va por encima. En la oleada 25 aparece el **jefe
   secreto**: PRISMA en pequeño, con los ataques de todos los jefes, su música y un logro propio.
 - **Campaña**: un mapa voxel vertical que se recorre de abajo arriba, un mundo por temática (pradera,
   playa, desierto, caramelo, nieve, ciudad, volcán, espacio), cada uno sobre su propio mar y unidos
@@ -96,6 +96,16 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
   pintura (sombrero de paja, gorro cangrejo, aguijón, magdalena, muñeco de nieve, gorra de
   policía, minivolcán, antenas marcianas y corona prismática): no se compran, y en Mi Tanque
   dicen a quién hay que vencer.
+- **Bailes de victoria** (`content/dances.js`, efectos en `render/dance.js`): al ganar, tu tanque
+  baila y sale de cuadro por arriba a su manera, cada uno con sus efectos: **cohete** (el único
+  con fuego al despegar), **tornado** (embudo de viento en espiral que lo levanta), **voltereta**
+  (una, una doble y sale dando volteretas, con estela y polvo al caer), **boing** (botes de
+  gelatina con anillos de colores y un último bote al cielo), **helicóptero** (aspas borrosas y
+  polvo empujado por el suelo, se va de lado), **fuegos artificiales** (15, de cuatro formas, con
+  gran final) y **disco** (pista que se enciende al ritmo y bola de espejos).
+- **Rival a la vista**: en partida rápida y supervivencia, si el rival cae donde no llega la
+  cámara (ordenador), la cámara va a enseñarlo antes de la cuenta atrás; y durante la partida,
+  si lo ves o lo acabas de ver fuera de la pantalla, unos **ecos** en el borde indican por dónde queda.
 - **Logros**: 28 (todos los modos tienen alguno, también el tutorial y el duelo), con aviso al conseguirlos y pantalla propia con barras de progreso.
 - **Arquetipos de escenario**: cada partida elige uno (Arena clásica, Emboscada, Demolición, Fortaleza,
   Carreras, Fantasmas) que decide cuánto muro, qué materiales, cuánta hierba y qué objetos salen,

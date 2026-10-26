@@ -244,8 +244,8 @@ export class TankModel {
             // Las volteretas giran por el centro del tanque, no por la base
             const h = 0.35 * this.scale;
             this.root.position.y += P.y + h * (1 - Math.cos(P.rx));
-            this.root.position.x -= Math.sin(tank.yaw + P.ry) * h * Math.sin(P.rx);
-            this.root.position.z -= Math.cos(tank.yaw + P.ry) * h * Math.sin(P.rx);
+            this.root.position.x += P.dx - Math.sin(tank.yaw + P.ry) * h * Math.sin(P.rx);
+            this.root.position.z += P.dz - Math.cos(tank.yaw + P.ry) * h * Math.sin(P.rx);
             this.root.rotation.set(P.rx, tank.yaw + P.ry, P.rz, 'YXZ');
             this.turret.rotation.y += P.turret;
         }

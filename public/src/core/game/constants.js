@@ -11,6 +11,9 @@ export const REPLAY = { length: 2.2, speed: 0.45 };
 export const PHASE = { roar: 0.55, rage: 1.45, back: 2.6, end: 3.2 };
 // Presentación del jefe antes de la cuenta atrás: cámara encima, gesto y nombre en grande
 export const BOSS_INTRO = { card: 0.75, gesture: 1.0, back: 2.7, extra: 2.6 };
+// Si el rival empieza fuera de la pantalla (ordenador: pantalla apaisada), la cámara va a
+// enseñarlo antes de la cuenta atrás y vuelve contigo
+export const SCOUT = { at: 1.05, back: 2.3, extra: 1.5 };
 // Estrellas de cada jefe: ganar · perder como mucho 2 de vida · ganar en menos de "par" segundos
 export const STARS = { maxDamage: 2, par: 75, parHard: 95 };
 // Modo difícil: los jefes, más duros (vida, velocidad, frecuencia de especiales, esquiva)
