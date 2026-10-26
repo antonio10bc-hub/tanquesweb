@@ -135,14 +135,15 @@ test('ajustes del ordenador: tamaño de interfaz, controles y paneles a los lado
     await page.click('#btn-uisize'); // pequeña
     await page.click('#btn-uisize'); // normal otra vez
     expect(await ui()).toBe('1.5');
-    // Tamaño del píxel: normal ~216 líneas en 1080p, fino más, grande menos
+    // Tamaño del píxel: fino por defecto (más de las ~216 líneas de normal en 1080p), grande menos
     const lines = () => page.evaluate(() => game.renderer.height);
-    expect(await lines()).toBe(216);
-    await page.click('#btn-pixel');
     await expect(page.locator('#btn-pixel')).toHaveText(/FINO/);
     expect(await lines()).toBeGreaterThan(216);
     await page.click('#btn-pixel');
+    await expect(page.locator('#btn-pixel')).toHaveText(/GRANDE/);
     expect(await lines()).toBeLessThan(216);
+    await page.click('#btn-pixel');
+    expect(await lines()).toBe(216);
     await page.click('#btn-pixel');
     // Controles: Escape vuelve a Ajustes, no al menú
     await page.click('#btn-controls');

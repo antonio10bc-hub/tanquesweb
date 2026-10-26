@@ -3,8 +3,8 @@
 const KEY = 'tanques.settings';
 // analytics: null mientras no ha contestado al aviso; true/false después
 // uiSize: tamaño de la interfaz en el ordenador ('small' | 'normal' | 'large')
-// pixel: tamaño del píxel del juego en el ordenador ('big' | 'normal' | 'fine')
-const DEFAULTS = { music: true, sfx: true, vibration: true, analytics: null, uiSize: 'normal', pixel: 'normal' };
+// pixel: tamaño del píxel del juego en el ordenador ('big' | 'normal' | 'fine'; fino por defecto)
+const DEFAULTS = { music: true, sfx: true, vibration: true, analytics: null, uiSize: 'normal', pixel: 'fine' };
 
 export const Settings = {
     ...DEFAULTS,

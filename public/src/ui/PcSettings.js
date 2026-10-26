@@ -32,7 +32,7 @@ export class PcSettings {
         this.setLines = setLines;
         this.el = { size: $('btn-uisize'), full: $('btn-fullscreen'), controls: $('controls'), pixel: $('btn-pixel') };
         this.el.pixel.addEventListener('click', () => this.pixel());
-        setLines(PIXEL_LINES[Settings.pixel] || PIXEL_LINES.normal);
+        setLines(PIXEL_LINES[Settings.pixel] || PIXEL_LINES.fine);
         this.el.full.addEventListener('click', () => this.fullscreen());
         this.el.size.addEventListener('click', () => this.size());
         $('btn-controls').addEventListener('click', () => this.showControls(true));
@@ -53,7 +53,7 @@ export class PcSettings {
         const on = !!document.fullscreenElement;
         this.el.full.textContent = on ? L('EXIT FULL SCREEN', 'SALIR DE PANTALLA COMPLETA') : L('FULL SCREEN', 'PANTALLA COMPLETA');
         this.el.size.textContent = `${L('INTERFACE', 'INTERFAZ')}: ${SIZE_NAMES[Settings.uiSize] || SIZE_NAMES.normal}`;
-        this.el.pixel.textContent = `${L('PIXEL', 'PÍXEL')}: ${PIXEL_NAMES[Settings.pixel] || PIXEL_NAMES.normal}`;
+        this.el.pixel.textContent = `${L('PIXEL', 'PÍXEL')}: ${PIXEL_NAMES[Settings.pixel] || PIXEL_NAMES.fine}`;
     }
 
     fullscreen() {

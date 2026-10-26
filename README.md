@@ -125,8 +125,8 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
   un mando por jugador); fuera de la partida se traduce a teclas: cruceta → flechas, A → Enter,
   B → Escape, Start → pausa. Con un mando conectado, las etiquetas de los botones enseñan A/B/START.
 - **Ajustes del ordenador** (`ui/PcSettings.js`): pantalla completa (también con F), tamaño de la
-  interfaz (pequeña, normal, grande), tamaño del píxel del juego (grande, normal o fino: unas 155,
-  210 o 300 líneas en el lado corto, igual en 1080p que en 4K) y una pantalla de controles con teclado y mando. Los botones
+  interfaz (pequeña, normal, grande), tamaño del píxel del juego (grande, normal o fino, el de
+  por defecto: unas 155, 210 o 300 líneas en el lado corto, igual en 1080p que en 4K) y una pantalla de controles con teclado y mando. Los botones
   llevan su tecla al lado ([ESC], [ENTER]...), el cursor es una flecha pixelada y la partida se
   pausa también al irse a otra ventana.
 - **Paneles a los lados** (ordenador apaisado, si la arena deja sitio): a la izquierda el minimapa
