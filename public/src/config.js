@@ -3,7 +3,7 @@
 export const CONFIG = {
     render: {
         targetPixels: 210,  // líneas aprox. en el lado corto de la pantalla (la DS tenía 192)
-        maxScale: 6,
+        maxScale: 16,       // hasta 4K se mantienen las ~210 líneas (con 6, en 4K salían 360)
         colorLevels: 31,    // niveles por canal: 5 bits, como la DS
         dither: 1.0,
         saturation: 1.25,

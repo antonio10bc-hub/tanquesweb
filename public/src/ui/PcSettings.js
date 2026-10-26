@@ -1,10 +1,14 @@
 // Ajustes que solo salen en el ordenador: pantalla completa (también con la tecla F), tamaño de
-// la interfaz y la pantalla de controles (qué hace cada tecla y cada botón del mando).
+// la interfaz, tamaño del píxel del juego y la pantalla de controles (qué hace cada tecla y
+// cada botón del mando).
 import { L } from '../core/I18n.js';
 import { Settings } from '../core/Settings.js';
 import { PC, UI_SIZES, applyUiScale } from '../core/Device.js';
 
 const SIZE_NAMES = { small: L('SMALL', 'PEQUEÑA'), normal: L('NORMAL', 'NORMAL'), large: L('LARGE', 'GRANDE') };
+// Tamaño del píxel: líneas en el lado corto de la pantalla (la DS tenía 192)
+export const PIXEL_LINES = { big: 160, normal: 210, fine: 300 };
+const PIXEL_NAMES = { big: L('BIG', 'GRANDE'), normal: L('NORMAL', 'NORMAL'), fine: L('FINE', 'FINO') };
 
 // Acción · teclado · mando
 const CONTROLS = [
@@ -20,11 +24,15 @@ const CONTROLS = [
 ];
 
 export class PcSettings {
-    constructor(sfx) {
+    // setLines(n): cambia el tamaño del píxel del juego (RetroRenderer.setLines)
+    constructor(sfx, setLines) {
         if (!PC) return;
         const $ = (id) => document.getElementById(id);
         this.sfx = sfx;
-        this.el = { size: $('btn-uisize'), full: $('btn-fullscreen'), controls: $('controls') };
+        this.setLines = setLines;
+        this.el = { size: $('btn-uisize'), full: $('btn-fullscreen'), controls: $('controls'), pixel: $('btn-pixel') };
+        this.el.pixel.addEventListener('click', () => this.pixel());
+        setLines(PIXEL_LINES[Settings.pixel] || PIXEL_LINES.normal);
         this.el.full.addEventListener('click', () => this.fullscreen());
         this.el.size.addEventListener('click', () => this.size());
         $('btn-controls').addEventListener('click', () => this.showControls(true));
@@ -45,6 +53,7 @@ export class PcSettings {
         const on = !!document.fullscreenElement;
         this.el.full.textContent = on ? L('EXIT FULL SCREEN', 'SALIR DE PANTALLA COMPLETA') : L('FULL SCREEN', 'PANTALLA COMPLETA');
         this.el.size.textContent = `${L('INTERFACE', 'INTERFAZ')}: ${SIZE_NAMES[Settings.uiSize] || SIZE_NAMES.normal}`;
+        this.el.pixel.textContent = `${L('PIXEL', 'PÍXEL')}: ${PIXEL_NAMES[Settings.pixel] || PIXEL_NAMES.normal}`;
     }
 
     fullscreen() {
@@ -64,6 +73,15 @@ export class PcSettings {
         const order = Object.keys(UI_SIZES);
         Settings.set('uiSize', order[(order.indexOf(Settings.uiSize) + 1) % order.length]);
         applyUiScale();
+        this.labels();
+    }
+
+    // Grande → normal → fino → grande...
+    pixel() {
+        this.sfx.play('ui');
+        const order = Object.keys(PIXEL_LINES);
+        Settings.set('pixel', order[(order.indexOf(Settings.pixel) + 1) % order.length]);
+        this.setLines(PIXEL_LINES[Settings.pixel]);
         this.labels();
     }
 

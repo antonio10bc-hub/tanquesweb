@@ -140,8 +140,8 @@ document.getElementById('btn-tutorial').addEventListener('click', () => {
 new Glossary(sfx);
 // Flechas y Enter por todos los menús
 const nav = new KeyNav(() => sfx.play('tick'));
-// Ordenador: pantalla completa, tamaño de interfaz y controles
-new PcSettings(sfx);
+// Ordenador: pantalla completa, tamaño de interfaz y de píxel, y controles
+new PcSettings(sfx, (lines) => game.renderer.setLines(lines));
 // Mandos: mueven el tanque (uno por jugador en el duelo) y, fuera de la partida, los menús
 new Gamepads({
     inputs: () => [input, game.input2, game.mode === 'duel'],

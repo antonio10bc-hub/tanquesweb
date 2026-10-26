@@ -1760,3 +1760,14 @@ html.pc .set-col .set-btn { font-size: 10px; }
 /* Logros: la lista ocupa lo que dejan el título, las pestañas y Volver (con la interfaz muy
    grande no se sale por arriba) */
 html.pc #trophies .glossary-list { max-height: min(calc(70vh / var(--ui)), calc(100vh / var(--ui) - 330px)); }
+/* En los botones de modo el texto casi no cabe: la tecla va como chapita en la esquina */
+html.pc .mode-btn[data-kbd]::after {
+    position: absolute;
+    top: -12px;
+    right: -8px;
+    margin: 0;
+    color: #fff;
+    background: var(--ink);
+    border-color: #fff;
+    opacity: 1;
+}

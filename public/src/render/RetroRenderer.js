@@ -106,7 +106,8 @@ export class RetroRenderer {
         const w = Math.max(1, sw);
         const h = Math.max(1, sh);
         const { targetPixels, maxScale } = this.cfg;
-        const scale = Math.min(maxScale, Math.max(1, Math.round(Math.min(w, h) / targetPixels)));
+        const lines = this.lines || targetPixels;
+        const scale = Math.min(maxScale, Math.max(1, Math.round(Math.min(w, h) / lines)));
         const lw = Math.ceil(w / scale);
         const lh = Math.ceil(h / scale);
         this.gl.setSize(lw, lh, false);
@@ -116,6 +117,13 @@ export class RetroRenderer {
         this.width = lw;
         this.height = lh;
         if (this.onResize) this.onResize(lw, lh);
+    }
+
+    // Tamaño del píxel (Ajustes, en el ordenador): líneas en el lado corto de la pantalla
+    setLines(lines) {
+        this.lines = lines;
+        this.lastW = 0; // fuerza a recalcular aunque la ventana no haya cambiado
+        this.resize();
     }
 
     // Gradación de color fija (modo difícil: todo teñido de rojo y con bordes oscuros).
