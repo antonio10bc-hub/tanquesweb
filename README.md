@@ -117,6 +117,10 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
   de música, sonido y vibración que se recuerdan.
 - **Glosario de objetos**: el botón OBJETOS del menú va rotando los objetos en 3D y abre una lista
   con cada uno animado igual que en la partida y su explicación (sale de `desc` en `content/pickups.js`).
+- **Menús con teclado** (`ui/KeyNav.js`): las flechas pasan al botón más cercano en esa dirección
+  y Enter o Espacio lo pulsan, en todas las pantallas (menú, Mi Tanque, Objetos, Logros, Ajustes,
+  pausa, final, postal y la campaña). Cada pantalla conserva sus teclas: en Mi Tanque
+  izquierda/derecha cambian de objeto, en la campaña arriba/abajo cambian de mundo, y Escape vuelve.
 - **En el ordenador** (`core/Device.js`: hay ratón): la interfaz, pensada para el móvil en
   vertical, se agranda según la pantalla (`--ui`, a saltos de 0,25; ×1,5 en 1080p) con `zoom` en
   cada pieza y no en la página, así que el canvas y el joystick siguen en píxeles reales. Mi Tanque

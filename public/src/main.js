@@ -4,6 +4,7 @@ import { Input } from './core/Input.js';
 import { Sfx } from './core/Audio.js';
 import { Hud } from './ui/Hud.js';
 import { Glossary } from './ui/Glossary.js';
+import { KeyNav } from './ui/KeyNav.js';
 import { Garage } from './ui/Garage.js';
 import { Postcard } from './ui/Postcard.js';
 import { Trophies } from './ui/Trophies.js';
@@ -135,6 +136,8 @@ document.getElementById('btn-tutorial').addEventListener('click', () => {
     game.startTutorial();
 });
 new Glossary(sfx);
+// Flechas y Enter por todos los menús
+new KeyNav(() => sfx.play('tick'));
 new ModeArt();
 new Trophies(sfx);
 const garage = new Garage(sfx);

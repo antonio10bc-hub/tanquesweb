@@ -80,3 +80,46 @@ test('suministros: se eligen con las flechas y Enter, y la pausa va por encima',
     expect(await page.evaluate(() => window.picked)).toBe('b');
     noErrors(errors);
 });
+
+test('los menús se recorren con las flechas y Enter', async ({ page }) => {
+    const errors = await openGame(page);
+    const focused = () => page.evaluate(() => document.activeElement.id);
+    // La primera flecha enseña el botón principal; luego se va al más cercano
+    await page.keyboard.press('ArrowDown');
+    expect(await focused()).toBe('btn-play');
+    for (let i = 0; i < 4 && (await focused()) !== 'btn-garage'; i++) await page.keyboard.press('ArrowUp');
+    expect(await focused()).toBe('btn-garage');
+    // Mi Tanque: izquierda/derecha siguen cambiando de objeto; abajo baja hasta Volver
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#garage')).toBeVisible();
+    await expect(page.locator('#garage-count')).toHaveText(/^1 /);
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('#garage-count')).toHaveText(/^2 /);
+    // (el botón de comprar está desactivado sin monedas: el foco empieza en las pestañas)
+    await page.keyboard.press('ArrowDown');
+    expect(await page.evaluate(() => document.activeElement.classList.contains('tab'))).toBe(true);
+    for (let i = 0; i < 5 && (await focused()) !== 'btn-garage-close'; i++) await page.keyboard.press('ArrowDown');
+    expect(await focused()).toBe('btn-garage-close');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#garage')).toBeHidden();
+    // De vuelta en el menú, el foco sigue en Mi Tanque; a Ajustes y de vuelta
+    await page.keyboard.press('ArrowRight');
+    for (let i = 0; i < 4 && (await focused()) !== 'btn-settings'; i++) await page.keyboard.press('ArrowUp');
+    expect(await focused()).toBe('btn-settings');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#settings')).toBeVisible();
+    await page.keyboard.press('ArrowDown');
+    for (let i = 0; i < 8 && (await focused()) !== 'btn-settings-close'; i++) await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#settings')).toBeHidden();
+    // Partida: en pausa también, y las flechas no mueven nada del menú mientras juegas
+    await page.click('#btn-play');
+    await waitState(page, 'play');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('ArrowDown');
+    expect(await focused()).toBe('btn-resume');
+    for (let i = 0; i < 4 && (await focused()) !== 'btn-quit'; i++) await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#menu')).toBeVisible();
+    noErrors(errors);
+});

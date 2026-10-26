@@ -1539,7 +1539,8 @@ html.pc .toggle[data-key="vibration"] { display: none; }
     .btn:not(:disabled):hover, .items-btn:hover, .corner-btn:hover, .arrow:hover, .toggle:hover,
     .garage-tabs .tab:hover, .up-card:hover, .pause-btn:hover, .skull-btn:hover, .tut-skip:hover { filter: brightness(1.15); }
 }
-html.pc button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 4px; }
+/* Teclado (también en el móvil con teclado): marco en el botón o la lista con el foco */
+button:focus-visible, .glossary-list:focus-visible { outline: 3px solid var(--cyan); outline-offset: 4px; }
 
 /* Objetos, logros y estadísticas: a lo ancho, en dos columnas */
 html.pc .glossary-list {
