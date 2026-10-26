@@ -4,6 +4,7 @@ import { GOLD_SPARKS } from '../../content/index.js';
 import { weatherParticle } from '../../render/weather.js';
 import { FIRE as FLAMES } from '../../world/Bullets.js';
 import { approach } from '../math.js';
+import { sharedDuel } from '../Device.js';
 import { SPARKS, TURBO, NUKE, TRIPLE, REPLAY, PHASE, BOSS_INTRO } from './constants.js';
 
 // Vista: dibujar cada fotograma, clima, cámara y tanques (fundido de sigilo, marcas).
@@ -38,7 +39,8 @@ export const ViewPart = {
         this.markers.update(dt, this.time);
         this.updateCamera();
         this.rig.update(dt);
-        if (this.mode === 'duel' && ['intro', 'play', 'outro', 'replay', 'end'].includes(this.state)) this.renderDuel(dt);
+        // (en el ordenador con la pantalla apaisada, los dos comparten una sola vista)
+        if (this.mode === 'duel' && !sharedDuel() && ['intro', 'play', 'outro', 'replay', 'end'].includes(this.state)) this.renderDuel(dt);
         else {
             const aspect = this.renderer.width / this.renderer.height;
             if (this.rig.camera.view && this.rig.camera.view.enabled) this.rig.camera.clearViewOffset(); // al salir del duelo

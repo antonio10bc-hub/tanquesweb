@@ -3,6 +3,7 @@ import { PICKUPS } from '../content/index.js';
 import { box, toon, outline, OUTLINE } from '../render/materials.js';
 import { vibrate } from './Haptics.js';
 import { L } from './I18n.js';
+import { PC } from './Device.js';
 
 // Tutorial de la primera partida: lo mínimo para entender el juego, de uno en uno y en una
 // arena segura. Cada paso tiene un título, una frase y una condición para pasar al siguiente.
@@ -16,7 +17,9 @@ const ITEM_LEFT = { x: 3.5, z: 4.5 }, ITEM_RIGHT = { x: 9.5, z: 4.5 };
 const STEPS = [
     {
         title: L('MOVE', 'MUÉVETE'),
-        text: L('DRAG YOUR FINGER (OR WASD) AND REACH THE ARROW', 'ARRASTRA EL DEDO (O WASD) Y LLEGA A LA FLECHA'),
+        text: PC
+            ? L('MOVE WITH WASD OR THE ARROWS AND REACH THE ARROW', 'MUÉVETE CON WASD O LAS FLECHAS Y LLEGA A LA FLECHA')
+            : L('DRAG YOUR FINGER (OR WASD) AND REACH THE ARROW', 'ARRASTRA EL DEDO (O WASD) Y LLEGA A LA FLECHA'),
         enter(tu) {
             tu.point(GOAL);
         },
@@ -31,7 +34,9 @@ const STEPS = [
     },
     {
         title: L('FIRE', 'DISPARA'),
-        text: L('LIFT YOUR FINGER: WHEN STILL, YOUR TANK FIRES ON ITS OWN', 'SUELTA EL DEDO: QUIETO, TU TANQUE DISPARA SOLO'),
+        text: PC
+            ? L('LET GO OF THE KEYS: WHEN STILL, YOUR TANK FIRES ON ITS OWN', 'SUELTA LAS TECLAS: QUIETO, TU TANQUE DISPARA SOLO')
+            : L('LIFT YOUR FINGER: WHEN STILL, YOUR TANK FIRES ON ITS OWN', 'SUELTA EL DEDO: QUIETO, TU TANQUE DISPARA SOLO'),
         enter(tu) {
             tu.point(null);
             tu.dummy = tu.spawnDummy();

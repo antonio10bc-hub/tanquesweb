@@ -688,7 +688,8 @@ export class CampaignMap {
     // Encuadra el mundo dejando sitio a la ficha de abajo (en móviles pequeños ocupa mucho)
     focus(i) {
         const n = this.node(i), rig = this.game.rig;
-        const card = this.el.card.offsetHeight ? (this.el.card.offsetHeight + 24) / window.innerHeight : 0.3;
+        const h = this.el.card.getBoundingClientRect().height; // tal como se ve (en el ordenador va agrandada)
+        const card = h ? (h + 24) / window.innerHeight : 0.3;
         rig.focus(W / 2, n.z + 1.2 + card * rig.halfDepth * ZOOM * 0.6);
     }
 

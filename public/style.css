@@ -1514,3 +1514,81 @@ html[lang="en"] .toggle.off::after { content: ' OFF'; }
 .ico-trail { background-image: var(--px-tab-trail); }
 .ico-dance { background-image: var(--px-tab-dance); }
 .ico-pet { background-image: var(--px-tab-pet); }
+
+/* ---------- ORDENADOR ----------
+   Con ratón y teclado (html.pc, ver core/Device.js) la interfaz pensada para el móvil se
+   agranda según la pantalla (--ui) con zoom en cada pieza, no en la página entera: el canvas
+   y el joystick siguen en píxeles reales. Lo que se mide en vh dentro de una pieza agrandada
+   se divide por --ui para que ocupe lo mismo en pantalla. */
+html.pc { --ui: 1; }
+html.pc .screen > *,
+html.pc .campaign > *,
+html.pc .hud > *,
+html.pc .tut, html.pc .callout, html.pc .stage, html.pc .streak, html.pc .banner, html.pc .bi-text,
+html.pc .toast, html.pc .ach, html.pc .consent, html.pc .upgrade, html.pc .coin-counter,
+html.pc .duel-label, html.pc .replay-tag { zoom: var(--ui); }
+
+/* Se juega con el teclado: el joystick solo aparece si se arrastra con el ratón, y vibrar no
+   tiene sentido en un ordenador */
+html.pc .joy.idle { opacity: 0; }
+html.pc .toggle[data-key="vibration"] { display: none; }
+
+/* Ratón: los botones se iluminan al pasar por encima (sin moverse: en el borde, moverse los
+   haría entrar y salir del puntero sin parar); teclado: marco al moverse con Tab */
+@media (hover: hover) {
+    .btn:not(:disabled):hover, .items-btn:hover, .corner-btn:hover, .arrow:hover, .toggle:hover,
+    .garage-tabs .tab:hover, .up-card:hover, .pause-btn:hover, .skull-btn:hover, .tut-skip:hover { filter: brightness(1.15); }
+}
+html.pc button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 4px; }
+
+/* Objetos, logros y estadísticas: a lo ancho, en dos columnas */
+html.pc .glossary-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    align-content: start;
+    width: min(940px, calc((100vw - 48px) / var(--ui)));
+    max-height: calc(70vh / var(--ui));
+}
+html.pc #stats-list { align-items: start; }
+html.pc .t-pips { max-width: min(940px, 100%); }
+html.pc .pause-map { height: calc(32vh / var(--ui)); }
+html.pc .postcard-img { height: calc(72vh / var(--ui)); }
+
+/* Mi Tanque: el tanque grande a la izquierda y todo lo demás en una columna a la derecha */
+html.pc .garage {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-areas:
+        "title title"
+        "stage tabs"
+        "stage coins"
+        "stage badge"
+        "stage name"
+        "stage count"
+        "stage action"
+        "stage hint"
+        "stage foot";
+    justify-content: center;
+    align-content: center;
+    justify-items: center;
+    column-gap: 48px;
+    row-gap: 10px;
+}
+html.pc .garage > .end-title { grid-area: title; margin-bottom: 14px; }
+html.pc .garage-tabs { grid-area: tabs; }
+html.pc .garage > .coins-badge { grid-area: coins; }
+html.pc .garage-stage { grid-area: stage; align-self: center; }
+html.pc .garage-badge { grid-area: badge; }
+html.pc .garage-name { grid-area: name; }
+html.pc .garage-count { grid-area: count; }
+html.pc #garage-action { grid-area: action; }
+html.pc .garage-hint { grid-area: hint; }
+html.pc .garage-foot { grid-area: foot; margin-top: 6px; }
+html.pc #garage-view { width: 280px; height: 280px; }
+
+/* Duelo en el ordenador: una sola vista para los dos, cada uno con su marcador en su esquina
+   y su etiqueta (con sus teclas) abajo en su lado */
+.duel-labels.shared .duel-line { display: none; }
+.duel-labels.shared .duel-label.p1 { top: auto; bottom: 24px; left: 24px; transform: none; }
+.duel-labels.shared .duel-label.p2 { bottom: 24px; left: auto; right: 24px; transform: none; }
+.hud.duel-shared .stealth, .hud.duel-shared .hint { display: none; }

@@ -3,6 +3,7 @@ import { drawCoin, COIN_SPIN, installPixelSprites } from './PixelArt.js';
 import { achievementIcon, achievementBg } from './achievementIcons.js';
 import { L } from '../core/I18n.js';
 import { DEV } from '../core/Dev.js';
+import { sharedDuel } from '../core/Device.js';
 export class Hud {
     constructor() {
         installPixelSprites();
@@ -319,10 +320,15 @@ export class Hud {
         b.className = `banner show ${kind}`;
     }
 
-    // Duelo local: etiquetas de cada jugador en su mitad (la de arriba, girada para el J2)
+    // Duelo local: etiquetas de cada jugador en su mitad (la de arriba, girada para el J2).
+    // En el ordenador, una sola vista: cada marcador en su esquina, sin girar nada
     showDuel(on) {
-        document.getElementById('duel-labels').classList.toggle('hidden', !on);
-        this.el.hud.classList.toggle('duel-mode', on);
+        const shared = on && sharedDuel();
+        const labels = document.getElementById('duel-labels');
+        labels.classList.toggle('hidden', !on);
+        labels.classList.toggle('shared', shared);
+        this.el.hud.classList.toggle('duel-mode', on && !shared);
+        this.el.hud.classList.toggle('duel-shared', shared);
     }
 
     // ---------- Tutorial ----------

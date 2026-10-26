@@ -1,3 +1,4 @@
+import { PC } from './core/Device.js';
 import { Game } from './core/Game.js';
 import { Input } from './core/Input.js';
 import { Sfx } from './core/Audio.js';
@@ -17,6 +18,12 @@ import { analyticsAsk, setAnalyticsConsent } from './core/Analytics.js';
 
 // Idioma: los textos fijos de index.html están en inglés; en español se cambian ya
 applyHtmlTexts();
+// En el ordenador se juega con el teclado: las ayudas hablan de teclas y no de dedos
+if (PC) {
+    document.getElementById('hint').innerHTML = L('WASD / ARROWS TO MOVE<br>STOP TO FIRE · ESC TO PAUSE', 'WASD / FLECHAS PARA MOVER<br>PÁRATE PARA DISPARAR · ESC PAUSA');
+    document.querySelector('.duel-label.p1').textContent = L('PLAYER 1 · WASD', 'JUGADOR 1 · WASD');
+    document.querySelector('.duel-label.p2').textContent = L('PLAYER 2 · ARROWS', 'JUGADOR 2 · FLECHAS');
+}
 Profile.load();
 
 const canvas = document.getElementById('view');

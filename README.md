@@ -13,7 +13,7 @@ npm test           # pruebas en Chromium (la primera vez: npx playwright install
 **Pruebas** (`tests/`, Playwright): abren el juego en un navegador de verdad y juegan partidas
 cortas con `window.game` y el botón secreto (tutorial, menús, partida rápida, jefe con fase 2 y
 monedas, duelo, repetición con ataques de jefe, supervivencia con mini jefe y escudo del
-acorazado). GitHub Actions las pasa en cada push a `main` (`.github/workflows/tests.yml`).
+acorazado, y la interfaz en un ordenador a 1080p). GitHub Actions las pasa en cada push a `main` (`.github/workflows/tests.yml`).
 
 En local no hay paso de compilación: módulos ES nativos. La web publicada sí se empaqueta:
 Vercel ejecuta `npm run build` (`scripts/build.mjs`, esbuild), que copia `public/` en `dist/` y
@@ -55,8 +55,9 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
 - **Cuatro modos**: **Partida rápida** (duelo contra un rival), **Campaña**, **Duelo a dos** (dos
   personas en el mismo móvil a **pantalla partida**: cada una ve la arena entera desde su lado,
   la de arriba girada hacia quien coge el móvil por el otro extremo, en una arena ancha y baja con
-  pocos obstáculos; cada una con su joystick en su mitad; en el ordenador,
-  WASD y flechas; como los dos miran la misma pantalla, escondido se ve solo una sombra tenue) y
+  pocos obstáculos; cada una con su joystick en su mitad; en el ordenador, una sola vista de la
+  arena para los dos, sin partir, con WASD y flechas; como los dos miran la misma pantalla,
+  escondido se ve solo una sombra tenue) y
   **Supervivencia** (cada
   oleada trae un enemigo más, hasta 8; recuperas 2 de vida al superar cada oleada y se guarda tu
   récord). Los tipos de enemigo van llegando de uno en uno y se presentan la primera vez:
@@ -105,6 +106,11 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
   de música, sonido y vibración que se recuerdan.
 - **Glosario de objetos**: el botón OBJETOS del menú va rotando los objetos en 3D y abre una lista
   con cada uno animado igual que en la partida y su explicación (sale de `desc` en `content/pickups.js`).
+- **En el ordenador** (`core/Device.js`: hay ratón): la interfaz, pensada para el móvil en
+  vertical, se agranda según la pantalla (`--ui`, a saltos de 0,25; ×1,5 en 1080p) con `zoom` en
+  cada pieza y no en la página, así que el canvas y el joystick siguen en píxeles reales. Mi Tanque
+  pasa a dos columnas, Objetos y Logros a una cuadrícula ancha, las ayudas hablan de teclas, el
+  joystick solo sale si se arrastra con el ratón y no hay interruptor de vibración.
 - **Instalable y sin conexión**: "Añadir a pantalla de inicio" la abre a pantalla completa con su
   icono, y tras abrirla una vez con internet funciona también sin conexión.
 - La IA juega con **las mismas reglas**: solo sabe dónde estás cuando te ve.
