@@ -1615,7 +1615,8 @@ html.pc #garage-view { width: 280px; height: 280px; }
 .hud.duel-shared .stealth, .hud.duel-shared .hint { display: none; }
 
 /* ---------- ECOS: RIVAL FUERA DE LA PANTALLA ----------
-   Dos rombos que se abren a saltos, como un sónar, y una flechita hacia el rival */
+   Dos rombos que se abren a saltos sin parar, como un sónar, y una flechita hacia el rival.
+   Se quedan mientras el rival esté fuera de la vista (core/game/view.js) */
 .echoes { position: fixed; inset: 0; z-index: 11; pointer-events: none; overflow: hidden; }
 .echo { position: absolute; width: 0; height: 0; transform: scale(var(--ui, 1)); }
 .echo i {
@@ -1627,9 +1628,9 @@ html.pc #garage-view { width: 280px; height: 280px; }
     border: 4px solid var(--pink);
     box-shadow: 0 0 0 3px rgba(27, 11, 51, .55);
     opacity: 0;
-    animation: echoRing 1s steps(6) forwards;
+    animation: echoRing 1s steps(6) infinite;
 }
-.echo i + i { animation-delay: .3s; }
+.echo i + i { animation-delay: .5s; }
 .echo b {
     position: absolute;
     left: -9px;
@@ -1640,13 +1641,13 @@ html.pc #garage-view { width: 280px; height: 280px; }
     border: 3px solid var(--ink);
     clip-path: polygon(0 0, 100% 50%, 0 100%, 25% 50%);
     transform: rotate(var(--a, 0rad));
-    animation: echoArrow 1.2s steps(2) forwards;
+    animation: echoArrow .5s steps(1) infinite alternate;
 }
 @keyframes echoRing {
     0% { opacity: 1; transform: rotate(45deg) scale(.3); }
     100% { opacity: 0; transform: rotate(45deg) scale(2.2); }
 }
-@keyframes echoArrow { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes echoArrow { to { opacity: .55; } }
 
 /* Supervivencia: la pausa va por encima de los suministros (para poder salir) y la carta
    elegida con las flechas se marca */

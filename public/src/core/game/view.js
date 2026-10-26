@@ -5,8 +5,8 @@ import { weatherParticle } from '../../render/weather.js';
 import { FIRE as FLAMES } from '../../world/Bullets.js';
 import { approach } from '../math.js';
 const _echo = new THREE.Vector3();
-// Ecos en el borde: cada cuánto se repite el de un mismo rival y hasta cuándo vale lo que sabes de él
-const ECHO = { every: 0.9, memory: 2.5, margin: 34, top: 150 };
+// Ecos en el borde: distancia al borde de la pantalla y, arriba, por debajo de los marcadores
+const ECHO = { margin: 34, top: 150 };
 import { sharedDuel } from '../Device.js';
 import { SPARKS, TURBO, NUKE, TRIPLE, REPLAY, PHASE, BOSS_INTRO, SCOUT } from './constants.js';
 
@@ -42,7 +42,7 @@ export const ViewPart = {
         this.markers.update(dt, this.time);
         this.updateCamera();
         this.rig.update(dt);
-        this.edgeEchoes(dt);
+        this.edgeEchoes();
         // (en el ordenador con la pantalla apaisada, los dos comparten una sola vista)
         if (this.mode === 'duel' && !sharedDuel() && ['intro', 'play', 'outro', 'replay', 'end'].includes(this.state)) this.renderDuel(dt);
         else {
@@ -84,34 +84,41 @@ export const ViewPart = {
         r.renderSplit(this.scene, cams[0], cams[1], dt);
     },
 
-    // Rival fuera de la pantalla del que sabes algo (lo ves o lo acabas de ver: al disparar se
-    // delata): ecos en el borde de la pantalla, del lado por donde queda. Solo una pista: si
-    // está escondido y hace rato que no lo ves, nada.
-    edgeEchoes(dt) {
+    // Rival fuera de la pantalla: un eco en el borde, del lado por donde queda, que lo sigue
+    // mientras se mueve y se quita en cuanto entra en la vista (aunque siga escondido): así
+    // nunca señala un sitio donde ya no está.
+    edgeEchoes() {
         const layer = (this.echoLayer ||= document.getElementById('echoes'));
-        const player = this.world.player;
-        if (this.state !== 'play' || this.mode === 'duel' || this.mode === 'tutorial' || !player.alive) return;
-        const W = window.innerWidth, H = window.innerHeight, m = ECHO.margin;
-        const ui = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui')) || 1;
-        const top = ECHO.top * ui; // por debajo de los marcadores y la pausa
-        for (const tank of this.world.enemies()) {
-            if (!tank.alive || tank.decoy) continue;
-            tank.echoT = (tank.echoT || 0) - dt;
-            const info = player.intel.get(tank);
-            if (!info || info.age > ECHO.memory || tank.echoT > 0) continue;
-            _echo.set(info.x, 0.4, info.z).project(this.rig.camera);
-            const sx = ((_echo.x + 1) / 2) * W, sy = ((1 - _echo.y) / 2) * H;
-            if (sx > 0 && sx < W && sy > top * 0.5 && sy < H) continue; // se ve en pantalla: no hace falta
-            tank.echoT = ECHO.every;
-            const el = document.createElement('div');
-            el.className = 'echo';
-            el.style.left = `${Math.min(W - m, Math.max(m, sx))}px`;
-            el.style.top = `${Math.min(H - m, Math.max(top, sy))}px`;
-            // La flechita apunta hacia el rival
-            el.style.setProperty('--a', `${Math.atan2(sy - H / 2, sx - W / 2)}rad`);
-            el.innerHTML = '<i></i><i></i><b></b>';
-            layer.appendChild(el);
-            setTimeout(() => el.remove(), 1300);
+        const echoes = (this.echoes ||= new Map()); // tanque -> elemento
+        const player = this.world.player, live = new Set();
+        if (this.state === 'play' && this.mode !== 'duel' && this.mode !== 'tutorial' && player.alive) {
+            const W = window.innerWidth, H = window.innerHeight, m = ECHO.margin;
+            const ui = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui')) || 1;
+            const top = ECHO.top * ui; // por debajo de los marcadores y la pausa
+            for (const tank of this.world.enemies()) {
+                if (!tank.alive || tank.decoy) continue;
+                _echo.set(tank.x, 0.4, tank.z).project(this.rig.camera);
+                const sx = ((_echo.x + 1) / 2) * W, sy = ((1 - _echo.y) / 2) * H;
+                if (sx > 0 && sx < W && sy > top * 0.5 && sy < H) continue; // en la vista: sin eco
+                live.add(tank);
+                let el = echoes.get(tank);
+                if (!el) {
+                    el = document.createElement('div');
+                    el.className = 'echo';
+                    el.innerHTML = '<i></i><i></i><b></b>';
+                    layer.appendChild(el);
+                    echoes.set(tank, el);
+                }
+                el.style.left = `${Math.min(W - m, Math.max(m, sx))}px`;
+                el.style.top = `${Math.min(H - m, Math.max(top, sy))}px`;
+                // La flechita apunta hacia el rival
+                el.style.setProperty('--a', `${Math.atan2(sy - H / 2, sx - W / 2)}rad`);
+            }
+        }
+        for (const [tank, el] of echoes) {
+            if (live.has(tank)) continue;
+            el.remove();
+            echoes.delete(tank);
         }
     },
 

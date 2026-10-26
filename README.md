@@ -105,7 +105,8 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
   gran final) y **disco** (pista que se enciende al ritmo y bola de espejos).
 - **Rival a la vista**: en partida rápida y supervivencia, si el rival cae donde no llega la
   cámara (ordenador), la cámara va a enseñarlo antes de la cuenta atrás; y durante la partida,
-  si lo ves o lo acabas de ver fuera de la pantalla, unos **ecos** en el borde indican por dónde queda.
+  mientras un rival está fuera de la pantalla, un **eco** en el borde lo sigue e indica por dónde
+  queda; se quita en cuanto entra en la vista, aunque siga escondido.
 - **Logros**: 28 (todos los modos tienen alguno, también el tutorial y el duelo), con aviso al conseguirlos y pantalla propia con barras de progreso.
 - **Arquetipos de escenario**: cada partida elige uno (Arena clásica, Emboscada, Demolición, Fortaleza,
   Carreras, Fantasmas) que decide cuánto muro, qué materiales, cuánta hierba y qué objetos salen,

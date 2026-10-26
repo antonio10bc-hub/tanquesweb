@@ -45,19 +45,21 @@ test('en el ordenador las ayudas hablan de teclas y el duelo se juega en una vis
     noErrors(errors);
 });
 
-test('en el ordenador la cámara enseña al rival que no se ve y avisa con ecos si se va de la pantalla', async ({ page }) => {
+test('en el ordenador la cámara enseña al rival que no se ve y un eco marca por dónde queda mientras está fuera', async ({ page }) => {
     const errors = await openGame(page);
     await page.click('#btn-play');
     expect(await page.evaluate(() => !!game.scout)).toBe(true);
     await waitState(page, 'play');
-    // Rival visto hace un momento y fuera de la pantalla: eco en el borde
+    // El rival sale arriba, fuera de la pantalla: eco en el borde
+    await expect(page.locator('#echoes .echo')).toHaveCount(1);
+    // En cuanto entra en la vista (aunque siga escondido) el eco se quita
     await page.evaluate(() => {
-        const e = game.world.enemies()[0], info = game.world.player.intel.get(e);
-        info.x = e.x;
-        info.z = e.z;
-        info.age = 0.2;
+        const e = game.world.enemies()[0], p = game.world.player;
+        e.frozen = true;
+        e.x = p.x + 2;
+        e.z = p.z - 1;
     });
-    await expect(page.locator('#echoes .echo').first()).toBeAttached();
+    await expect(page.locator('#echoes .echo')).toHaveCount(0);
     noErrors(errors);
 });
 
