@@ -62,8 +62,9 @@ export const DANCES = [
     {
         id: 'd_jelly', name: L('JELLY', 'GELATINA'), price: 1, time: 1.6, lift: 0.8,
         // Tiembla como un flan cada vez más fuerte y sale disparado como un muelle
-        move(t, p) {
+        move(t, p, fx) {
             const k = clamp01(t / this.time), w = Math.sin(t * 20) * (0.12 + 0.25 * k);
+            if (t < this.time) fx('wobble', 0);
             p.sy = 1 + w;
             p.sx = 1 - w * 0.7;
             p.rz = Math.sin(t * 13) * 0.1 * k;
@@ -88,8 +89,8 @@ export const DANCES = [
                 const flat = squash(t, (i + 1) * d, 0.05);
                 p.sy = 1 - 0.3 * flat + (p.y > 0.05 ? 0.12 : 0);
                 p.sx = 1 + 0.2 * flat;
-                if (once(p, `p${i}`, t >= (i + 1) * d)) fx('land', 0, 0.4);
             }
+            for (let k = 0; k < 6; k++) if (once(p, `p${k}`, t >= (k + 1) * d)) fx('land', 0, 0.4);
         },
         exit(u, p, fx) {
             if (once(p, 'up', true)) fx('stars', 0.6);
@@ -126,6 +127,8 @@ export const DANCES = [
             p.recoil = Math.max(0, Math.sin(t * 17)) ** 6;
             p.y = hop(t - 1.35, 0.35, 0.4);
             fx('note', 0.9);
+            // Un acorde de guitarra eléctrica en cada cabezazo
+            if (t < 1.35 && once(p, `riff${Math.floor(t / 0.37)}`, true)) fx('riff', 0);
             if (once(p, 'jump', t >= 1.35)) fx('land', 0, 0.6);
         },
         exit(u, p, fx) {
@@ -286,7 +289,10 @@ export const DANCES = [
             p.y = down * 0.25;
             const spin = clamp01((t - 0.3) / 1.2);
             p.ry = spin * spin * Math.PI * 8;
-            if (down > 0.6) fx('downwash', 0, down);
+            if (down > 0.6) {
+                fx('downwash', 0, down);
+                fx('scratch', 0);
+            }
             if (t > 1.65) {
                 p.rz = -0.25;
                 p.sy = 0.9;

@@ -246,6 +246,23 @@ export class Sfx {
                 this.seq('triangle', [262, 262, 262, 330, 392, 330, 392, 523], 0.11, 0.13, 0.16);
                 this.tone('sine', 131, 131, 1, 0.2, 0, 0.88);
                 break;
+            // ---------- Bailes de victoria ----------
+            case 'rocket': this.noise(0.16, 0.14, 1100); this.tone('sawtooth', 90, 60, 0.12, 0.05); break;
+            case 'fizz': this.noise(0.05, 0.05, 6500); break;
+            case 'wind': this.noise(0.45, 0.09, 1400); break;
+            case 'swish': this.tone('triangle', 500, 1400, 0.12, 0.06); this.noise(0.1, 0.05, 4500); break;
+            case 'twinkle': this.seq('triangle', [1568, 2093, 2637], 0.04, 0.06, 0.08); break;
+            case 'pop': this.tone('sine', 420 + Math.random() * 200, 1000, 0.05, 0.1); break;
+            // Helicóptero: el golpe de las aspas
+            case 'chop': this.noise(0.05, 0.22, 600); this.tone('sine', 95, 60, 0.05, 0.16); break;
+            case 'discoBeat': this.tone('sine', 150, 40, 0.13, 0.32); this.noise(0.04, 0.07, 9000, 0, 0.16); break;
+            case 'kiss': this.tone('sine', 1100, 1800, 0.09, 0.07); this.tone('sine', 1500, 2200, 0.07, 0.05, 0, 0.1); break;
+            case 'inflate': this.tone('triangle', 180, 520, 0.4, 0.07); this.noise(0.35, 0.03, 2500); break;
+            case 'flap': this.noise(0.09, 0.1, 1600); break;
+            case 'jelly': this.tone('sine', 260 + Math.random() * 120, 200, 0.11, 0.09); break;
+            case 'scratch': this.tone('sawtooth', 380, 140, 0.12, 0.05); this.noise(0.1, 0.06, 2200); break;
+            // Rockero: acorde de quinta con distorsión (dos sierras casi iguales)
+            case 'riff': for (const f of [110, 110.8, 165, 220]) this.tone('sawtooth', f, f * 0.99, 0.3, 0.05); break;
             case 'lose': this.seq('triangle', [392, 330, 262, 196], 0.16, 0.22, 0.24); break;
         }
     }

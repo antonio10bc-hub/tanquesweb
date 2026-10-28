@@ -16,7 +16,16 @@ const FLOOR = [0xff3e8e, 0x23e0d6, 0xffe03a, 0x7b5cff, 0xb6ff5c];
 export const danceTime = (def) => def.time + def.lift;
 
 // Sonido y temblor de cámara de los efectos que lo tienen (solo en la partida)
-export const DANCE_SFX = { blast: 'turbo', launch: 'itemSpawn', firework: 'crateBreak', boing: 'boing', land: 'drop', whoosh: 'decoy', gust: 'storm' };
+// [sonido, segundos mínimos entre dos]: los efectos que se piden en cada fotograma (el fuego del
+// cohete, las aspas, el viento...) suenan a su ritmo y no en cada fotograma. Algunos tipos solo
+// suenan (wobble, riff, scratch): no tienen partículas.
+export const DANCE_SFX = {
+    blast: ['turbo', 0], launch: ['itemSpawn', 0], firework: ['crateBreak', 0], boing: ['boing', 0], land: ['drop', 0],
+    whoosh: ['decoy', 0], gust: ['storm', 0], stars: ['twinkle', 0], floor: ['discoBeat', 0], riff: ['riff', 0],
+    flame: ['rocket', 0.11], spark: ['fizz', 0.12], twister: ['wind', 0.32], swoosh: ['swish', 0.22], bubbles: ['pop', 0.16],
+    rotor: ['chop', 0.085], glitter: ['twinkle', 0.28], hearts: ['kiss', 0.3], balloon: ['inflate', 0.45], cape: ['flap', 0.2],
+    wobble: ['jelly', 0.13], scratch: ['scratch', 0.32],
+};
 export const DANCE_SHAKE = { blast: 0.3, land: 0.12, boing: 0.08, firework: 0.04 };
 
 export function newPose() {

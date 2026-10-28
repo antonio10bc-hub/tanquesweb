@@ -14,6 +14,7 @@
 //   harmony   segunda voz de la melodía, una tercera por debajo
 //   swing     retraso de las semicorcheas impares (0..0.35)
 //   octave    octava de la melodía (1 por defecto)
+//   volume    volumen de la música (0.42 por defecto; el menú va más bajo)
 const SCALES = {
     major: [0, 2, 4, 5, 7, 9, 11],
     minor: [0, 2, 3, 5, 7, 8, 10],
@@ -62,7 +63,7 @@ export class Music {
         this.drums = { ...DEFAULT_DRUMS, ...this.cfg.drums };
         this.bus = ctx.createGain();
         this.bus.gain.setValueAtTime(0, ctx.currentTime);
-        this.bus.gain.linearRampToValueAtTime(0.42, ctx.currentTime + 0.6);
+        this.bus.gain.linearRampToValueAtTime(this.cfg.volume ?? 0.42, ctx.currentTime + 0.6);
         // Sigilo: escondido, la música se oye apagada (como a través de una pared); al
         // descubrirte se abre de golpe. Y las explosiones gordas la agachan un instante.
         this.duckGain = ctx.createGain();

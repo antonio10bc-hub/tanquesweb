@@ -19,7 +19,7 @@ export const DancePart = {
         this.world.forceReveal = true;
         tank.moving = false;
         const mine = tank === this.world.player;
-        this.dance = { tank, def: DANCE_BY_ID[mine ? Profile.data.dance : ''] || DANCES[0], pose: newPose() };
+        this.dance = { tank, def: DANCE_BY_ID[mine ? Profile.data.dance : ''] || DANCES[0], pose: newPose(), sfxAt: {} };
         tank.model.pose = this.dance.pose;
     },
 
@@ -34,7 +34,14 @@ export const DancePart = {
     updateDance() {
         const d = this.dance, t = Math.max(0, this.stateTime - LEAD);
         dancePose(d.def, t, d.pose, (kind, y, a) => {
-            if (DANCE_SFX[kind]) this.sfx.play(DANCE_SFX[kind]);
+            const snd = DANCE_SFX[kind];
+            if (snd) {
+                const last = d.sfxAt[kind] ?? -1;
+                if (last < 0 || t - last >= snd[1]) {
+                    d.sfxAt[kind] = t;
+                    this.sfx.play(snd[0]);
+                }
+            }
             if (DANCE_SHAKE[kind]) this.rig.shake(DANCE_SHAKE[kind]);
             danceFx(this.particles, kind, d.tank.x + d.pose.dx, y, d.tank.z + d.pose.dz, d.tank.model.scale, a);
         });

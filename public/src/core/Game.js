@@ -43,6 +43,12 @@ const MAP_MUSIC = {
     drums: { k: 'x.......x.......', s: '................', h: '..x...x...x...x.' }, harmony: true,
     motif: '4...6.7.6...4...2...4.2.0.......4...6.7.9...7.6.4...6.4.2.......',
 };
+// Menú principal: el tema de Tank-less, alegre y algo más bajo que en la partida
+const MENU_MUSIC = {
+    root: 60, scale: 'major', tempo: 112, lead: 'square', octave: 2, arp: 'up', bass: '1...5...1...5...', volume: 0.3,
+    drums: { k: 'x.......x.......', s: '....x.......x...', h: '..x...x...x...x.' }, harmony: true,
+    motif: '4.4.5.4.2...0...2.4.5.7.5.4.2...4.4.5.4.2...0...2.4.2.1.0.......',
+};
 const MAP_MUSIC_HARD = {
     root: 57, scale: 'harmonic', tempo: 88, lead: 'sawtooth', arp: 'stab', bass: '1...1...5...1...', bassType: 'sine',
     drums: { k: 'x.......x..x....', s: '................', h: '................' },
@@ -109,6 +115,7 @@ export class Game {
         // arranca en cuanto lo permite (antes había que apagarla y encenderla a mano).
         sfx.onStateChange = (state) => {
             if (state === 'running' && Settings.music && !this.music.playing && (this.state === 'intro' || this.state === 'play')) this.startMusic();
+            if (state === 'running' && Settings.music && !this.music.playing && this.state === 'menu') this.menuMusic();
             if (state === 'running') this.ambience.resume();
         };
 
@@ -179,6 +186,7 @@ export class Game {
         this.music.enabled = Settings.music;
         if (!Settings.music) this.music.stop(0.2);
         else if (!this.music.playing && this.world && (this.state === 'intro' || this.state === 'play')) this.startMusic();
+        else if (!this.music.playing && this.state === 'menu') this.menuMusic();
     }
 
     // ---------- Flujo ----------
@@ -235,7 +243,8 @@ export class Game {
         this.campaign.show(false);
         if (this.state === 'campaign') this.music.stop(0.3);
         this.load(levelId);
-        this.ambience.stop(); // el menú, en silencio: el ambiente es cosa de la partida
+        this.ambience.stop(); // el ambiente es cosa de la partida; en el menú, su música
+        this.menuMusic();
         this.setState('menu');
         this.world.forceReveal = true;
         this.setInputs(false);
@@ -281,6 +290,10 @@ export class Game {
         this.campaign.open(this.justBeaten, this.hard);
         this.justBeaten = null;
         this.mapMusic(this.hard);
+    }
+
+    menuMusic() {
+        if (Settings.music && this.sfx.ctx) this.music.start(MENU_MUSIC, 3);
     }
 
     mapMusic(hard) {
