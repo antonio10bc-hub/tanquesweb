@@ -62,6 +62,25 @@ export class Sfx {
         else this.ctx.resume().catch(() => {});
     }
 
+    // Corta en seco lo que quede sonando de la partida (explosiones largas, fanfarrias a
+    // medias, ecos...): esos sonidos van al bus de efectos viejo, que se apaga y se suelta;
+    // lo que suene después va por uno nuevo.
+    cut() {
+        if (!this.ctx) return;
+        const old = this.fx, t = this.ctx.currentTime;
+        old.gain.setValueAtTime(old.gain.value, t);
+        old.gain.linearRampToValueAtTime(0, t + 0.06);
+        setTimeout(() => old.disconnect(), 150);
+        this.fx = this.ctx.createGain();
+        this.fx.connect(this.master);
+        this.fx.connect(this.delay);
+        // La cola del eco también se apaga (y el eco vuelve a estar listo enseguida)
+        const wet = this.wet.gain.value;
+        this.wet.gain.cancelScheduledValues(t);
+        this.wet.gain.setValueAtTime(0, t);
+        this.wet.gain.setValueAtTime(wet, t + 0.6);
+    }
+
     // Acústica del escenario: tipo de suelo (cambia el ruido de las orugas) y eco
     // (la ciudad entre edificios, la cueva del volcán, el vacío del espacio...).
     setAmbience(amb = {}) {

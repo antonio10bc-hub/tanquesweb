@@ -10,7 +10,7 @@
 //     extra  otro tema que se oye a la mitad por encima (el mundo elegido en el mapa)
 //     level  volumen (1 en la partida; menos en el menú)
 
-const VOL = 0.85;          // volumen general del ambiente
+const VOL = 0.5;           // volumen general del ambiente: sutil, se nota pero no tapa nada
 const FADE = 1.2;          // segundos del fundido al cambiar
 const TICK = 0.25;         // cada cuánto se tiran los dados de los detalles sueltos
 
@@ -20,12 +20,12 @@ const RECIPES = {
     desert: { layers: [['wind', 450, 0.7, 0.09, 0.09], ['wind', 3200, 3, 0.02, 0.23]], events: { gust: 0.12, hawk: 0.035, rattle: 0.04 } },
     candy: { layers: [['wind', 1200, 1.2, 0.03, 0.17], ['pad', [0, 4, 7, 11], 72, 0.014]], events: { twinkle: 0.5, pop: 0.12 } },
     volcano: { layers: [['rumble', 240, 0.1, 0.07], ['rumble', 520, 0.03, 0.19]], events: { bubble: 0.9, crackle: 1.2, eruption: 0.03 } },
-    beach: { layers: [['waves', 0.11, 0.17], ['wind', 900, 0.8, 0.025, 0.21]], events: { gull: 0.09, splash: 0.12 } },
+    beach: { layers: [['waves', 0.05, 0.17], ['wind', 900, 0.8, 0.015, 0.21]], events: { gull: 0.06, splash: 0.06 } },
     meadow: { layers: [['wind', 1100, 0.9, 0.035, 0.16]], events: { bird: 0.55, cricket: 0.2, bee: 0.04 } },
     city: { layers: [['rumble', 320, 0.05, 0.05], ['hum', 120, 0.012]], events: { car: 0.11, siren: 0.025, horn: 0.03, buzz: 0.15 } },
     space: { layers: [['drone', [82.4, 83.1, 123.5, 164.8], 0.012], ['wind', 300, 4, 0.02, 0.05]], events: { blip: 0.3, ping: 0.08, warp: 0.03 } },
     rainbow: { layers: [['pad', [0, 4, 7, 11, 14], 60, 0.018], ['wind', 1500, 1.5, 0.02, 0.12]], events: { twinkle: 0.7, harp: 0.08 } },
-    map: { layers: [['waves', 0.1, 0.12], ['wind', 800, 0.7, 0.03, 0.11]], events: { gull: 0.07 } },
+    map: { layers: [['waves', 0.035, 0.12], ['wind', 800, 0.7, 0.012, 0.11]], events: { gull: 0.04 } },
     hard: { layers: [['drone', [73.4, 74.1, 110, 155.6], 0.016], ['rumble', 200, 0.04, 0.06]], events: { whisper: 0.12, toll: 0.03 } },
 };
 

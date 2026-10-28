@@ -72,12 +72,12 @@ hud.onAgain = () => {
 };
 
 hud.onMenu = () => {
-    sfx.play('ui');
     if (game.mode === 'tutorial') game.finishTutorial();
     game.music.stop();
     // Desde un jefe de la campaña se vuelve al mapa
     if (game.mode === 'campaign') game.showCampaign();
     else game.showMenu();
+    sfx.play('ui'); // después: al salir se corta lo que quedaba sonando de la partida
 };
 
 const achievements = new Achievements(game);

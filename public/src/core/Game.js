@@ -229,6 +229,7 @@ export class Game {
     }
 
     showMenu(levelId) {
+        this.sfx.cut();
         this.plane.stop();
         this.supply = null;
         this.campaign.show(false);
@@ -262,6 +263,7 @@ export class Game {
 
     // Campaña: el mapa de mundos. justBeaten anima el desbloqueo del siguiente.
     showCampaign() {
+        this.sfx.cut();
         this.endToken++;
         this.paused = false;
         this.music.stop(0.2);
