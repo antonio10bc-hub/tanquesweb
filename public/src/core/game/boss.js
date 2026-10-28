@@ -22,6 +22,7 @@ export const BossPart = {
         if (t < prev) this.introPrev = -1;
         if (at(BOSS_INTRO.card)) {
             const w = WORLD_BY_ID[this.worldId];
+            this.sfx.play(this.hard ? 'hardSting' : 'bossSting');
             this.hud.bossIntro(b.def.name, this.def.tagline, this.hard ? L('HARD MODE', 'MODO DIFÍCIL') : L(`${w.name} BOSS`, `JEFE DE ${w.name}`), this.hard);
         }
         if (at(BOSS_INTRO.gesture)) {

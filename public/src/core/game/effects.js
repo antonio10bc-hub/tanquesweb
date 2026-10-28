@@ -22,6 +22,7 @@ export const EffectsPart = {
         this.rig.shake(1);
         this.renderer.flash(0xffffff, 0.7);
         this.sfx.play('boom', this.panOf(tank.x));
+        this.music.duck(0.6, 0.9);
         if (!scorch) return;
         const mark = new THREE.Mesh(
             new THREE.CircleGeometry(0.55, 8),
@@ -52,7 +53,8 @@ export const EffectsPart = {
         ev.on('pickupSpawn', (item) => {
             this.particles.burst(item.x, 0.5, item.z, 12, [item.def.color, item.def.accent, 0xffffff], { speed: 2.5, up: 3, size: 0.1, ttl: 0.5, grav: 8 });
             this.waves.spawn(item.x, item.z, item.def.color, 1.2, 0.35);
-            this.sfx.play('itemSpawn', this.panOf(item.x));
+            // La bomba nuclear avisa con su alarma: es el objeto que más cambia la partida
+            this.sfx.play(item.kind === 'nuke' ? 'nukeSpawn' : 'itemSpawn', this.panOf(item.x));
         });
 
         ev.on('pickupExpired', (item) => {
@@ -211,6 +213,7 @@ export const EffectsPart = {
         this.renderer.flash(0xffffff, 0.95);
         this.hitStop = Math.max(this.hitStop, 0.08);
         this.sfx.play('nuke', this.panOf(x));
+        this.music.duck(0.85, 1.6);
         vibrate('nuke');
         if (!scorch) return;
         const mark = new THREE.Mesh(

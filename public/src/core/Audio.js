@@ -19,7 +19,14 @@ export class Sfx {
             this.ctx.onstatechange = () => this.onStateChange && this.onStateChange(this.ctx.state);
             this.master = this.ctx.createGain();
             this.master.gain.value = this.volume;
-            this.master.connect(this.ctx.destination);
+            // Compresor al final: une la mezcla y evita que las explosiones saturen
+            this.comp = this.ctx.createDynamicsCompressor();
+            this.comp.threshold.value = -16;
+            this.comp.knee.value = 12;
+            this.comp.ratio.value = 4;
+            this.comp.attack.value = 0.004;
+            this.comp.release.value = 0.2;
+            this.master.connect(this.comp).connect(this.ctx.destination);
             // Los efectos pasan por su propio bus con un eco opcional (la música va aparte)
             this.fx = this.ctx.createGain();
             this.fx.connect(this.master);
@@ -180,6 +187,46 @@ export class Sfx {
             case 'go': this.seq('square', [880, 1175, 1760], 0.07, 0.14, 0.2); break;
             case 'ui': this.tone('square', 660, 1320, 0.09, 0.14); break;
             case 'win': this.seq('square', [523, 659, 784, 1047, 784, 1047], 0.1, 0.14, 0.16); break;
+            // ---------- Tensión ----------
+            // Latido: tu última vida (dos golpes graves)
+            case 'heartbeat': this.tone('sine', 70, 45, 0.12, 0.35); this.tone('sine', 62, 40, 0.14, 0.25, 0, 0.17); break;
+            // Queda un solo enemigo en la oleada
+            case 'lastOne': this.seq('square', [440, 554, 659], 0.06, 0.08, 0.1); this.tone('sine', 110, 55, 0.5, 0.2); break;
+            // Aparece la bomba nuclear: alarma corta
+            case 'nukeSpawn': this.tone('square', 660, 660, 0.1, 0.16, pan); this.tone('square', 880, 880, 0.1, 0.16, pan, 0.12); this.tone('square', 660, 660, 0.1, 0.16, pan, 0.24); break;
+            // ---------- Cuenta atrás: cada número más agudo ----------
+            case 'count3': this.tone('square', 440, 440, 0.12, 0.14); this.tone('sine', 110, 60, 0.15, 0.25); break;
+            case 'count2': this.tone('square', 523, 523, 0.12, 0.14); this.tone('sine', 120, 60, 0.15, 0.25); break;
+            case 'count1': this.tone('square', 659, 659, 0.14, 0.15); this.tone('sine', 130, 60, 0.18, 0.28); break;
+            // ---------- Modos ----------
+            // Duelo: campana de boxeo, dos golpes
+            case 'bell':
+                for (const d of [0, 0.32]) { this.tone('sine', 1480, 1470, 1.1, 0.16, 0, d); this.tone('sine', 2350, 2340, 0.7, 0.07, 0, d); this.tone('triangle', 740, 735, 0.9, 0.06, 0, d); }
+                break;
+            // Supervivencia: bocina de que llega una oleada
+            case 'waveHorn': this.tone('sawtooth', 233, 220, 0.42, 0.2); this.tone('sawtooth', 175, 165, 0.6, 0.17, 0, 0.45); this.noise(0.9, 0.12, 400); break;
+            // Supervivencia: oleada superada
+            case 'waveClear': this.seq('square', [523, 659, 784, 1047, 1319], 0.07, 0.12, 0.12); this.seq('triangle', [262, 330, 392, 523, 659], 0.07, 0.12, 0.12); break;
+            // ---------- Campaña ----------
+            // El jefe entra en escena: acorde grave de metales, golpes de timbal que aceleran y un platillo
+            case 'bossSting':
+                for (const f of [65.4, 92.5, 98]) this.tone('sawtooth', f, f * 0.98, 1.6, 0.09);
+                for (let i = 0; i < 7; i++) this.tone('sine', 90, 50, 0.16, 0.18 + i * 0.03, 0, 0.9 - 0.9 / (i + 1.2));
+                this.noise(1.4, 0.25, 7000, 0, 0.9);
+                break;
+            // ...y en modo difícil, más oscuro: tritono y una campana
+            case 'hardSting':
+                for (const f of [55, 77.8, 110]) this.tone('sawtooth', f, f * 0.97, 2, 0.1);
+                this.tone('sine', 196, 194, 2.4, 0.18, 0, 0.6);
+                this.tone('sine', 466, 462, 1.8, 0.07, 0, 0.6);
+                this.noise(1.8, 0.3, 900, 0, 0.6);
+                break;
+            // Jefe derrotado: fanfarria larga
+            case 'bossWin':
+                this.seq('square', [523, 523, 523, 659, 784, 659, 784, 1047], 0.11, 0.13, 0.16);
+                this.seq('triangle', [262, 262, 262, 330, 392, 330, 392, 523], 0.11, 0.13, 0.16);
+                this.tone('sine', 131, 131, 1, 0.2, 0, 0.88);
+                break;
             case 'lose': this.seq('triangle', [392, 330, 262, 196], 0.16, 0.22, 0.24); break;
         }
     }

@@ -1,7 +1,8 @@
 // Música chiptune generada al vuelo: bajo, arpegio, melodía y batería sobre una progresión
 // de 4 compases. Cada tema elige raíz, escala, tempo y timbre; la melodía se genera con una
 // semilla, así que cada escenario suena distinto pero siempre igual dentro de una partida.
-// "intensity" (0..1) acelera y añade capas cuando la cosa se pone fea.
+// "intensity" (0..1) acelera y añade capas cuando la cosa se pone fea (charles a semicorcheas
+// a partir de 0.5 y un pulso grave a partir de 0.75). Escondido, la música suena apagada.
 //
 // Opcional, para temas con personalidad propia (los jefes de la campaña):
 //   prog      progresión de 4 compases (grados de la escala)
@@ -39,6 +40,7 @@ const DEFAULT_BASS = '1..1..1.1..1..1.';
 const DEFAULT_DRUMS = { k: 'x.......x.......', s: '....x.......x...', h: '.x.x.x.x.x.x.x.x' };
 const MOTIF = { '.': null, a: -1, b: -2 };
 const midiToHz = (m) => 440 * Math.pow(2, (m - 69) / 12);
+const OPEN = 18000, MUFFLED = 2200; // frecuencia de corte de la música a la vista / escondido
 
 export class Music {
     constructor(sfx) {
@@ -61,7 +63,13 @@ export class Music {
         this.bus = ctx.createGain();
         this.bus.gain.setValueAtTime(0, ctx.currentTime);
         this.bus.gain.linearRampToValueAtTime(0.42, ctx.currentTime + 0.6);
-        this.bus.connect(this.sfx.master);
+        // Sigilo: escondido, la música se oye apagada (como a través de una pared); al
+        // descubrirte se abre de golpe. Y las explosiones gordas la agachan un instante.
+        this.duckGain = ctx.createGain();
+        this.filter = ctx.createBiquadFilter();
+        this.filter.type = 'lowpass';
+        this.filter.frequency.value = this.muffled ? MUFFLED : OPEN;
+        this.bus.connect(this.duckGain).connect(this.filter).connect(this.sfx.master);
         this.step = 0;
         this.next = ctx.currentTime + 0.08;
         this.timer = setInterval(() => this.tick(), 25);
@@ -76,6 +84,24 @@ export class Music {
         bus.gain.setValueAtTime(bus.gain.value, ctx.currentTime);
         bus.gain.linearRampToValueAtTime(0, ctx.currentTime + fade);
         setTimeout(() => bus.disconnect(), (fade + 0.3) * 1000);
+    }
+
+    // Escondido (true) o a la vista (false)
+    setMuffle(on) {
+        if (this.muffled === on) return;
+        this.muffled = on;
+        if (!this.timer) return;
+        const ctx = this.sfx.ctx;
+        this.filter.frequency.setTargetAtTime(on ? MUFFLED : OPEN, ctx.currentTime, on ? 0.35 : 0.05);
+    }
+
+    // Baja la música un momento (explosiones, bombas) y la devuelve poco a poco
+    duck(amount = 0.5, time = 0.6) {
+        if (!this.timer) return;
+        const g = this.duckGain.gain, t = this.sfx.ctx.currentTime;
+        g.cancelScheduledValues(t);
+        g.setValueAtTime(1 - amount, t);
+        g.linearRampToValueAtTime(1, t + time);
     }
 
     get playing() {
@@ -134,11 +160,15 @@ export class Music {
             if (c.harmony) this.voice(c.harmonyLead || 'triangle', this.note(deg + m - 2, oct), t, len * 1.8, 0.05);
         }
 
+        // Tensión alta: un pulso grave en corcheas que empuja (última vida, enemigo encima...)
+        if (this.intensity > 0.75 && s % 2 === 0) this.voice('triangle', this.note(deg, -2) + 12, t, len * 0.8, 0.16);
+
         // Batería
         const d = this.drums;
         if (d.k[s] === 'x') this.kick(t);
         if (d.s[s] === 'x') this.hiss(t, 0.12, 0.16, 1800);
         if (d.h[s] === 'x') this.hiss(t, 0.03, hot ? 0.06 : 0.035, 7000);
+        else if (hot && d.h[s] === '.') this.hiss(t, 0.02, 0.025, 8000);
         else if (d.h[s] === 'o') this.hiss(t, 0.12, 0.05, 6000);
     }
 

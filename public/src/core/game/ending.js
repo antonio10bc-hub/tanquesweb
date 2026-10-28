@@ -163,7 +163,7 @@ export const EndingPart = {
             }
         }
         this.events.emit('matchEnd', { win, mode: this.mode, wave: this.wave, world: this.worldId });
-        this.sfx.play(win ? 'win' : 'lose');
+        this.sfx.play(!win ? 'lose' : this.mode === 'campaign' ? 'bossWin' : 'win');
         if (win) this.particles.burst(p.x, 0.8, p.z, 90, CONFETTI, { speed: 4, up: 9, size: 0.14, ttl: 2.4, grav: 9 });
     },
 };

@@ -16,7 +16,13 @@ export const SurvivalPart = {
     updateSurvival(dt) {
         const w = this.world;
         if (!this.waveClear) {
-            if (w.aliveEnemies() > 0 || this.dropping.length) return;
+            // Queda uno: aviso de que la oleada está a punto de caer
+            const left = w.aliveEnemies() + this.dropping.length;
+            if (left === 1 && this.waveSize > 1 && this.lastOneWave !== this.wave) {
+                this.lastOneWave = this.wave;
+                this.sfx.play('lastOne');
+            }
+            if (left > 0) return;
             // Oleada superada: respiro y curación (las minas que quedaban se desactivan). Tu
             // tanque se queda quieto y sin disparar hasta la siguiente oleada (mientras pasa el
             // avión y eliges la mejora no hay nada que hacer, y así no vuela ningún barril)
@@ -31,7 +37,7 @@ export const SurvivalPart = {
             }
             this.waveTimer = SURVIVAL.pause;
             this.hud.banner(L(`WAVE ${this.wave}!`, `¡OLEADA ${this.wave}!`), 'go');
-            this.sfx.play('win');
+            this.sfx.play('waveClear');
             const p = w.player;
             const healed = Math.min(p.maxHp, p.hp + SURVIVAL.heal);
             if (healed > p.hp) {
@@ -84,9 +90,10 @@ export const SurvivalPart = {
             this.hud.showBoss(boss.def.name);
             setTimeout(() => this.state === 'play' && this.hud.callout(L('MINI BOSS!', '¡MINI JEFE!')), 900);
             this.sfx.play('warn');
+            this.sfx.play('waveHorn');
         } else {
             this.hud.banner(L(`WAVE ${this.wave}`, `OLEADA ${this.wave}`));
-            this.sfx.play('go');
+            this.sfx.play('waveHorn');
         }
         let intro = 0;
         this.events.emit('waveStart', this.wave, specs);

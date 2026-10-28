@@ -21,6 +21,7 @@ import { World } from '../world/World.js';
 import { EventBus } from './EventBus.js';
 import { Input } from './Input.js';
 import { Music } from './Music.js';
+import { Ambience } from './Ambience.js';
 import { ReplayRecorder } from './Replay.js';
 import { Settings } from './Settings.js';
 import { setAnalyticsConsent } from './Analytics.js';
@@ -35,6 +36,18 @@ import { BossPart } from './game/boss.js';
 import { SurvivalPart } from './game/survival.js';
 import { EndingPart } from './game/ending.js';
 import { DancePart } from './game/dance.js';
+
+// Música del mapa de la campaña: de aventura, con su melodía (y una versión inquietante)
+const MAP_MUSIC = {
+    root: 60, scale: 'lydian', tempo: 100, lead: 'triangle', octave: 2, arp: 'up', bass: '1.......5.......',
+    drums: { k: 'x.......x.......', s: '................', h: '..x...x...x...x.' }, harmony: true,
+    motif: '4...6.7.6...4...2...4.2.0.......4...6.7.9...7.6.4...6.4.2.......',
+};
+const MAP_MUSIC_HARD = {
+    root: 57, scale: 'harmonic', tempo: 88, lead: 'sawtooth', arp: 'stab', bass: '1...1...5...1...', bassType: 'sine',
+    drums: { k: 'x.......x..x....', s: '................', h: '................' },
+    motif: '0...1...0...a...0...2...1.......0...1...3...2...1...0...a.......',
+};
 
 // Orquesta todo: bucle, estados de partida, cámara, efectos, música y HUD.
 // Este archivo lleva el flujo (menú, cargar, empezar, pausa, bucle e intro); el resto de
@@ -53,6 +66,7 @@ export class Game {
         this.input2.setEnabled(false);
         this.sfx = sfx;
         this.music = new Music(sfx);
+        this.ambience = new Ambience(sfx); // viento, olas, lava... de cada escenario
         this.events = new EventBus();
         this.renderer = new RetroRenderer(canvas, CONFIG.render);
         this.scene = new THREE.Scene();
@@ -95,6 +109,7 @@ export class Game {
         // arranca en cuanto lo permite (antes había que apagarla y encenderla a mano).
         sfx.onStateChange = (state) => {
             if (state === 'running' && Settings.music && !this.music.playing && (this.state === 'intro' || this.state === 'play')) this.startMusic();
+            if (state === 'running') this.ambience.resume();
         };
 
         this.renderer.onResize = (w, h) => this.rig.resize(w / h);
@@ -160,6 +175,7 @@ export class Game {
 
     applySettings() {
         this.sfx.enabled = Settings.sfx;
+        this.ambience.setEnabled(Settings.sfx);
         this.music.enabled = Settings.music;
         if (!Settings.music) this.music.stop(0.2);
         else if (!this.music.playing && this.world && (this.state === 'intro' || this.state === 'play')) this.startMusic();
@@ -218,6 +234,7 @@ export class Game {
         this.campaign.show(false);
         if (this.state === 'campaign') this.music.stop(0.3);
         this.load(levelId);
+        this.ambience.set(this.themeId, { level: 0.6 });
         this.setState('menu');
         this.world.forceReveal = true;
         this.setInputs(false);
@@ -256,9 +273,16 @@ export class Game {
         this.hud.screen('campaign');
         this.hud.showBoss(null);
         this.hud.showReplay(false);
+        // Mapa: música de aventura tranquila (oscura en modo difícil) sobre el mar del archipiélago
+        // (al elegir un mundo, CampaignMap suma su ambiente por encima)
+        this.ambience.set('map', { hard: this.hard });
         this.campaign.open(this.justBeaten, this.hard);
         this.justBeaten = null;
-        if (Settings.music) this.music.start({ root: 60, scale: 'major', tempo: 104, lead: 'triangle' }, 7);
+        this.mapMusic(this.hard);
+    }
+
+    mapMusic(hard) {
+        if (Settings.music) this.music.start(hard ? MAP_MUSIC_HARD : MAP_MUSIC, 7);
     }
 
     startMatch(levelId, seed, themeId) {
@@ -288,12 +312,16 @@ export class Game {
         }
         // Modo difícil: calaveras en los bordes de la arena (sin teñir la pantalla)
         this.skulls.start(this.hard ? this.world.arena : null);
+        // Ambiente del escenario (en modo difícil, con su fondo inquietante)
+        this.ambience.set(this.themeId, { hard: this.hard });
+        this.heartT = 0;
         this.playTime = 0;
         this.damageTaken = 0;
         this.tally = { kills: 0, hits: 0, pickups: 0 }; // para el resumen final
         this.hud.showBoss(this.boss ? this.boss.def.name : null);
         this.hud.endButtons(this.mode === 'tutorial' ? L('REPEAT', 'REPETIR') : L('PLAY AGAIN', 'OTRA VEZ'), this.mode === 'campaign' ? L('SEE THE MAP', 'VER EL MAPA') : L('MAIN MENU', 'MENÚ PRINCIPAL'));
         this.wave = 1;
+        this.lastOneWave = 0;
         this.waveSize = this.world.enemies().length;
         this.waveClear = false;
         this.dropping = [];
@@ -504,7 +532,36 @@ export class Game {
         else if (p.cloak > 0) stealth = 'cloak';
         else if (p.inBush) stealth = 'bush';
         this.hud.setStealth(stealth);
-        this.music.intensity = this.state === 'play' ? (p.hp <= 2 ? 1 : p.hp <= 3 ? 0.5 : 0) : 0;
+        this.updateTension(dt, stealth);
+    }
+
+    // Tensión sonora: la música acelera y suma capas con la vida baja, con un enemigo cerca,
+    // con el jefe furioso o según avanzan las oleadas; escondido suena apagada, y en la última
+    // vida se oye el latido.
+    updateTension(dt, stealth) {
+        const w = this.world, p = w.player, playing = this.state === 'play' && !this.cutscene;
+        let target = 0;
+        if (playing && p.alive) {
+            const r = p.hp / p.maxHp;
+            target = r <= 0.2 ? 1 : r <= 0.4 ? 0.6 : 0;
+            let near = Infinity;
+            for (const e of w.enemies()) if (e.alive && !e.decoy) near = Math.min(near, Math.hypot(e.x - p.x, e.z - p.z));
+            target = Math.max(target, clamp((5.5 - near) / 4, 0, 1) * 0.55);
+            if (this.boss && this.boss.angry) target = Math.max(target, 0.6);
+            if (this.mode === 'survival') target = Math.max(target, Math.min(0.45, this.wave * 0.03));
+        }
+        // Sube rápido y baja despacio
+        const k = target > this.music.intensity ? 2 : 0.5;
+        this.music.intensity += (target - this.music.intensity) * Math.min(1, dt * k);
+        this.music.setMuffle(playing && this.mode !== 'duel' && this.mode !== 'tutorial' && stealth !== 'visible');
+        // Latido en la última vida
+        if (playing && p.alive && p.hp === 1) {
+            this.heartT = (this.heartT || 0) - dt;
+            if (this.heartT <= 0) {
+                this.heartT = 0.85;
+                this.sfx.play('heartbeat');
+            }
+        } else this.heartT = 0;
     }
 
     updateIntro() {
@@ -543,11 +600,12 @@ export class Game {
         if (t >= m.countdownStart + extra && step >= this.countdown) {
             if (step < labels.length) {
                 this.hud.banner(labels[step]);
-                this.sfx.play('tick');
+                this.sfx.play(`count${3 - step}`);
                 this.countdown = step + 1;
             } else {
                 this.hud.banner(L('GO!', '¡FUEGO!'), 'go');
-                this.sfx.play('go');
+                // El duelo empieza con campana de boxeo; el resto, con su fanfarria
+                this.sfx.play(this.mode === 'duel' ? 'bell' : 'go');
                 // Durante la cuenta atrás os veis: cada uno arranca sabiendo dónde está el otro.
                 this.world.updateIntel(0);
                 this.world.forceReveal = false;

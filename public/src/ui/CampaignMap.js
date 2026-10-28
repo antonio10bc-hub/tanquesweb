@@ -60,6 +60,7 @@ export class CampaignMap {
             game.renderer.flash(this.hard ? 0xff1a3a : 0xffffff, 0.6);
             game.rig.shake(this.hard ? 0.6 : 0.2);
             this.open(null, this.hard);
+            game.mapMusic(this.hard); // el mapa de pesadilla tiene su propia música
         });
         $('btn-campaign-back').addEventListener('click', () => {
             game.sfx.play('ui');
@@ -682,6 +683,8 @@ export class CampaignMap {
         this.el.card.classList.toggle('secret', !!w.secret);
         this.freeCam = false;
         this.focus(i);
+        // De fondo, el mar del archipiélago y, por encima, el ambiente del mundo elegido
+        this.game.ambience.set('map', { hard: this.hard, extra: open ? w.theme : null });
         if (move && open && i !== this.at) this.goTo(i);
     }
 
