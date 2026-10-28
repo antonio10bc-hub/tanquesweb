@@ -235,7 +235,7 @@ export class Game {
         this.campaign.show(false);
         if (this.state === 'campaign') this.music.stop(0.3);
         this.load(levelId);
-        this.ambience.set(this.themeId, { level: 0.6 });
+        this.ambience.stop(); // el menú, en silencio: el ambiente es cosa de la partida
         this.setState('menu');
         this.world.forceReveal = true;
         this.setInputs(false);

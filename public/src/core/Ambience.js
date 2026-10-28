@@ -10,7 +10,9 @@
 //     extra  otro tema que se oye a la mitad por encima (el mundo elegido en el mapa)
 //     level  volumen (1 en la partida; menos en el menú)
 
-const VOL = 0.5;           // volumen general del ambiente: sutil, se nota pero no tapa nada
+const VOL = 0.3;           // volumen general del ambiente: de fondo, sin tapar nada
+const NOISE = 0.45;        // las capas de ruido (viento, olas, rumor) aún más bajas: en el
+                           // altavoz del móvil un ruido constante se nota mucho
 const FADE = 1.2;          // segundos del fundido al cambiar
 const TICK = 0.25;         // cada cuánto se tiran los dados de los detalles sueltos
 
@@ -23,7 +25,7 @@ const RECIPES = {
     beach: { layers: [['waves', 0.05, 0.17], ['wind', 900, 0.8, 0.015, 0.21]], events: { gull: 0.06, splash: 0.06 } },
     meadow: { layers: [['wind', 1100, 0.9, 0.035, 0.16]], events: { bird: 0.55, cricket: 0.2, bee: 0.04 } },
     city: { layers: [['rumble', 320, 0.05, 0.05], ['hum', 120, 0.012]], events: { car: 0.11, siren: 0.025, horn: 0.03, buzz: 0.15 } },
-    space: { layers: [['drone', [82.4, 83.1, 123.5, 164.8], 0.012], ['wind', 300, 4, 0.02, 0.05]], events: { blip: 0.3, ping: 0.08, warp: 0.03 } },
+    space: { layers: [['drone', [82.4, 83.1, 123.5, 164.8], 0.008], ['wind', 300, 4, 0.02, 0.05]], events: { blip: 0.3, ping: 0.08, warp: 0.03 } },
     rainbow: { layers: [['pad', [0, 4, 7, 11, 14], 60, 0.018], ['wind', 1500, 1.5, 0.02, 0.12]], events: { twinkle: 0.7, harp: 0.08 } },
     map: { layers: [['waves', 0.035, 0.12], ['wind', 800, 0.7, 0.012, 0.11]], events: { gull: 0.04 } },
     hard: { layers: [['drone', [73.4, 74.1, 110, 155.6], 0.016], ['rumble', 200, 0.04, 0.06]], events: { whisper: 0.12, toll: 0.03 } },
@@ -128,7 +130,7 @@ export class Ambience {
         };
         if (type === 'wind') {
             // Ruido filtrado que sube y baja (el filtro también se mueve: rachas)
-            const [freq, q, vol, rate] = a;
+            const [freq, q, v, rate] = a, vol = v * NOISE;
             const f = ctx.createBiquadFilter();
             f.type = 'bandpass';
             f.frequency.value = freq;
@@ -138,7 +140,7 @@ export class Ambience {
             lfo(rate, out.gain, vol * scale * 0.6);
             lfo(rate * 0.7, f.frequency, freq * 0.35);
         } else if (type === 'rumble') {
-            const [freq, vol, rate] = a;
+            const [freq, v, rate] = a, vol = v * NOISE;
             const f = ctx.createBiquadFilter();
             f.type = 'lowpass';
             f.frequency.value = freq;
@@ -146,8 +148,8 @@ export class Ambience {
             noise().connect(f).connect(out);
             lfo(rate, out.gain, vol * scale * 0.5);
         } else if (type === 'waves') {
-            // Olas: ruido grave que crece y rompe cada pocos segundos
-            const [vol, rate] = a;
+            // Olas: ruido grave que crece y rompe cada pocos segundos (lo más bajo de todo)
+            const [v, rate] = a, vol = v * NOISE * 0.6;
             const f = ctx.createBiquadFilter();
             f.type = 'lowpass';
             f.frequency.value = 800;
