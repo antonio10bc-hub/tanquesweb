@@ -6,7 +6,7 @@ import { CONFETTI, REPLAY, STARS } from './constants.js';
 
 // Final de partida: cámara lenta, repetición del golpe final y pantalla de resultado (récords, estrellas, monedas).
 // Métodos de Game (se mezclan en su prototipo desde core/Game.js): "this" es la partida.
-// Monedas por ganar una partida rápida (las de supervivencia: survival.js; campaña: estrellas)
+// Monedas por ganar una partida rápida (las de supervivencia: survival.js; la campaña no da)
 const QUICK_COIN = 1;
 
 export const EndingPart = {
@@ -118,11 +118,8 @@ export const EndingPart = {
                 const par = hard ? STARS.parHard : STARS.par;
                 const got = [true, this.damageTaken <= STARS.maxDamage, this.playTime < par];
                 const stars = got.filter(Boolean).length;
-                const prevBest = Profile.stars(w.id, hard);
                 const best = Profile.setStars(w.id, stars, hard);
                 this.lastStars = stars;
-                // Las monedas solo se ganan aquí: una por cada estrella nueva de este jefe
-                const reward = Math.max(0, best - prevBest);
                 st.bosses = Profile.data.campaign.beaten.filter((id) => !WORLD_BY_ID[id].secret).length;
                 st.stars = Object.values(Profile.data.campaign.stars).reduce((a, b) => a + b, 0);
                 st.hardBosses = Profile.data.campaign.hard.beaten.length;
@@ -137,8 +134,8 @@ export const EndingPart = {
                     // Primera victoria en difícil: su gorro y su pintura ya están en Mi Tanque
                     if (hard && first) setTimeout(() => this.state === 'end' && this.hud.toast(L('NEW HAT AND PAINT IN MY TANK!', '¡NUEVO GORRO Y PINTURA EN MI TANQUE!'), 'trophy'), 2600);
                 };
-                // Una moneda por cada estrella nueva; primero vuelan al contador y luego el final
-                this.payCoins(reward, end);
+                // La campaña no da monedas: se juega por las estrellas y los trofeos
+                end();
             } else {
                 this.hud.showEnd(false, L('TRY AGAIN!', '¡INTÉNTALO OTRA VEZ!'));
                 this.showTally();

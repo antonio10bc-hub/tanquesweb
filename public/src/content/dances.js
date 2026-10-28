@@ -44,7 +44,142 @@ export const DANCES = [
         },
     },
     {
-        id: 'd_spin', name: L('TORNADO', 'TORNADO'), price: 3, time: 1.7, lift: 1,
+        id: 'd_wave', name: L('HELLO!', '¡HOLA!'), price: 1, time: 1.5, lift: 0.8,
+        // Saluda moviendo el cañón de lado a lado dando saltitos, y se va de un brinco
+        move(t, p, fx) {
+            p.turret = Math.sin(t * 14) * 0.9;
+            p.y = Math.abs(Math.sin(t * 6.3)) * 0.14;
+            p.rz = Math.sin(t * 6.3) * 0.08;
+            if (once(p, 'hi', t >= 0.6)) fx('stars', 1.2);
+        },
+        exit(u, p, fx) {
+            if (once(p, 'jump', true)) fx('whoosh', 0);
+            p.y += 0.15 + 16 * u * u;
+            p.turret = Math.sin(u * 30) * 0.9;
+            fx('swoosh', p.y);
+        },
+    },
+    {
+        id: 'd_jelly', name: L('JELLY', 'GELATINA'), price: 1, time: 1.6, lift: 0.8,
+        // Tiembla como un flan cada vez más fuerte y sale disparado como un muelle
+        move(t, p) {
+            const k = clamp01(t / this.time), w = Math.sin(t * 20) * (0.12 + 0.25 * k);
+            p.sy = 1 + w;
+            p.sx = 1 - w * 0.7;
+            p.rz = Math.sin(t * 13) * 0.1 * k;
+            p.ry = Math.sin(t * 7) * 0.2 * k;
+        },
+        exit(u, p, fx) {
+            if (once(p, 'go', true)) fx('boing', 0, 1.2);
+            p.y += 0.1 + 17 * u * u;
+            const j = Math.sin(u * 40) * (1 - u) * 0.25;
+            p.sy = 1.35 + j;
+            p.sx = 0.8 - j * 0.6;
+            fx('bubbles', p.y);
+        },
+    },
+    {
+        id: 'd_pogo', name: L('POGO', 'POGO'), price: 1, time: 1.6, lift: 0.7,
+        // Seis saltitos rapidísimos levantando polvo y el último lo lanza al cielo
+        move(t, p, fx) {
+            const d = 0.26, i = Math.floor(t / d);
+            if (i < 6) {
+                p.y = hop(t - i * d, d, 0.32);
+                const flat = squash(t, (i + 1) * d, 0.05);
+                p.sy = 1 - 0.3 * flat + (p.y > 0.05 ? 0.12 : 0);
+                p.sx = 1 + 0.2 * flat;
+                if (once(p, `p${i}`, t >= (i + 1) * d)) fx('land', 0, 0.4);
+            }
+        },
+        exit(u, p, fx) {
+            if (once(p, 'up', true)) fx('stars', 0.6);
+            p.y += 0.15 + 17 * u * u;
+            p.sy = 1.25;
+            p.sx = 0.85;
+            fx('swoosh', p.y);
+        },
+    },
+    {
+        id: 'd_bow', name: L('BOW', 'REVERENCIA'), price: 1, time: 1.8, lift: 1,
+        // Dos reverencias muy educadas lanzando corazones y sube flotando entre ellos
+        move(t, p, fx) {
+            const bow = (s) => Math.sin(Math.PI * clamp01((t - s) / 0.55));
+            const b = Math.max(bow(0.2), bow(1.0));
+            p.rx = 0.55 * b;
+            p.turret = -0.3 * b;
+            if (once(p, 'h1', t >= 0.45)) fx('hearts', 0.8);
+            if (once(p, 'h2', t >= 1.25)) fx('hearts', 0.8);
+        },
+        exit(u, p, fx) {
+            p.y += u * 1.2 + 9 * u * u;
+            p.rz = Math.sin(u * 8) * 0.15;
+            if (Math.random() < 0.3) fx('hearts', p.y + 0.3, 0.3);
+        },
+    },
+    {
+        id: 'd_rocker', name: L('ROCKER', 'ROCKERO'), price: 1, time: 1.7, lift: 0.8,
+        // Cabecea a toda velocidad al ritmo de la batería y salta al público
+        move(t, p, fx) {
+            const k = clamp01(t / 0.3);
+            p.rx = Math.max(0, Math.sin(t * 17)) * 0.35 * k;
+            p.rz = Math.sin(t * 8.5) * 0.08 * k;
+            p.recoil = Math.max(0, Math.sin(t * 17)) ** 6;
+            p.y = hop(t - 1.35, 0.35, 0.4);
+            fx('note', 0.9);
+            if (once(p, 'jump', t >= 1.35)) fx('land', 0, 0.6);
+        },
+        exit(u, p, fx) {
+            p.y += 0.2 + 16 * u * u;
+            p.rx = -u * Math.PI * 2;
+            fx('note', p.y);
+            fx('swoosh', p.y);
+        },
+    },
+    {
+        id: 'd_moon', name: L('MOONWALK', 'MOONWALK'), price: 2, time: 2, lift: 0.8,
+        // Se desliza hacia atrás como si flotara, vuelve, gira sobre sí mismo y se queda
+        // de puntillas antes de salir de un salto
+        move(t, p, fx) {
+            const glide = t < 1.2 ? Math.sin((t / 1.2) * Math.PI) : 0;
+            p.dx = -glide * 0.7;
+            p.y = Math.abs(Math.sin(t * 9)) * 0.04 * (t < 1.2 ? 1 : 0);
+            p.rz = -glide * 0.06;
+            p.ry = smooth(clamp01((t - 1.2) / 0.4)) * Math.PI * 2;
+            if (t > 1.6) {
+                p.sy = 1.12;
+                p.sx = 0.92;
+                p.rx = -0.12;
+            }
+            if (t < 1.2 && Math.random() < 0.4) fx('swoosh', -0.2);
+            if (once(p, 'pose', t >= 1.6)) fx('stars', 1.1);
+        },
+        exit(u, p, fx) {
+            if (once(p, 'jump', true)) fx('whoosh', 0);
+            p.y += 0.15 + 16 * u * u;
+            p.ry += u * u * 10;
+            fx('glitter', p.y);
+        },
+    },
+    {
+        id: 'd_balloon', name: L('BALLOON', 'GLOBO'), price: 2, time: 1.8, lift: 1.2,
+        // Infla un globo, se hincha él también y se va flotando colgado de él
+        move(t, p, fx) {
+            const k = smooth(clamp01(t / 1.2));
+            p.sx = 1 + 0.25 * k + Math.sin(t * 9) * 0.03 * k;
+            p.sy = 1 + 0.25 * k - Math.sin(t * 9) * 0.03 * k;
+            p.y = smooth(clamp01((t - 1.2) / 0.6)) * 0.4;
+            p.rz = Math.sin(t * 3) * 0.08 * k;
+            fx('balloon', p.y + 1.1, k);
+        },
+        exit(u, p, fx) {
+            p.y += u * 1.5 + 9 * u * u;
+            p.rz = Math.sin(u * 7) * 0.18;
+            p.dx += Math.sin(u * 4) * 0.4;
+            fx('balloon', p.y + 1.1, 1);
+        },
+    },
+    {
+        id: 'd_spin', name: L('TORNADO', 'TORNADO'), price: 2, time: 1.7, lift: 1,
         // Gira cada vez más rápido dentro de un remolino que lo levanta y se lo lleva
         move(t, p, fx) {
             const k = clamp01(t / this.time);
@@ -63,7 +198,7 @@ export const DANCES = [
         },
     },
     {
-        id: 'd_flip', name: L('BACKFLIP', 'VOLTERETA'), price: 3, time: 2.1, lift: 0.8,
+        id: 'd_flip', name: L('BACKFLIP', 'VOLTERETA'), price: 2, time: 2.1, lift: 0.8,
         // Saltito para coger impulso, una voltereta, una doble más alta y sale disparado
         // dando volteretas sin parar
         move(t, p, fx) {
@@ -84,7 +219,7 @@ export const DANCES = [
         },
     },
     {
-        id: 'd_boing', name: L('BOING', 'BOING'), price: 3, time: 2.1, lift: 0.8,
+        id: 'd_boing', name: L('BOING', 'BOING'), price: 2, time: 2.1, lift: 0.8,
         // Botes cada vez más altos aplastándose como gelatina, coge carrerilla agachado y
         // sale botando hasta el cielo
         move(t, p, fx) {
@@ -142,7 +277,55 @@ export const DANCES = [
         },
     },
     {
-        id: 'd_fireworks', name: L('FIREWORKS', 'FUEGOS ARTIFICIALES'), price: 4, time: 2.4, lift: 0.9,
+        id: 'd_break', name: L('BREAKDANCE', 'BREAKDANCE'), price: 3, time: 2.1, lift: 0.8,
+        // Se tumba de lado y gira como un molino barriendo el suelo, se levanta de golpe,
+        // pose congelada y sale girando
+        move(t, p, fx) {
+            const down = smooth(clamp01((t - 0.15) / 0.3)) * (1 - smooth(clamp01((t - 1.45) / 0.2)));
+            p.rz = down * Math.PI * 0.45;
+            p.y = down * 0.25;
+            const spin = clamp01((t - 0.3) / 1.2);
+            p.ry = spin * spin * Math.PI * 8;
+            if (down > 0.6) fx('downwash', 0, down);
+            if (t > 1.65) {
+                p.rz = -0.25;
+                p.sy = 0.9;
+                p.sx = 1.1;
+            }
+            if (once(p, 'freeze', t >= 1.65)) fx('stars', 1.1);
+        },
+        exit(u, p, fx) {
+            p.y += 0.15 + 16 * u * u;
+            p.ry += u * Math.PI * 10;
+            p.rz = 0;
+            fx('swoosh', p.y);
+        },
+    },
+    {
+        id: 'd_hero', name: L('SUPERHERO', 'SUPERHÉROE'), price: 3, time: 1.6, lift: 0.9,
+        // Pose de héroe con la capa al viento, se agacha cogiendo fuerza y sale volando
+        // con el puño por delante dejando una estela
+        move(t, p, fx) {
+            const crouch = smooth(clamp01((t - 0.7) / 0.8));
+            p.sy = 1.08 - 0.3 * crouch;
+            p.sx = 1 + 0.15 * crouch;
+            p.rz = Math.sin(t * 60) * 0.03 * crouch;
+            p.turret = -0.4 * (1 - crouch);
+            fx('cape', 0.5);
+            if (crouch > 0.3) fx('spark', 0.05);
+        },
+        exit(u, p, fx) {
+            if (once(p, 'go', true)) fx('blast', 0);
+            p.y += 0.2 + 18 * u * u;
+            p.rx = -0.5 * smooth(Math.min(1, u * 3));
+            p.sy = 1.15;
+            p.sx = 0.9;
+            fx('cape', p.y);
+            fx('swoosh', p.y);
+        },
+    },
+    {
+        id: 'd_fireworks', name: L('FIREWORKS', 'FUEGOS ARTIFICIALES'), price: 3, time: 2.4, lift: 0.9,
         // Barre el cielo con el cañón lanzando fuegos artificiales sin parar, con un gran final
         // de tres a la vez, y sube entre la purpurina
         move(t, p, fx) {
@@ -165,7 +348,7 @@ export const DANCES = [
         },
     },
     {
-        id: 'd_disco', name: L('DISCO', 'DISCO'), price: 4, time: 2.6, lift: 0.9,
+        id: 'd_disco', name: L('DISCO', 'DISCO'), price: 3, time: 2.6, lift: 0.9,
         // Bajo una bola de espejos y sobre una pista que se enciende al ritmo: contoneo de
         // caderas, dos vueltas de un salto y un meneo final; sube girando como la bola
         move(t, p, fx) {

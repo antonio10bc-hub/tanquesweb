@@ -16,7 +16,7 @@ test('partida rápida: se gana, sale la repetición y da una moneda', async ({ p
     noErrors(errors);
 });
 
-test('jefe: el botón secreto primero lo pasa a fase 2, luego lo derrota y paga una moneda por estrella', async ({ page }) => {
+test('jefe: el botón secreto primero lo pasa a fase 2, luego lo derrota y da estrellas (sin monedas)', async ({ page }) => {
     const errors = await openGame(page);
     await page.evaluate(() => game.startBoss('w1'));
     await waitState(page, 'play');
@@ -25,13 +25,12 @@ test('jefe: el botón secreto primero lo pasa a fase 2, luego lo derrota y paga 
     await page.waitForFunction(() => !game.cutscene, null, { timeout: 30_000 });
     await secretWin(page);
     await waitState(page, 'end');
-    // Primero la ceremonia de las monedas y luego el final con las estrellas
     await expect(page.locator('#end-title')).toHaveText('¡JEFE DERROTADO!', { timeout: 20_000 });
     const p = await profile(page);
     expect(p.campaign.beaten).toContain('w1');
     const stars = p.campaign.stars.w1;
     expect(stars).toBeGreaterThanOrEqual(1);
-    expect(p.coins).toBe(stars);
+    expect(p.coins || 0).toBe(0);
     noErrors(errors);
 });
 

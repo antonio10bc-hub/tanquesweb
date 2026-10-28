@@ -1771,3 +1771,46 @@ html.pc .mode-btn[data-kbd]::after {
     border-color: #fff;
     opacity: 1;
 }
+
+
+/* ---------- Tanque dorado en Mi Tanque: el premio gordo ---------- */
+.garage-frame { position: relative; display: flex; }
+.legend-spark { display: none; position: absolute; width: 21px; height: 21px; background: var(--px-spark-a) center / contain no-repeat; image-rendering: pixelated; z-index: 2; pointer-events: none; animation: twinkle 1.2s steps(2) infinite; }
+.legend-spark.s1 { top: -12px; left: -12px; }
+.legend-spark.s2 { top: 18%; right: -14px; animation-delay: .3s; }
+.legend-spark.s3 { bottom: -10px; right: 22%; animation-delay: .6s; }
+.legend-spark.s4 { bottom: 28%; left: -14px; animation-delay: .9s; }
+@keyframes twinkle { 50% { background-image: var(--px-spark-b); transform: scale(.7); } }
+.garage.legend .legend-spark { display: block; }
+.garage.legend { background: radial-gradient(circle at 50% 42%, rgba(255, 210, 63, .55), rgba(60, 30, 0, .9) 45%, rgba(27, 11, 51, .96) 75%); }
+/* Rayos de sol dorados que giran a saltos detrás del tanque */
+.garage.legend #garage-view {
+    background: repeating-conic-gradient(from 0deg at 50% 55%, #ffd23f 0deg 15deg, #ffb300 15deg 30deg);
+    border-color: #fff4b0;
+    box-shadow: 0 0 0 4px #e6a400, 0 0 0 8px var(--ink), 0 0 0 12px #ffd23f, 0 0 0 16px var(--ink), 0 18px 0 var(--ink);
+    animation: legend-rays 2.4s steps(12) infinite;
+}
+@keyframes legend-rays { 50% { background: repeating-conic-gradient(from 15deg at 50% 55%, #ffd23f 0deg 15deg, #ffb300 15deg 30deg); } }
+/* Nombre en oro que destella */
+.garage.legend .garage-name { color: #ffd23f; font-size: clamp(13px, 4.8vw, 20px); animation: legend-name .9s steps(2) infinite; }
+@keyframes legend-name { 50% { color: #fff4b0; text-shadow: 3px 3px 0 #c77800, 6px 6px 0 var(--ink); } }
+/* Cartel de LEGENDARIO con estrellas */
+.legend-badge { background: #ffd23f; color: var(--ink); animation: legend-pop 1.2s steps(3) infinite; }
+.legend-star { display: inline-block; width: 14px; height: 14px; background: var(--px-star-on) center / contain no-repeat; image-rendering: pixelated; }
+@keyframes legend-pop { 50% { transform: scale(1.08) rotate(-2deg); } }
+/* Botón de compra de oro con un brillo que lo cruza */
+.garage.legend #garage-action {
+    color: var(--ink);
+    background: linear-gradient(100deg, #ffd23f 0 40%, #fff4b0 40% 48%, #ffd23f 48% 56%, #fff4b0 56% 60%, #ffd23f 60%) 0 0 / 300% 100%;
+    box-shadow: 0 7px 0 var(--ink), inset 0 -6px 0 #c77800, inset 0 4px 0 #fff4b0;
+    animation: legend-shine 1.6s steps(8) infinite;
+}
+@keyframes legend-shine { from { background-position: 100% 0; } to { background-position: -50% 0; } }
+/* Lo que te falta para tenerlo: una barra pixelada */
+.legend-bar { display: block; width: min(220px, 60vw); height: 12px; margin: 0 auto 6px; background: #2a1f4f; border: 3px solid var(--ink); box-shadow: 0 3px 0 var(--ink); }
+.legend-bar i { display: block; height: 100%; background: repeating-linear-gradient(90deg, #ffd23f 0 6px, #e6a400 6px 8px); }
+@media (prefers-reduced-motion: reduce) {
+    .garage.legend #garage-view, .garage.legend .garage-name, .legend-badge, .garage.legend #garage-action, .legend-spark { animation: none; }
+}
+html.pc .legend-badge { grid-area: badge; }
+.garage.legend #garage-action:disabled { opacity: 1; filter: saturate(.75); }

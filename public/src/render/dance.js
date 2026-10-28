@@ -227,6 +227,29 @@ export function danceFx(particles, kind, x, y, z, s = 1, a = 0, ceil = Infinity)
             }
             break;
         }
+        // ----- reverencia: corazones que suben -----
+        case 'hearts': {
+            const n = a ? 1 : 8;
+            for (let k = 0; k < n; k++) {
+                P.spawn(x + j(0.8), y + j(0.3), z + j(0.6) + 0.2, j(1.2), 1 + r() * 1.2, j(0.6) + 0.4, 0.12 + r() * 0.06, 0.8, r() < 0.7 ? 0xff3e8e : 0xffb3f0, -0.8);
+            }
+            break;
+        }
+        // ----- globo: un globo rosa con brillo y su cordel hasta el tanque -----
+        case 'balloon': {
+            const by = Math.min(ceil, y), size = (0.2 + a * 0.4) * s;
+            P.spawn(x, by, z, 0, 0, 0, size, 0.04, 0xff3e8e, 0);
+            P.rot[P.n - 1] = P.spin[P.n - 1] = 0;
+            P.spawn(x - size * 0.2, by + size * 0.2, z + size * 0.4, 0, 0, 0, size * 0.25, 0.04, 0xffb3f0, 0);
+            P.rot[P.n - 1] = P.spin[P.n - 1] = 0;
+            P.spawn(x, by - size * 0.55, z, 0, 0, 0, 0.06, 0.04, 0xff3e8e, 0);
+            for (let k = 1; k <= 5; k++) P.spawn(x + Math.sin(k + performance.now() / 300) * 0.02, by - size * 0.55 - k * 0.1, z, 0, 0, 0, 0.03, 0.04, 0xffffff, 0);
+            break;
+        }
+        // ----- superhéroe: capa roja que ondea detrás -----
+        case 'cape':
+            for (let k = 0; k < 2; k++) P.spawn(x + j(0.3), y + 0.2 + r() * 0.3, z - 0.35 * s, j(0.6), -0.3, -1.2 - r(), 0.12 + r() * 0.06, 0.3, r() < 0.75 ? 0xff2a3a : 0xffd23f, 0);
+            break;
         case 'note':
             if (r() < 0.4) P.spawn(x + j(1.2), y + r() * 0.4, z + j(1.2), j(0.6), 1.2, j(0.6), 0.1, 0.8, PARTY[(r() * PARTY.length) | 0], -0.6);
             break;

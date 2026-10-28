@@ -32,6 +32,7 @@ export class Garage {
             action: $('garage-action'), coins: $('garage-coins'), menu: $('menu'), hint: $('garage-hint'),
             btnCanvas: $('btn-garage').querySelector('canvas'),
         };
+        this.el.hint.dataset.text = this.el.hint.innerHTML;
         this.ctx = this.el.view.getContext('2d');
         this.btnCtx = this.el.btnCanvas.getContext('2d');
         this.btnCtx.imageSmoothingEnabled = false;
@@ -178,6 +179,11 @@ export class Garage {
         this.pop = 0;
         this.danceT = 0;
         this.refresh();
+        // El tanque dorado llega con fanfarria y una lluvia de oro
+        if (this.skin.gold) {
+            this.sfx.play('secret');
+            this.goldBurst = 1;
+        }
     }
 
     // Comprar (si no la tienes) o equipar.
@@ -208,7 +214,12 @@ export class Garage {
         el.name.textContent = s.name;
         // Los trofeos de los jefes van con su marco especial
         el.screen.classList.toggle('boss-item', !!s.boss);
-        document.getElementById('garage-badge').classList.toggle('off', !s.boss);
+        document.getElementById('garage-badge').classList.toggle('off', !s.boss || !!s.gold);
+        // El tanque dorado: el premio gordo, con su propio escenario (rayos, destellos y cartel)
+        el.screen.classList.toggle('legend', !!s.gold);
+        document.getElementById('garage-legend').classList.toggle('off', !s.gold);
+        document.getElementById('garage-badge').classList.toggle('hidden', !!s.gold);
+        document.getElementById('garage-legend').classList.toggle('hidden', !s.gold);
         el.count.textContent = `${this.index + 1} / ${this.items.length}`;
         el.coins.textContent = Profile.coins;
         const owned = Profile.owns(s.id), equipped = Profile.data[CATS[this.cat].key] === s.id;
@@ -226,8 +237,12 @@ export class Garage {
         el.action.className = `btn ${owned ? '' : 'buy'}`;
         el.action.innerHTML = equipped ? L('EQUIPPED', 'EQUIPADO') : owned ? L('USE', 'USAR')
             : Profile.coins >= s.price ? L(`BUY <span class="coin"></span> ${s.price}`, `COMPRAR <span class="coin"></span> ${s.price}`) : L(`<span class="coin"></span> ${s.price} · NOT ENOUGH COINS`, `<span class="coin"></span> ${s.price} · SIN MONEDAS`);
-        // Recordatorio de dónde salen las monedas
+        // Recordatorio de dónde salen las monedas (para el dorado, una barra de lo que llevas)
         el.hint.classList.toggle('off', owned || Profile.coins >= s.price);
+        if (s.gold && !owned && Profile.coins < s.price) {
+            const k = Math.min(1, Profile.coins / s.price);
+            el.hint.innerHTML = `<span class="legend-bar"><i style="width:${Math.max(2, k * 100)}%"></i></span>${Profile.coins} / ${s.price}`;
+        } else if (el.hint.dataset.text) el.hint.innerHTML = el.hint.dataset.text;
         el.screen.classList.toggle('golden', !!this.preview(true).skin.gold);
     }
 
@@ -302,6 +317,10 @@ export class Garage {
             f.recoil = Math.max(0, f.recoil - dt * 5);
         } else {
             this.shot.visible = false;
+        }
+        if (this.goldBurst && ctx === this.ctx) {
+            this.particles.burst(0, 1.4, 0, 70, GOLD_SPARKS, { speed: 2.6, up: 3, size: 0.09, ttl: 1.4, grav: 4 });
+            this.goldBurst = 0;
         }
         if (this.burst) {
             this.particles.burst(0, 0.6, 0, 50, [0xffe03a, 0xff3e8e, 0x23e0d6, 0xffffff], { speed: 3, up: 5, size: 0.1, ttl: 1, grav: 8 });

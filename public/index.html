@@ -184,14 +184,18 @@
         <div class="coins-badge static"><span class="coin"></span><span id="garage-coins">0</span></div>
         <div class="garage-stage">
             <button id="garage-prev" class="arrow" data-nav-skip="1" aria-label="Previous" data-es-aria="Anterior">&lt;</button>
-            <canvas id="garage-view" width="112" height="112"></canvas>
+            <div class="garage-frame">
+                <canvas id="garage-view" width="112" height="112"></canvas>
+                <i class="legend-spark s1"></i><i class="legend-spark s2"></i><i class="legend-spark s3"></i><i class="legend-spark s4"></i>
+            </div>
             <button id="garage-next" class="arrow" data-nav-skip="1" aria-label="Next" data-es-aria="Siguiente">&gt;</button>
         </div>
         <div id="garage-badge" class="garage-badge off"><span class="skull-mini"></span><span data-es="TROFEO DE JEFE">BOSS TROPHY</span><span class="skull-mini"></span></div>
+        <div id="garage-legend" class="garage-badge legend-badge off"><span class="legend-star"></span><span data-es="¡LEGENDARIO!">LEGENDARY!</span><span class="legend-star"></span></div>
         <div id="garage-name" class="garage-name"></div>
         <div id="garage-count" class="garage-count"></div>
         <button id="garage-action" class="btn" data-nav-first="1" data-es="USAR">USE</button>
-        <div id="garage-hint" class="garage-hint off" data-es="GANA MONEDAS EN PARTIDAS RÁPIDAS,<br>OLEADAS Y ESTRELLAS DE LA CAMPAÑA">EARN COINS IN QUICK MATCHES,<br>WAVES AND CAMPAIGN STARS</div>
+        <div id="garage-hint" class="garage-hint off" data-es="GANA MONEDAS EN PARTIDAS RÁPIDAS<br>Y EN CADA OLEADA DE SUPERVIVENCIA">EARN COINS IN QUICK MATCHES<br>AND EVERY SURVIVAL WAVE</div>
         <div class="garage-foot">
             <button id="btn-garage-close" class="btn btn-small" data-kbd="ESC" data-pad="B" data-es="VOLVER">BACK</button>
             <button id="btn-postcard" class="btn btn-small" data-es="POSTAL">POSTCARD</button>
