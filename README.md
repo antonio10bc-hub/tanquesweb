@@ -52,6 +52,11 @@ coger un objeto y, al final, el muñeco de entrenamiento despierta y es tu prime
 - **Casillas especiales** según el tema: **hielo** (nieve, espacio) en el que resbalas y **bloques de
   TNT** (desierto, volcán, ciudad, playa, pradera: rojos, con un cartel de llama encima) que revientan de un disparo, dañan a los
   tanques cercanos, rompen muros y estallan en cadena.
+- **Modos que se desbloquean** (`core/Unlocks.js`): al empezar solo está abierta la partida rápida.
+  La campaña se abre al ganar 3 partidas rápidas, el duelo a dos al ganar 5 y la supervivencia al
+  completar la campaña. Los bloqueados salen apagados con un candado y su progreso; al pulsarlos,
+  un aviso dice qué falta. Al abrirse uno se anuncia, y ya no se vuelve a cerrar (quien ya había
+  jugado un modo antes de esto lo conserva).
 - **Cuatro modos**: **Partida rápida** (duelo contra un rival), **Campaña**, **Duelo a dos** (dos
   personas en el mismo móvil a **pantalla partida**: cada una ve la arena entera desde su lado,
   la de arriba girada hacia quien coge el móvil por el otro extremo, en una arena ancha y baja con

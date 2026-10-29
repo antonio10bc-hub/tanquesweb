@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { openGame, waitState, noErrors } = require('./helpers');
+const { openGame, waitState, secretWin, profile, noErrors } = require('./helpers');
 
 test('la primera vez arranca el tutorial y se puede saltar', async ({ page }) => {
     const errors = await openGame(page, null);
@@ -60,5 +60,36 @@ test('el idioma se cambia en Ajustes y se queda guardado', async ({ page }) => {
     await page.reload();
     await page.waitForFunction(() => window.game && !document.getElementById('btn-campaign').disabled);
     await expect(page.locator('#btn-play')).toHaveText('QUICK MATCH');
+    noErrors(errors);
+});
+
+test('al empezar solo está abierta la partida rápida; los demás modos dicen qué falta y se abren jugando', async ({ page }) => {
+    // Dos partidas rápidas ganadas: a una de la campaña
+    const errors = await openGame(page, { tutorialDone: true, stats: { wins: 2 } });
+    for (const id of ['#btn-campaign', '#btn-survival', '#btn-duel']) await expect(page.locator(id)).toHaveClass(/locked/);
+    await expect(page.locator('#btn-play')).not.toHaveClass(/locked/);
+    await page.click('#btn-campaign');
+    await expect(page.locator('#lock-note')).toBeVisible();
+    await expect(page.locator('#lock-text')).toHaveText('NECESITAS GANAR 3 PARTIDAS RÁPIDAS PARA DESBLOQUEAR LA CAMPAÑA');
+    await expect(page.locator('#lock-count')).toHaveText('2/3');
+    await expect(page.locator('#menu')).toBeVisible();
+    expect(await page.evaluate(() => game.state)).toBe('menu');
+    await page.click('#btn-survival');
+    await expect(page.locator('#lock-text')).toHaveText('NECESITAS COMPLETAR LA CAMPAÑA PARA DESBLOQUEAR LA SUPERVIVENCIA');
+    await page.click('#btn-duel');
+    await expect(page.locator('#lock-text')).toHaveText('NECESITAS GANAR 5 PARTIDAS RÁPIDAS PARA DESBLOQUEAR EL DUELO A DOS');
+    // La tercera victoria abre la campaña (y se anuncia al volver al menú)
+    await page.click('#btn-play');
+    await waitState(page, 'play');
+    await secretWin(page);
+    await waitState(page, 'end');
+    await expect(page.locator('#end-title')).toHaveText('¡VICTORIA!', { timeout: 20_000 });
+    await page.click('#btn-end-menu');
+    await expect(page.locator('#btn-campaign')).not.toHaveClass(/locked/);
+    await expect(page.locator('#toast')).toContainText('NUEVO MODO: CAMPAÑA');
+    await expect(page.locator('#btn-duel')).toHaveClass(/locked/);
+    await page.click('#btn-campaign');
+    await waitState(page, 'campaign');
+    expect((await profile(page)).unlocked).toContain('campaign');
     noErrors(errors);
 });

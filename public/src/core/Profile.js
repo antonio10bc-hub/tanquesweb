@@ -16,6 +16,7 @@ const fresh = () => ({
     pet: 'pet_none',     // mascota equipada
     achievements: {},    // id -> fecha de desbloqueo
     tutorialDone: false, // el tutorial sale solo la primera vez
+    unlocked: [],        // modos ya desbloqueados (core/Unlocks.js)
     // Campaña: jefes derrotados y estrellas (1-3) por mundo; "hard" lo mismo en modo difícil
     campaign: { beaten: [], stars: {}, hard: { beaten: [], stars: {} } },
     stats: {

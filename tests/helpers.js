@@ -1,9 +1,10 @@
 // Utilidades comunes de las pruebas.
 const { expect } = require('@playwright/test');
 
-// Abre el juego con un perfil guardado (por defecto, el tutorial ya visto) y espera al menú.
-// Devuelve la lista de errores de la página para comprobar al final que no ha habido ninguno.
-async function openGame(page, profile = { tutorialDone: true }) {
+// Abre el juego con un perfil guardado (por defecto, el tutorial ya visto y todos los modos
+// abiertos) y espera al menú. Devuelve la lista de errores de la página para comprobar al final
+// que no ha habido ninguno.
+async function openGame(page, profile = { tutorialDone: true, unlocked: ['campaign', 'survival', 'duel'] }) {
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto('/');

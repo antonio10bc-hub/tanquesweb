@@ -161,6 +161,12 @@
                 <button id="btn-duel" class="btn btn-duel mode-btn" disabled><canvas class="mode-art" aria-hidden="true"></canvas><span class="mode-label" data-es="DUELO A DOS">TWO-PLAYER DUEL</span></button>
             </div>
         </div>
+        <!-- Modo bloqueado: qué falta para abrirlo (ui/ModeLocks.js) -->
+        <div id="lock-note" class="lock-note" role="status">
+            <i class="lock-ico" aria-hidden="true"></i>
+            <span id="lock-text" class="lock-text"></span>
+            <div class="lock-progress"><div class="lock-track"><i id="lock-bar"></i></div><span id="lock-count"></span></div>
+        </div>
     </div>
 
     <!-- Campaña: el mapa se dibuja en el canvas del juego; esto es la interfaz encima -->

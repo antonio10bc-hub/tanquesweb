@@ -121,6 +121,11 @@ const SPRITES = {
             '...KPPPPK...', '..KPPPPPPK..', '..KPPPPPPK..', '..KPPPPPPK..', '...KKKKKK...', '............'],
         pal: { K: INK, P: '#ff9a1f' },
     },
+    // Candado de los modos bloqueados
+    lock: {
+        rows: ['...KKKK...', '..KWWWWK..', '.KWK..KWK.', '.KWK..KWK.', 'KKKKKKKKKK', 'KYYYYYYYOK', 'KYYYKKYYOK', 'KYYYKKYYOK', 'KYYYYKYYOK', 'KOOOOOOOOK', 'KKKKKKKKKK'],
+        pal: { K: INK, W: '#e2dcff', Y: '#ffd23f', O: '#e6a400' },
+    },
     // Panel lateral del ordenador: bala del cargador y objetos que llevas
     pwBullet: {
         rows: ['..KKK...', '.KWYYK..', '.KYYYK..', '.KYYOK..', '.KYYOK..', 'KKKKKKK.', 'KOOOOOK.', 'KOOOOOK.', 'KKKKKKK.'],

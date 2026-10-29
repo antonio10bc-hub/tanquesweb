@@ -5,6 +5,7 @@ import { Sfx } from './core/Audio.js';
 import { Hud } from './ui/Hud.js';
 import { Glossary } from './ui/Glossary.js';
 import { KeyNav } from './ui/KeyNav.js';
+import { ModeLocks } from './ui/ModeLocks.js';
 import { PcSettings } from './ui/PcSettings.js';
 import { Gamepads } from './core/Gamepad.js';
 import { Garage } from './ui/Garage.js';
@@ -50,18 +51,23 @@ hud.onPlay = () => {
     sfx.play('ui');
     game.startMatch(game.levelId, undefined, game.themeId);
 };
+// Modos bloqueados hasta cumplir lo suyo (core/Unlocks.js): al pulsarlos dicen qué falta
+const locks = new ModeLocks(hud, sfx);
 document.getElementById('btn-campaign').addEventListener('click', () => {
     sfx.unlock();
+    if (locks.deny('campaign')) return;
     sfx.play('ui');
     game.showCampaign();
 });
 document.getElementById('btn-duel').addEventListener('click', () => {
     sfx.unlock();
+    if (locks.deny('duel')) return;
     sfx.play('ui');
     game.startDuel();
 });
 document.getElementById('btn-survival').addEventListener('click', () => {
     sfx.unlock();
+    if (locks.deny('survival')) return;
     sfx.play('ui');
     game.startSurvival();
 });
@@ -93,6 +99,7 @@ const consent = document.getElementById('consent');
 // (en el dispositivo del autor no hay aviso ni interruptor: se mide siempre)
 if (analyticsAsk()) document.querySelector('.toggle[data-key="analytics"]').classList.remove('hidden');
 hud.onScreenChange = (name) => {
+    if (name === 'menu') locks.refresh();
     const ask = name === 'menu' && Settings.analytics === null && analyticsAsk();
     consent.classList.toggle('hidden', !ask);
 };
