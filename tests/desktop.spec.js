@@ -171,25 +171,29 @@ test('con mando: el stick mueve el tanque, Start pausa y A pulsa en los menús',
         navigator.getGamepads = () => [pad];
     });
     const errors = await openGame(page);
-    const press = async (b) => {
+    // El juego lee el mando una vez por fotograma: el botón se mantiene hasta que reacciona
+    // (until) o un rato, que en el ordenador de pruebas, sin tarjeta gráfica, un fotograma a
+    // 1920x1080 puede durar más que una pulsación corta y se perdería
+    const press = async (b, until) => {
         await page.evaluate((b) => (window.pad.buttons[b].pressed = true), b);
-        await page.waitForTimeout(80);
+        if (until) await page.waitForFunction(until);
+        else await page.waitForTimeout(250);
         await page.evaluate((b) => (window.pad.buttons[b].pressed = false), b);
-        await page.waitForTimeout(80);
+        await page.waitForTimeout(250);
     };
     await page.click('#btn-play');
     await waitState(page, 'play');
     await page.evaluate(() => (window.pad.axes[0] = 1));
     await page.waitForFunction(() => game.input.move.x > 0.9);
     await page.evaluate(() => (window.pad.axes[0] = 0));
-    await press(9);
+    await press(9, () => game.paused);
     await expect(page.locator('#pause')).toBeVisible();
     // En la pausa: abajo hasta Salir y A
     await page.evaluate(() => (window.pad.buttons[13].pressed = true));
     await page.waitForFunction(() => document.activeElement.id === 'btn-resume');
     await page.evaluate(() => (window.pad.buttons[13].pressed = false));
     for (let i = 0; i < 4 && (await page.evaluate(() => document.activeElement.id)) !== 'btn-quit'; i++) await press(13);
-    await press(0);
+    await press(0, () => game.state === 'menu');
     await expect(page.locator('#menu')).toBeVisible();
     noErrors(errors);
 });

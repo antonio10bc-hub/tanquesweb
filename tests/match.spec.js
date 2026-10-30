@@ -69,3 +69,15 @@ test('al ganar baila con el baile equipado (con su mascota) y luego vuelve a cae
     await page.waitForFunction(() => !game.landing && game.world.player.model.dropY === 0);
     noErrors(errors);
 });
+
+test('ganar al rival difícil de la partida rápida da 2 monedas', async ({ page }) => {
+    const errors = await openGame(page, { tutorialDone: true, quickPlayed: 5 });
+    await page.evaluate(() => (game.forceRival = 'hard'));
+    await page.click('#btn-play');
+    await waitState(page, 'play');
+    expect(await page.evaluate(() => game.rival.id)).toBe('hard');
+    await secretWin(page);
+    await waitState(page, 'end');
+    await page.waitForFunction(() => JSON.parse(localStorage.getItem('tankless.profile')).coins === 2, null, { timeout: 20_000 });
+    noErrors(errors);
+});

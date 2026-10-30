@@ -6,8 +6,10 @@ import { CONFETTI, FIRE, REPLAY, STARS } from './constants.js';
 
 // Final de partida: cámara lenta, repetición del golpe final y pantalla de resultado (récords, estrellas, monedas).
 // Métodos de Game (se mezclan en su prototipo desde core/Game.js): "this" es la partida.
-// Monedas por ganar una partida rápida (las de supervivencia: survival.js; la campaña no da)
+// Monedas por ganar una partida rápida: 1, o 2 contra el rival difícil (las de supervivencia:
+// survival.js; la campaña no da)
 const QUICK_COIN = 1;
+const QUICK_COIN_HARD = 2;
 
 export const EndingPart = {
     endMatch(win) {
@@ -196,7 +198,7 @@ export const EndingPart = {
             Profile.save();
             if (win) {
                 // Partida rápida ganada: una moneda de oro
-                this.payCoins(QUICK_COIN, () => {
+                this.payCoins(this.rival && this.rival.id === 'hard' ? QUICK_COIN_HARD : QUICK_COIN, () => {
                     this.hud.showEnd(true, '');
                     this.showTally();
                 });
