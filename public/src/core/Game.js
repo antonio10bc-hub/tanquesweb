@@ -320,7 +320,8 @@ export class Game {
         if (this.boss && this.hard) {
             // Modo difícil: aura maligna y jefe más duro
             const b = this.boss;
-            const H = WORLDS.findIndex((w) => w.id === this.worldId) >= HARD_LATE.from ? HARD_LATE : HARD;
+            const late = WORLDS.findIndex((w) => w.id === this.worldId) >= HARD_LATE.from || HARD_LATE.also.includes(this.worldId);
+            const H = late ? HARD_LATE : HARD;
             b.hp = b.maxHp = Math.round(b.maxHp * H.hp);
             b.speed *= H.speed;
             b.brain.every *= H.every;
