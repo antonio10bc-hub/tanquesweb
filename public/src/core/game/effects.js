@@ -13,6 +13,12 @@ export const EffectsPart = {
         return clamp((x - this.rig.x) / 7, -1, 1);
     },
 
+    // Apunta un impacto para que la repetición lo vuelva a pintar (solo mientras se juega:
+    // es lo único que se graba)
+    rec(kind, data) {
+        if (this.state === 'play') this.recorder.note(kind, data);
+    },
+
     deathFx(tank, scorch = true) {
         const pal = tank.def.palette;
         this.particles.burst(tank.x, 0.4, tank.z, 46, [pal.body, pal.accent, pal.tread, pal.barrel], { speed: 6, up: 7, size: 0.2, ttl: 1.4, grav: 16 });
@@ -78,6 +84,7 @@ export const EffectsPart = {
         });
 
         ev.on('bulletWall', (x, z, color) => {
+            this.rec('wall', { x, z, color });
             this.particles.burst(x, 0.45, z, 6, [color, 0xffffff], { speed: 2.2, up: 1.5, size: 0.09, ttl: 0.3, grav: 9 });
             this.sfx.play('wall', this.panOf(x));
         });
@@ -89,6 +96,7 @@ export const EffectsPart = {
 
         ev.on('tileHit', (c, r, res, color, style = 'crate') => {
             const st = this.theme.walls[style] || COMMON_WALLS[style] || this.theme.walls.crate, x = c + 0.5, z = r + 0.5;
+            this.rec('tile', { x, z, broken: res === 'broken', top: st.top, side: st.side });
             if (res === 'broken') {
                 this.particles.burst(x, 0.5, z, 34, [st.top, st.side, 0xffffff], { speed: 4, up: 5, size: 0.2, ttl: 1, grav: 14 });
                 this.waves.spawn(x, z, st.top, 1.8, 0.4);
@@ -102,6 +110,7 @@ export const EffectsPart = {
         });
 
         ev.on('shieldBreak', (tank, x) => {
+            this.rec('shield', { x: tank.x, z: tank.z });
             this.particles.burst(tank.x, 0.5, tank.z, 24, [0x6fd0ff, 0xffffff, 0x3fa9ff], { speed: 4, up: 3, size: 0.12, ttl: 0.5, grav: 6 });
             this.waves.spawn(tank.x, tank.z, 0x6fd0ff, 1.4, 0.35);
             this.sfx.play('shield', this.panOf(x));
@@ -111,6 +120,7 @@ export const EffectsPart = {
         ev.on('hit', (tank, x, z, color, damage) => {
             if (tank === this.world.player) this.damageTaken += damage;
             const pal = tank.def.palette, me = mine(tank);
+            this.rec('hit', { x, z, color, damage, body: pal.body, accent: pal.accent });
             if (damage > 1) {
                 this.particles.burst(x, 0.5, z, 30, FLAMES, { speed: 5, up: 4, size: 0.2, ttl: 0.6, grav: -1 });
                 this.waves.spawn(x, z, 0xff9a1f, 1.8, 0.4);
@@ -134,21 +144,8 @@ export const EffectsPart = {
         ev.on('nukeBoom', (n) => this.nukeFx(n));
 
         ev.on('barrelBoom', (x, z, R) => {
-            this.particles.burst(x, 0.4, z, 50, FIRE, { speed: R * 3, up: 5, size: 0.22, ttl: 0.7, grav: 4 });
-            this.particles.burst(x, 0.8, z, 20, [0x5a4a6a, 0x8a7a9a], { speed: 1.5, up: 4, size: 0.3, ttl: 1.1, grav: -1 });
-            this.waves.spawn(x, z, 0xffe03a, R, 0.45);
-            this.waves.spawn(x, z, 0xff3e1f, R * 1.3, 0.7);
-            this.rig.shake(0.6);
-            this.renderer.flash(0xffb03a, 0.35);
-            this.hitStop = Math.max(this.hitStop, 0.05);
-            this.sfx.play('boom', this.panOf(x));
-            vibrate('crate');
-            const mark = new THREE.Mesh(new THREE.CircleGeometry(R * 0.7, 10),
-                new THREE.MeshBasicMaterial({ color: this.theme.scorch, transparent: true, opacity: 0.45, depthWrite: false }));
-            mark.position.set(x, 0.014, z);
-            mark.rotation.set(-Math.PI / 2, 0, Math.random() * Math.PI);
-            this.world.root.add(mark);
-            this.world.arena.trash.push(mark.material, mark.geometry);
+            this.rec('barrel', { x, z, R });
+            this.barrelFx(x, z, R);
         });
 
         // Señuelo: una nube de humo al soltarlo (tapa el cambio) y un "¡puf!" al deshacerse
@@ -187,6 +184,27 @@ export const EffectsPart = {
         });
 
         this.bindBossEvents();
+    },
+
+
+    // Explosión de un barril de TNT (scorch: deja la quemadura; en la repetición ya está)
+    barrelFx(x, z, R, scorch = true) {
+        this.particles.burst(x, 0.4, z, 50, FIRE, { speed: R * 3, up: 5, size: 0.22, ttl: 0.7, grav: 4 });
+        this.particles.burst(x, 0.8, z, 20, [0x5a4a6a, 0x8a7a9a], { speed: 1.5, up: 4, size: 0.3, ttl: 1.1, grav: -1 });
+        this.waves.spawn(x, z, 0xffe03a, R, 0.45);
+        this.waves.spawn(x, z, 0xff3e1f, R * 1.3, 0.7);
+        this.rig.shake(0.6);
+        this.renderer.flash(0xffb03a, 0.35);
+        this.hitStop = Math.max(this.hitStop, 0.05);
+        this.sfx.play('boom', this.panOf(x));
+        if (!scorch) return;
+        vibrate('crate');
+        const mark = new THREE.Mesh(new THREE.CircleGeometry(R * 0.7, 10),
+            new THREE.MeshBasicMaterial({ color: this.theme.scorch, transparent: true, opacity: 0.45, depthWrite: false }));
+        mark.position.set(x, 0.014, z);
+        mark.rotation.set(-Math.PI / 2, 0, Math.random() * Math.PI);
+        this.world.root.add(mark);
+        this.world.arena.trash.push(mark.material, mark.geometry);
     },
 
     // Triple toque en tu barra de vida: gana la partida. Contra un jefe, primero fuerza su fase 2

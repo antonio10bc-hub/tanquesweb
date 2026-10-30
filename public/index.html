@@ -114,10 +114,12 @@
         <div id="stage-sub" class="stage-sub"></div>
     </div>
 
+    <!-- Repetición del golpe final: bandas de cine, marco de cámara, líneas de vídeo y carteles -->
     <div id="replay" class="replay hidden">
-        <div class="bar-top"></div>
-        <div class="bar-bottom"></div>
-        <div class="replay-tag" data-es="REPETICIÓN">REPLAY</div>
+        <div class="replay-scan"></div>
+        <div class="replay-frame"><i></i><i></i><i></i><i></i></div>
+        <div class="bar-top"><div class="replay-tag" data-es="REPETICIÓN">REPLAY</div><div class="replay-speed">&#9654;&#9654; x0.5</div></div>
+        <div class="bar-bottom"><div class="replay-skip"><span class="touch-only" data-es="TOCA PARA SALTAR">TAP TO SKIP</span><span class="pc-only" data-es="CLIC PARA SALTAR">CLICK TO SKIP</span></div></div>
     </div>
 
     <div id="joy" class="joy hidden">
@@ -146,6 +148,7 @@
                 <span class="word"><span class="ch">T</span><span class="ch">A</span><span class="ch">N</span><span class="ch">K</span><span class="ch ghost">-</span><span class="ch ghost">L</span><span class="ch ghost">E</span><span class="ch ghost">S</span><span class="ch ghost">S</span></span>
             </h1>
             <button id="btn-garage" class="items-btn garage-btn" aria-label="My tank" data-es-aria="Mi tanque">
+                <span id="garage-dot" class="notif-dot hidden" aria-hidden="true"></span>
                 <canvas width="112" height="112"></canvas>
                 <span data-es="MI TANQUE">MY TANK</span>
             </button>

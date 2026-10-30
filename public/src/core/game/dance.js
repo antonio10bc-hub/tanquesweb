@@ -11,6 +11,7 @@ const LEAD = 0.35; // la cámara se acerca antes de que empiece a bailar
 export const DancePart = {
     // Tras la repetición (o si no la hay): baile si alguien ha ganado, si no el final directo
     afterReplay() {
+        this.settleReplay();
         const tank = this.danceTank();
         if (!tank) return this.showEnd();
         this.setState('dance');

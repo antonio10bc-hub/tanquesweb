@@ -2,7 +2,7 @@ import { CONFIG } from '../../config.js';
 import { WORLD_BY_ID } from '../../content/index.js';
 import { Profile } from '../Profile.js';
 import { L } from '../I18n.js';
-import { CONFETTI, REPLAY, STARS } from './constants.js';
+import { CONFETTI, FIRE, REPLAY, STARS } from './constants.js';
 
 // Final de partida: cámara lenta, repetición del golpe final y pantalla de resultado (récords, estrellas, monedas).
 // Métodos de Game (se mezclan en su prototipo desde core/Game.js): "this" es la partida.
@@ -33,17 +33,57 @@ export const EndingPart = {
         this.particles.clear();
         this.replayLen = Math.min(REPLAY.length, this.recorder.duration);
         this.replayFrom = this.recorder.duration - this.replayLen;
-        this.replayAlive = this.world.tanks.map(() => true);
         this.replayNukes = new Map();
         this.recorder.rewind();
+        // Quién está vivo al empezar la repetición: los que ya habían caído antes no vuelven a
+        // explotar en el primer fotograma (antes salían explosiones donde no había nada)
+        this.recorder.apply(this.replayFrom, this.world, this.bullets);
+        this.recorder.rewind();
+        this.replayAlive = this.world.tanks.map((t) => t.alive);
+    },
+
+    // Fin de la repetición (o al saltarla): todo vuelve a como acabó la partida y se quita lo
+    // que estaba a medio vuelo, para que el baile y la pantalla final no tengan balas ni ataques
+    // congelados ni tanques muertos de pie
+    settleReplay() {
+        if (this.state === 'replay') this.recorder.apply(Infinity, this.world, this.bullets);
+        this.bullets.clear();
+        this.world.nukes.length = 0;
+        this.world.hazards.clear();
+        this.finishDrops();
+    },
+
+    // Efectos de los impactos grabados (la repetición los vuelve a pintar al pasar por ellos)
+    replayFx(n) {
+        const d = n.data;
+        switch (n.kind) {
+            case 'hazardBoom': return this.hazardBoomFx(d);
+            case 'hit':
+                if (d.damage > 1) this.particles.burst(d.x, 0.5, d.z, 30, FIRE, { speed: 5, up: 4, size: 0.2, ttl: 0.6, grav: -1 });
+                this.particles.burst(d.x, 0.5, d.z, 14, [d.color, d.body, d.accent, 0xffffff], { speed: 4, up: 3, size: 0.13, ttl: 0.5 });
+                this.rig.shake(0.25);
+                return this.sfx.play('hit', this.panOf(d.x));
+            case 'wall':
+                return this.particles.burst(d.x, 0.45, d.z, 6, [d.color, 0xffffff], { speed: 2.2, up: 1.5, size: 0.09, ttl: 0.3, grav: 9 });
+            case 'tile':
+                if (d.broken) {
+                    this.particles.burst(d.x, 0.5, d.z, 34, [d.top, d.side, 0xffffff], { speed: 4, up: 5, size: 0.2, ttl: 1, grav: 14 });
+                    this.waves.spawn(d.x, d.z, d.top, 1.8, 0.4);
+                    return this.sfx.play('crateBreak', this.panOf(d.x));
+                }
+                return this.particles.burst(d.x, 0.6, d.z, 6, [d.top, d.side], { speed: 2, up: 2.5, size: 0.1, ttl: 0.4, grav: 12 });
+            case 'barrel':
+                return this.barrelFx(d.x, d.z, d.R, false);
+            case 'shield':
+                this.particles.burst(d.x, 0.5, d.z, 24, [0x6fd0ff, 0xffffff, 0x3fa9ff], { speed: 4, up: 3, size: 0.12, ttl: 0.5, grav: 6 });
+                return this.sfx.play('shield', this.panOf(d.x));
+        }
     },
 
     updateReplay() {
         const t = Math.min(this.stateTime * REPLAY.speed, this.replayLen);
         // Los ataques del jefe también se repiten: los impactos vuelven a sonar y temblar
-        for (const n of this.recorder.apply(this.replayFrom + t, this.world, this.bullets)) {
-            if (n.kind === 'hazardBoom') this.hazardBoomFx(n.data);
-        }
+        for (const n of this.recorder.apply(this.replayFrom + t, this.world, this.bullets)) this.replayFx(n);
         const live = new Set(this.world.nukes.map((n) => n.id));
         for (const [id, n] of this.replayNukes) if (!live.has(id)) { this.nukeFx(n, false); this.replayNukes.delete(id); }
         for (const n of this.world.nukes) this.replayNukes.set(n.id, n);
@@ -100,6 +140,7 @@ export const EndingPart = {
         this.bullets.clear();
         this.world.nukes.length = 0;
         this.world.hazards.clear();
+        this.finishDrops();
         this.world.forceReveal = true;
         for (const t of this.world.tanks) t.alive = t.hp > 0;
         const p = this.world.player;

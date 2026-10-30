@@ -257,6 +257,7 @@ export class Hud {
         this.el.replay.classList.toggle('hidden', !on);
         this.el.pauseBtn.classList.toggle('hidden', on);
         this.replaying = on;
+        document.body.classList.toggle('replaying', on);
         this.el.stealth.classList.toggle('hidden', on);
         if (on) this.showHint(false);
     }

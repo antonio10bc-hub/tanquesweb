@@ -521,6 +521,7 @@ export class Game {
                 break;
             case 'outro':
                 this.stepWorld(simDt, false);
+                this.updateDrops(dt); // los que caían del cielo terminan de aterrizar
                 if (this.stateTime >= CONFIG.match.slowmoTime) this.startReplay();
                 break;
             case 'replay':

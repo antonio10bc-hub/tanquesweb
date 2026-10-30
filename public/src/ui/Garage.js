@@ -88,7 +88,14 @@ export class Garage {
             if (sx !== null && Math.abs(e.clientX - sx) > 30) this.step(e.clientX < sx ? 1 : -1);
             sx = null;
         });
-        Profile.onChange(() => this.refresh());
+        Profile.onChange(() => {
+            this.refresh();
+            this.updateDot();
+        });
+        this.dot = $('garage-dot');
+        // Quien ya jugaba antes del punto rojo empieza "al día" (sin aviso por lo que ya tenía)
+        if (!Profile.data.garageSeen) this.markSeen(false);
+        this.updateDot();
 
         this.isOpen = false;
         this.last = performance.now();
@@ -158,7 +165,32 @@ export class Garage {
         this.refresh();
     }
 
+    // Trofeos de jefe que ya tienes (gorros y pinturas de modo difícil)
+    trophies() {
+        return CATS.flatMap((c) => c.items).filter((s) => s.boss && Profile.owns(s.id)).map((s) => s.id);
+    }
+
+    // Lo que hay ahora queda "visto": el punto rojo se apaga hasta que pase algo nuevo
+    markSeen(save = true) {
+        Profile.data.garageSeen = { coins: Profile.coins, trophies: this.trophies() };
+        if (save) Profile.save();
+        else this.updateDot();
+    }
+
+    // Punto rojo en el botón de Mi Tanque: has ganado monedas suficientes para algo que antes
+    // no podías comprar, o has desbloqueado un trofeo de jefe nuevo. Al entrar se apaga.
+    updateDot() {
+        const seen = Profile.data.garageSeen;
+        if (!this.dot || !seen) return;
+        const coins = Profile.coins;
+        const affordable = coins > seen.coins && CATS.some((c) => c.items.some((s) =>
+            !s.boss && s.price > seen.coins && s.price <= coins && !Profile.owns(s.id)));
+        const trophy = this.trophies().some((id) => !seen.trophies.includes(id));
+        this.dot.classList.toggle('hidden', !(affordable || trophy));
+    }
+
     open() {
+        this.markSeen();
         this.sfx.unlock();
         this.sfx.play('ui');
         this.isOpen = true;
@@ -198,6 +230,7 @@ export class Garage {
             this.sfx.play('itemGone'); // trofeo de jefe: no se compra
         } else if (Profile.buy(s.id, s.price)) {
             Profile.equip(s.id, key);
+            this.markSeen(); // lo que te queda tras comprar es el nuevo punto de partida del aviso
             this.sfx.play('win');
             this.burst = 1;
             if (this.onBuy) this.onBuy(s, key);

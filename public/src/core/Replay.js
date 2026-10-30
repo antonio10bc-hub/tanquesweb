@@ -74,9 +74,15 @@ export class ReplayRecorder {
         const notes = [];
         for (let i = Math.max(0, this.cursor + 1); i <= idx; i++) if (this.cursor >= 0 || i === idx) notes.push(...this.frames[i].notes);
         this.cursor = Math.max(this.cursor, idx);
-        f.tanks.forEach((s, i) => {
-            const tank = world.tanks[i];
-            if (!tank) return;
+        world.tanks.forEach((tank, i) => {
+            const s = f.tanks[i];
+            // Los que aún no existían en ese momento (señuelos, drones, enemigos de una oleada
+            // posterior) no se ven: si no, aparecerían antes de tiempo en su sitio final
+            if (!s) {
+                tank.alive = false;
+                tank.moving = false;
+                return;
+            }
             for (const k of TANK_FIELDS) tank[k] = s[k];
             tank.alive = s.alive;
             tank.moving = s.moving;

@@ -14,6 +14,9 @@ const fresh = () => ({
     trail: 't_default',  // estela de bala equipada
     dance: 'd_rocket',   // baile de victoria equipado
     pet: 'pet_none',     // mascota equipada
+    // Lo que había la última vez que entraste en Mi Tanque (para el punto rojo del botón):
+    // monedas y trofeos de jefe que ya tenías. null: se toma lo que haya al cargar.
+    garageSeen: null,
     achievements: {},    // id -> fecha de desbloqueo
     tutorialDone: false, // el tutorial sale solo la primera vez
     unlocked: [],        // modos ya desbloqueados (core/Unlocks.js)

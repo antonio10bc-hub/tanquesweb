@@ -120,6 +120,16 @@ export const SurvivalPart = {
     },
 
     // Los enemigos de oleada caen del cielo; hasta aterrizar no se mueven.
+    // La partida acaba con enemigos aún cayendo del cielo: aterrizan ya (si no, se quedaban
+    // colgados en el aire durante la repetición y en la pantalla final)
+    finishDrops() {
+        for (const d of this.dropping) {
+            d.tank.model.dropY = 0;
+            d.tank.frozen = false;
+        }
+        this.dropping = [];
+    },
+
     updateDrops(dt) {
         for (let i = this.dropping.length - 1; i >= 0; i--) {
             const d = this.dropping[i];
