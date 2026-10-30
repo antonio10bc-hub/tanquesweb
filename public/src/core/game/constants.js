@@ -17,4 +17,4 @@ export const SCOUT = { at: 1.05, back: 2.3, extra: 1.5 };
 // Estrellas de cada jefe: ganar · perder como mucho 2 de vida · ganar en menos de "par" segundos
 export const STARS = { maxDamage: 2, par: 75, parHard: 95 };
 // Modo difícil: los jefes, más duros (vida, velocidad, frecuencia de especiales, esquiva)
-export const HARD = { hp: 1.5, speed: 1.12, every: 0.75, dodge: 0.15 };
+export const HARD = { hp: 1.35, speed: 1.08, every: 0.82, dodge: 0.1 };

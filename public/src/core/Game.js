@@ -16,6 +16,7 @@ import { CampaignMap } from '../ui/CampaignMap.js';
 import { drawMinimap } from '../ui/Minimap.js';
 import { Tutorial } from './Tutorial.js';
 import { waveSpecs } from '../content/survival.js';
+import { RIVALS, rivalFor } from '../content/rivals.js';
 import { BulletSystem } from '../world/Bullets.js';
 import { World } from '../world/World.js';
 import { EventBus } from './EventBus.js';
@@ -364,7 +365,22 @@ export class Game {
         this.hud.screen('play');
         this.hud.showReplay(false);
         this.hud.showHint(true);
-        if (!this.boss && this.mode !== 'tutorial') this.hud.stage(this.def.name, `${this.theme.name} · ${this.def.tagline}`);
+        // Partida rápida: rival fácil, normal o difícil (las primeras, de menos a más)
+        this.rival = null;
+        if (this.mode === 'quick') {
+            const id = this.forceRival || rivalFor(Profile.data.quickPlayed || 0);
+            Profile.data.quickPlayed = (Profile.data.quickPlayed || 0) + 1;
+            Profile.save();
+            const r = (this.rival = { id, ...RIVALS[id] });
+            for (const e of this.world.enemies()) {
+                if (e.brain && e.brain.p) Object.assign(e.brain.p, r.params);
+                if (r.hp) e.hp = e.maxHp = r.hp;
+            }
+        }
+        if (!this.boss && this.mode !== 'tutorial') {
+            const rival = this.rival ? ` · RIVAL: ${this.rival.name}` : '';
+            this.hud.stage(this.def.name, `${this.theme.name} · ${this.def.tagline}${rival}`);
+        }
         this.rig.zoomTarget = 1.6;
         this.rig.yawTarget = 0.7;
         this.rig.focus(this.world.player.x, this.world.player.z);

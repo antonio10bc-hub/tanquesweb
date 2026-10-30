@@ -93,7 +93,9 @@ export class CampaignMap {
     unlocked(i) {
         const w = WORLDS[i];
         if (w.secret) return WORLDS.every((o) => o.secret || this.isBeaten(o.id));
-        return i === 0 || this.isBeaten(WORLDS[i - 1].id);
+        // Abierto si ganaste al anterior (o a este: quien ganó jefes con el orden antiguo de los
+        // mundos no pierde nada al reordenarlos)
+        return i === 0 || this.isBeaten(WORLDS[i - 1].id) || this.isBeaten(w.id);
     }
 
     maxOpen() {

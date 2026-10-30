@@ -17,6 +17,7 @@ const fresh = () => ({
     // Lo que había la última vez que entraste en Mi Tanque (para el punto rojo del botón):
     // monedas y trofeos de jefe que ya tenías. null: se toma lo que haya al cargar.
     garageSeen: null,
+    quickPlayed: 0,      // partidas rápidas empezadas (las primeras eligen un rival más fácil)
     achievements: {},    // id -> fecha de desbloqueo
     tutorialDone: false, // el tutorial sale solo la primera vez
     unlocked: [],        // modos ya desbloqueados (core/Unlocks.js)

@@ -221,7 +221,8 @@ export function secretBossSpec() {
 
 // Composición de la oleada n en el escenario themeId.
 export function waveSpecs(n, themeId, max) {
-    const dodge = Math.min(0.2 + n * 0.05, 0.7);
+    // Algo más torpes que antes: esquivan menos y tardan más en llegar al máximo
+    const dodge = Math.min(0.15 + n * 0.035, 0.6);
     const spec = (type) => ({ type, def: enemyDef(type, themeId), brain: ENEMY_TYPES[type].brain, params: { dodge, ...ENEMY_TYPES[type].params } });
     if (n === SECRET_WAVE) return [secretBossSpec(), spec('armored'), spec('sniper'), spec('scout'), spec('scout')];
     // Cada 5 oleadas, el mini jefe (y, a partir de la 10, algo de escolta)
@@ -233,7 +234,8 @@ export function waveSpecs(n, themeId, max) {
     }
     const pool = Object.keys(ENEMY_TYPES).filter((id) => ENEMY_TYPES[id].from <= n);
     const fresh = pool.find((id) => ENEMY_TYPES[id].from === n && id !== 'grunt');
-    const count = Math.min(n, max);
+    // Un enemigo más cada dos oleadas (1, 2, 2, 3, —, 4, 4, 5...), no en cada una
+    const count = Math.min(Math.ceil((n + 1) / 2), max);
     const out = [];
     for (let i = 0; i < count; i++) {
         // El tipo que se estrena esta oleada sale seguro (solo uno, para presentarlo)
