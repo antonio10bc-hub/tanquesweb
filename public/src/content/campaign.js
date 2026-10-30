@@ -257,7 +257,7 @@ export const WORLDS = [
                 }
             },
         }),
-        attack: { id: 'ring', name: L('CANDY RAIN!', '¡LLUVIA DE CARAMELOS!'), cast: 0.8, cooldown: 6, count: 14, rings2: 3 },
+        attack: { id: 'ring', name: L('CANDY RAIN!', '¡LLUVIA DE CARAMELOS!'), cast: 0.8, cooldown: 6, count: 12, rings2: 3, lane: 2 },
         intro: L('SWEET OUTSIDE, MEAN INSIDE', 'DULCE POR FUERA, MALO POR DENTRO'),
         tell: L('IT FIRES CANDY IN EVERY DIRECTION', 'DISPARA CARAMELOS EN TODAS DIRECCIONES'),
         // Cajita de música de caramelo con arpegios brillantes; en la fase 2, subidón de azúcar

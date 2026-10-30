@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CONFIG } from '../config.js';
-import { LEVELS, THEMES, SURVIVAL, WORLD_BY_ID, getDef } from '../content/index.js';
+import { LEVELS, THEMES, SURVIVAL, WORLDS, WORLD_BY_ID, getDef } from '../content/index.js';
 import { RetroRenderer } from '../render/RetroRenderer.js';
 import { CameraRig } from '../render/CameraRig.js';
 import { Particles } from '../render/Particles.js';
@@ -30,7 +30,7 @@ import { Profile } from './Profile.js';
 import { vibrate } from './Haptics.js';
 import { clamp, pick } from './math.js';
 import { L } from './I18n.js';
-import { BOSS_INTRO, HARD, SCOUT, STAGE } from './game/constants.js';
+import { BOSS_INTRO, HARD, HARD_LATE, SCOUT, STAGE } from './game/constants.js';
 import { ViewPart } from './game/view.js';
 import { EffectsPart } from './game/effects.js';
 import { BossPart } from './game/boss.js';
@@ -320,10 +320,11 @@ export class Game {
         if (this.boss && this.hard) {
             // Modo difícil: aura maligna y jefe más duro
             const b = this.boss;
-            b.hp = b.maxHp = Math.round(b.maxHp * HARD.hp);
-            b.speed *= HARD.speed;
-            b.brain.every *= HARD.every;
-            b.brain.p.dodge = Math.min(0.8, b.brain.p.dodge + HARD.dodge);
+            const H = WORLDS.findIndex((w) => w.id === this.worldId) >= HARD_LATE.from ? HARD_LATE : HARD;
+            b.hp = b.maxHp = Math.round(b.maxHp * H.hp);
+            b.speed *= H.speed;
+            b.brain.every *= H.every;
+            b.brain.p.dodge = Math.min(0.8, b.brain.p.dodge + H.dodge);
             b.evil = true;
             b.model.setEvil(true);
         }

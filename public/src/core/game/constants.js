@@ -18,6 +18,8 @@ export const SCOUT = { at: 1.05, back: 2.3, extra: 1.5 };
 export const STARS = { maxDamage: 2, par: 75, parHard: 95 };
 // Modo difícil: los jefes, más duros (vida, velocidad, frecuencia de especiales, esquiva)
 export const HARD = { hp: 1.35, speed: 1.08, every: 0.82, dodge: 0.1 };
+// ...y para los cinco últimos jefes (los más duros de por sí), un empujón más suave
+export const HARD_LATE = { hp: 1.2, speed: 1.05, every: 0.9, dodge: 0.06, from: 4 };
 // Cartel de inicio (partida rápida, supervivencia, duelo): cuándo entra cada parte (nombre,
 // tema, rival) y cuánto se retrasa la cuenta atrás para que dé tiempo a leerlo
 export const STAGE = { beats: [0.15, 0.55, 1.0], extra: 0.7, extraRival: 1.4 };

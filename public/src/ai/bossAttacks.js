@@ -46,11 +46,16 @@ export const ATTACKS = {
     },
 
     ring(tank, world, a, brain, p2) {
+        // Pasillo seguro: en cada lluvia queda un hueco ancho hacia un lado al azar (el mismo en
+        // todos los anillos de la fase 2), para colarse leyendo el ataque y no por suerte
+        const gap = Math.random() * TAU, half = ((a.lane || 0) * TAU) / a.count / 2;
         const fire = (off, round) => {
             if (!tank.alive) return;
             const w = tank.weapon;
             for (let k = 0; k < a.count; k++) {
                 const yaw = off + (k / a.count) * TAU;
+                const d = Math.abs(((yaw - gap) % TAU + TAU * 1.5) % TAU - Math.PI);
+                if (d < half) continue;
                 world.bullets.spawn(tank, tank.x + Math.sin(yaw) * w.muzzle, tank.z + Math.cos(yaw) * w.muzzle, yaw, w, 1, 0, CANDY[(k + round) % CANDY.length]);
             }
             tank.reveal = Math.max(tank.reveal, 1);
