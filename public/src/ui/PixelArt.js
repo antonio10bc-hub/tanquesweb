@@ -174,6 +174,50 @@ function spriteUrl({ rows, pal }) {
     return `url(${cv.toDataURL()})`;
 }
 
+// Rival de la partida rápida: un tanque visto de lado, más rabioso y con más llamas cuanto
+// más difícil (fácil: tranquilo y sin llamas; normal: una llama; difícil: tres llamaradas).
+// frame 0/1: dos fotogramas de las llamas para que parpadeen.
+const RIVAL_TANK = [
+    '......KKKKKK........',
+    '.....KAAAAAAK.......',
+    '.....KBWKBWBKKKKKKK.',
+    '.....KBBBBBBKGGGGGGK',
+    '.....KBBBBBBKKKKKKK.',
+    '..KKKKKKKKKKKKKKKK..',
+    '.KBBBBBBBBBBBBBBBBK.',
+    '.KBAAAAAAAAAAAAAABK.',
+    '.KKKKKKKKKKKKKKKKKK.',
+    'KDDDDDDDDDDDDDDDDDDK',
+    'KDADDADDADDADDADDADK',
+    '.KKKKKKKKKKKKKKKKKK.',
+];
+const RIVAL_FLAMES = {
+    easy: [['....................', '....................', '....................', '....................', '....................', '....................'], null],
+    normal: [
+        ['.........R..........', '........RO..........', '........ROR.........', '.......ROYOR........', '.......RYYYR........', '........KKK.........'],
+        ['..........R.........', '.........OR.........', '........ROR.........', '.......ROYOR........', '.......RYYOR........', '........KKK.........'],
+    ],
+    hard: [
+        ['..R.......R......R..', '.ROR.....ROR....RO..', '.ROYR...ROYOR..ROYR.', 'ROYYOR.ROYYYOR.RYYOR', 'RYYYYR.RYYWYYR.RYYYR', '.KKKK...KKKKK...KKK.'],
+        ['...R.....R........R.', '..ROR...ROR.....ROR.', '.RYOR..ROYOR...RYOR.', 'ROYYOR.ROYWYOR.ROYYR', 'RYYYYR.RYYYYYR.RYYYR', '.KKKK...KKKKK...KKK.'],
+    ],
+};
+const RIVAL_PAL = {
+    easy: { B: '#7dff4a', A: '#d8ff9a' },
+    normal: { B: '#ffd23f', A: '#ff9a1f' },
+    hard: { B: '#ff3e3e', A: '#ffb08a' },
+};
+function rivalSprite(id, frame) {
+    const f = RIVAL_FLAMES[id], flames = f[frame] || f[0];
+    let tank = RIVAL_TANK;
+    // El difícil frunce el ceño: los ojos se vuelven rendijas enfadadas
+    if (id === 'hard') tank = tank.map((r, i) => (i === 1 ? '.....KKAAAAKK.......' : i === 2 ? '.....KBKWKWBKKKKKKK.' : r));
+    return spriteUrl({
+        rows: [...flames, ...tank],
+        pal: { K: INK, W: '#ffffff', G: '#9a9aac', D: '#3b2d6b', R: '#ff3e1f', O: '#ff9a1f', Y: '#ffe03a', ...RIVAL_PAL[id] },
+    });
+}
+
 // Deja los sprites como variables CSS (--px-coin, --px-trophy...) para usarlos en el CSS.
 export function installPixelSprites() {
     const root = document.documentElement.style;
@@ -182,5 +226,9 @@ export function installPixelSprites() {
     root.setProperty('--px-coin', `url(${cv.toDataURL()})`);
     for (const [name, def] of Object.entries(SPRITES)) {
         root.setProperty(`--px-${name.replace(/[A-Z]/, (m) => '-' + m.toLowerCase())}`, spriteUrl(def));
+    }
+    for (const id of ['easy', 'normal', 'hard']) {
+        root.setProperty(`--px-rival-${id}`, rivalSprite(id, 0));
+        root.setProperty(`--px-rival-${id}-b`, rivalSprite(id, 1));
     }
 }

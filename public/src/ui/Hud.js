@@ -262,13 +262,16 @@ export class Hud {
         if (on) this.showHint(false);
     }
 
-    stage(name, sub) {
+    // Cartel de inicio de partida: nombre del escenario, tema y (en la partida rápida) el rival
+    // con su icono: rival = { id: 'easy' | 'normal' | 'hard', name } o null
+    stage(name, sub, rival = null) {
         const s = this.el.stage;
         this.el.stageName.textContent = name;
         this.el.stageSub.textContent = sub;
+        document.getElementById('stage-rival-name').textContent = rival ? rival.name : '';
         s.className = 'stage';
         void s.offsetWidth;
-        s.className = 'stage show';
+        s.className = `stage show${rival ? ` has-rival rival-${rival.id}` : ''}`;
     }
 
     setNames(player, enemy) {

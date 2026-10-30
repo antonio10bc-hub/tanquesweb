@@ -30,7 +30,7 @@ import { Profile } from './Profile.js';
 import { vibrate } from './Haptics.js';
 import { clamp, pick } from './math.js';
 import { L } from './I18n.js';
-import { BOSS_INTRO, HARD, SCOUT } from './game/constants.js';
+import { BOSS_INTRO, HARD, SCOUT, STAGE } from './game/constants.js';
 import { ViewPart } from './game/view.js';
 import { EffectsPart } from './game/effects.js';
 import { BossPart } from './game/boss.js';
@@ -377,9 +377,12 @@ export class Game {
                 if (r.hp) e.hp = e.maxHp = r.hp;
             }
         }
+        // Cartel de inicio (menos texto: escenario, tema y rival) y un poco más de intro para verlo
+        this.stageExtra = 0;
         if (!this.boss && this.mode !== 'tutorial') {
-            const rival = this.rival ? ` · RIVAL: ${this.rival.name}` : '';
-            this.hud.stage(this.def.name, `${this.theme.name} · ${this.def.tagline}${rival}`);
+            this.hud.stage(this.def.name, this.theme.name, this.rival);
+            this.stageExtra = this.rival ? STAGE.extraRival : STAGE.extra;
+            this.stageBeat = 0;
         }
         this.rig.zoomTarget = 1.6;
         this.rig.yawTarget = 0.7;
@@ -600,7 +603,17 @@ export class Game {
         const m = CONFIG.match;
         const t = this.stateTime;
         // Jefes: antes de la cuenta atrás, su presentación
-        const extra = this.boss ? BOSS_INTRO.extra : this.scout ? SCOUT.extra : 0;
+        const extra = this.boss ? BOSS_INTRO.extra : Math.max(this.scout ? SCOUT.extra : 0, this.stageExtra || 0);
+        // Cartel de inicio: un golpe de sonido por cada parte que entra (y el rival, según cuánto pica)
+        if (!this.boss && this.stageExtra) {
+            const beats = this.rival ? STAGE.beats : STAGE.beats.slice(0, 2);
+            while (this.stageBeat < beats.length && t >= beats[this.stageBeat]) {
+                const k = this.stageBeat++;
+                if (k < 2) this.sfx.play('tick');
+                else this.sfx.play(this.rival.id === 'hard' ? 'roar' : this.rival.id === 'normal' ? 'crash' : 'boing');
+                if (k === 2 && this.rival.id === 'hard') this.rig.shake(0.35);
+            }
+        }
         if (this.boss) this.updateBossIntro(t);
         // Rival fuera de la pantalla: al llegar la cámara, su "!" y un anillo
         if (this.scout && !this.scout.shown && t >= SCOUT.at + 0.35) {
