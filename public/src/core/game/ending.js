@@ -15,6 +15,7 @@ export const EndingPart = {
         // si no la repetición acabaría justo antes de que la bala llegue y sin explosión.
         this.recorder.record(0, this.world, this.bullets, true);
         this.result = win;
+        this.hud.holdAchievements(true);
         this.setState('outro');
         this.timeScale = CONFIG.match.slowmo;
         this.setInputs(false);
@@ -134,6 +135,7 @@ export const EndingPart = {
     showEnd() {
         const win = this.result;
         this.setState('end');
+        this.hud.holdAchievements(false);
         this.timeScale = 1;
         this.hud.showReplay(false);
         this.hud.showHint(false);

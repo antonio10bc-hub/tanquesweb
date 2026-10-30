@@ -199,6 +199,7 @@ export class Game {
 
     // seed / themeId: opcionales, para repetir un mapa concreto (game.world.seed, game.themeId).
     load(levelId = this.randomLevel(), seed, themeId) {
+        this.hud.holdAchievements(false); // por si se sale a mitad del final de una partida
         if (this.world) this.world.dispose();
         this.dance = null;
         this.landing = null;

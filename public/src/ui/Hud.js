@@ -111,7 +111,7 @@ export class Hud {
                 resolve();
                 // Ya con el menú final en pantalla, bajan los logros pendientes
                 this.achHold = false;
-                setTimeout(() => !this.achBusy && this.nextAchievement(), 500);
+                setTimeout(() => !this.achBusy && !this.achMatchHold && this.nextAchievement(), 500);
             };
             reward.onpointerdown = () => {
                 land();
@@ -177,7 +177,16 @@ export class Hud {
     achievement(name, desc, id) {
         this.achQueue = this.achQueue || [];
         this.achQueue.push({ name, desc, id });
-        if (!this.achBusy && !this.achHold) this.nextAchievement();
+        // Un instante después: si el golpe que da el logro también acaba la partida, para
+        // entonces ya está retenido y no sale encima de la repetición
+        setTimeout(() => !this.achBusy && !this.achHold && !this.achMatchHold && this.nextAchievement(), 0);
+    }
+
+    // Final de partida: los logros que salten durante la cámara lenta, la repetición y el baile
+    // esperan a la pantalla final (no tapan la repetición)
+    holdAchievements(on) {
+        this.achMatchHold = on;
+        if (!on && !this.achHold && !this.achBusy && this.achQueue && this.achQueue.length) setTimeout(() => !this.achBusy && !this.achHold && this.nextAchievement(), 600);
     }
 
     nextAchievement() {
