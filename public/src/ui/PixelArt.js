@@ -126,6 +126,11 @@ const SPRITES = {
         rows: ['...KKKK...', '..KWWWWK..', '.KWK..KWK.', '.KWK..KWK.', 'KKKKKKKKKK', 'KYYYYYYYOK', 'KYYYKKYYOK', 'KYYYKKYYOK', 'KYYYYKYYOK', 'KOOOOOOOOK', 'KKKKKKKKKK'],
         pal: { K: INK, W: '#e2dcff', Y: '#ffd23f', O: '#e6a400' },
     },
+    // El mismo candado, abierto (el arco levantado y girado hacia fuera)
+    lockOpen: {
+        rows: ['...KKKK...', '..KWWWWK..', '..KWK.KWK.', '.......KWK', '.......KWK', 'KKKKKKKKKK', 'KYYYYYYYOK', 'KYYYKKYYOK', 'KYYYKKYYOK', 'KYYYYKYYOK', 'KOOOOOOOOK', 'KKKKKKKKKK'],
+        pal: { K: INK, W: '#e2dcff', Y: '#ffd23f', O: '#e6a400' },
+    },
     // Panel lateral del ordenador: bala del cargador y objetos que llevas
     pwBullet: {
         rows: ['..KKK...', '.KWYYK..', '.KYYYK..', '.KYYOK..', '.KYYOK..', 'KKKKKKK.', 'KOOOOOK.', 'KOOOOOK.', 'KKKKKKK.'],

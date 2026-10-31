@@ -34,6 +34,8 @@ export const UNLOCKS = {
 
 // ¿Está abierto? (y si acaba de cumplirse, se apunta para siempre)
 export function isUnlocked(id) {
+    // Cerrado a mano desde el panel de depuración (aunque ya se cumpla lo suyo)
+    if ((Profile.data.devLocked || []).includes(id)) return false;
     const list = (Profile.data.unlocked ||= []);
     if (list.includes(id)) return true;
     const u = UNLOCKS[id], [have, need] = u.progress();
@@ -41,4 +43,14 @@ export function isUnlocked(id) {
     list.push(id);
     Profile.save();
     return true;
+}
+
+// Panel de depuración: abrir o cerrar un modo a mano
+export function forceUnlock(id, open) {
+    const d = Profile.data;
+    d.devLocked = (d.devLocked || []).filter((x) => x !== id);
+    d.unlocked = (d.unlocked || []).filter((x) => x !== id);
+    if (open) d.unlocked.push(id);
+    else d.devLocked.push(id);
+    Profile.save();
 }

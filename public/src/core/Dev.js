@@ -28,3 +28,22 @@ const state = read();
 export const DEV = state.on;
 // true/false si esta carga acaba de encenderlas o apagarlas (para avisar), si no null
 export const DEV_CHANGED = state.changed;
+
+// Panel de depuración: todo gratis en Mi Tanque (solo en el dispositivo del autor)
+const FREE_KEY = 'tankless.devfree';
+export function devFree() {
+    if (!DEV) return false;
+    try {
+        return localStorage.getItem(FREE_KEY) === '1';
+    } catch {
+        return false;
+    }
+}
+export function setDevFree(on) {
+    try {
+        if (on) localStorage.setItem(FREE_KEY, '1');
+        else localStorage.removeItem(FREE_KEY);
+    } catch {
+        /* sin almacenamiento */
+    }
+}

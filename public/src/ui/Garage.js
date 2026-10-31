@@ -9,6 +9,7 @@ import { PETS, PET_BY_ID } from '../content/pets.js';
 import { danceTime, dancePose, danceFx, newPose } from '../render/dance.js';
 import { Pet } from '../render/Pet.js';
 import { Profile } from '../core/Profile.js';
+import { devFree } from '../core/Dev.js';
 import { L } from '../core/I18n.js';
 
 // "Mi Tanque": tu tanque en 3D sobre un pedestal. Cinco pestañas (gorros, pinturas, estelas de
@@ -184,7 +185,7 @@ export class Garage {
         if (!this.dot || !seen) return;
         const coins = Profile.coins;
         const affordable = coins > seen.coins && CATS.some((c) => c.items.some((s) =>
-            !s.boss && s.price > seen.coins && s.price <= coins && !Profile.owns(s.id)));
+            !s.boss && this.price(s) > seen.coins && this.price(s) <= coins && !Profile.owns(s.id)));
         const trophy = this.trophies().some((id) => !seen.trophies.includes(id));
         this.dot.classList.toggle('hidden', !(affordable || trophy));
     }
@@ -228,7 +229,7 @@ export class Garage {
             }
         } else if (s.boss) {
             this.sfx.play('itemGone'); // trofeo de jefe: no se compra
-        } else if (Profile.buy(s.id, s.price)) {
+        } else if (Profile.buy(s.id, this.price(s))) {
             Profile.equip(s.id, key);
             this.markSeen(); // lo que te queda tras comprar es el nuevo punto de partida del aviso
             this.sfx.play('win');
@@ -242,8 +243,13 @@ export class Garage {
         this.refresh();
     }
 
+    // Precio de un objeto (0 si el panel de depuración lo ha puesto todo gratis)
+    price(s) {
+        return devFree() ? 0 : s.price;
+    }
+
     refresh() {
-        const s = this.skin, el = this.el;
+        const s = { ...this.skin, price: this.price(this.skin) }, el = this.el;
         el.name.textContent = s.name;
         // Los trofeos de los jefes van con su marco especial
         el.screen.classList.toggle('boss-item', !!s.boss);

@@ -43,6 +43,12 @@ export class KeyNav {
     }
 
     key(e) {
+        // Interfaz bloqueada (se está abriendo un modo): ninguna tecla hace nada hasta que acabe
+        if (document.body.classList.contains('ui-blocked')) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            return;
+        }
         const dir = DIRS[e.code], press = e.code === 'Enter' || e.code === 'Space' || e.code === 'NumpadEnter';
         if (!dir && !press) return;
         const screen = this.screen();
