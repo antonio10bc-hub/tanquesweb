@@ -4,7 +4,7 @@
 // copia); sin conexión, o si la red tarda demasiado, se usa la copia guardada.
 // La primera visita guarda la estructura básica al instalarse, y la página le envía la
 // lista de todo lo que ha cargado (módulos, iconos...) para que también lo guarde.
-const CACHE = 'tanques-v39';
+const CACHE = 'tanques-v40';
 const SHELL = [
     './',
     './index.html',
@@ -17,6 +17,7 @@ const SHELL = [
     './icons/icon-512.png',
     './icons/apple-touch-icon.png',
     './icons/favicon-64.png',
+    './img/loader-tank.png',
 ];
 const NETWORK_TIMEOUT = 4000;
 

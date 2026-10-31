@@ -1498,51 +1498,24 @@ body.replaying #view { filter: saturate(.55) contrast(1.08); }
 .ld-speed i:nth-child(5) { top: 72%; animation-delay: -.2s; }
 @keyframes ldLine { to { transform: translateX(calc(-100vw - 200px)); } }
 
-/* El tanque: 70x36 píxeles de dibujo a 5 px (4 en pantallas pequeñas), con las ruedas en el suelo */
+/* El tanque: hoja de 10 fotogramas de 300x170 (fogonazo y humo incluidos), a 2 px por píxel
+   (1,25 en móvil), con las orugas sobre el suelo. Tiembla un poco al disparar. */
 .ld-hero {
     position: absolute; left: 50%; top: calc(50% + 14px);
-    width: calc(71px * var(--ld-px)); height: calc(36px * var(--ld-px));
-    transform: translate(-58%, -94%);
-    --ld-px: 6;
-    animation: ldShake 1.6s steps(1) infinite;
+    --ld-px: 2;
+    width: calc(300px * var(--ld-px)); height: calc(170px * var(--ld-px));
+    transform: translate(-50%, -90%);
+    animation: ldShake 1.25s steps(1) infinite;
 }
-@media (max-width: 480px) { .ld-hero { --ld-px: 3.6; } }
-.ld-hero-tank { width: 100%; height: 100%; overflow: visible; display: block; }
-.ld-body { animation: ldBump .24s steps(1) infinite; }
-@keyframes ldBump { 50% { transform: translateY(-1px); } }
-.ld-t2 { opacity: 0; }
-.ld-t1 { animation: ldWheel .16s steps(1) infinite; }
-.ld-t2 { animation: ldWheel .16s steps(1) infinite reverse; }
-@keyframes ldWheel { 0% { opacity: 1; } 50% { opacity: 0; } }
-.ld-turret { animation: ldRecoil 1.6s steps(1) infinite; }
-@keyframes ldRecoil { 0% { transform: translateX(-3px); } 6% { transform: translateX(-2px); } 12% { transform: translateX(-1px); } 18%, 100% { transform: none; } }
-.ld-flash { opacity: 0; animation: ldFlash 1.6s steps(1) infinite; }
-@keyframes ldFlash { 0% { opacity: 1; } 8%, 100% { opacity: 0; } }
-.ld-flag { animation: ldFlag .3s steps(1) infinite; transform-origin: 16px 1px; }
-@keyframes ldFlag { 50% { transform: scaleY(.5); } }
-.ld-bullet { animation: ldBullet 1.6s steps(12) infinite; }
-@keyframes ldBullet { 0% { transform: translateX(4px); opacity: 1; } 45% { transform: translateX(180px); opacity: 1; } 46%, 100% { transform: translateX(180px); opacity: 0; } }
-@keyframes ldShake { 0% { transform: translate(-58%, -94%) translate(-3px, 2px); } 4% { transform: translate(-58%, -94%) translate(2px, -1px); } 8%, 100% { transform: translate(-58%, -94%); } }
-/* Humo del disparo y polvo de las orugas: cuadrados que crecen y se apagan */
-.ld-smoke i, .ld-dust i { position: absolute; background: #e2dcff; }
-.ld-smoke i {
-    left: calc(60px * var(--ld-px)); top: calc(10px * var(--ld-px));
-    width: calc(4px * var(--ld-px)); height: calc(4px * var(--ld-px));
-    animation: ldSmoke 1.6s steps(6) infinite; opacity: 0;
+@media (max-width: 640px) { .ld-hero { --ld-px: 1.25; } }
+.ld-sprite {
+    width: 100%; height: 100%;
+    background: url(img/loader-tank.png) 0 0 / 1000% 100% no-repeat;
+    image-rendering: pixelated;
+    animation: ldFrames 1.25s steps(10) infinite;
 }
-.ld-smoke i:nth-child(2) { animation-name: ldSmoke2; }
-.ld-smoke i:nth-child(3) { animation-name: ldSmoke3; }
-@keyframes ldSmoke { 0% { opacity: .9; transform: none; } 40% { opacity: 0; transform: translate(-10px, -26px) scale(2.2); } 100% { opacity: 0; } }
-@keyframes ldSmoke2 { 0% { opacity: .9; transform: none; } 40% { opacity: 0; transform: translate(14px, -18px) scale(1.8); } 100% { opacity: 0; } }
-@keyframes ldSmoke3 { 0% { opacity: .8; transform: none; } 40% { opacity: 0; transform: translate(-2px, 14px) scale(1.5); } 100% { opacity: 0; } }
-.ld-dust i {
-    left: calc(4px * var(--ld-px)); top: calc(28px * var(--ld-px));
-    width: calc(3px * var(--ld-px)); height: calc(3px * var(--ld-px));
-    background: #8e86a8; animation: ldDust .6s steps(5) infinite; opacity: 0;
-}
-.ld-dust i:nth-child(2) { animation-delay: .2s; top: calc(30px * var(--ld-px)); }
-.ld-dust i:nth-child(3) { animation-delay: .4s; top: calc(26px * var(--ld-px)); }
-@keyframes ldDust { 0% { opacity: .9; transform: none; } 100% { opacity: 0; transform: translate(-60px, -14px) scale(2); } }
+@keyframes ldFrames { to { background-position: calc(-3000px * var(--ld-px)) 0; } }
+@keyframes ldShake { 0% { transform: translate(-50%, -90%) translate(-4px, 3px); } 10% { transform: translate(-50%, -90%) translate(3px, -1px); } 20%, 100% { transform: translate(-50%, -90%); } }
 
 /* Abajo: la barra a todo el ancho (con tope) y el porcentaje */
 .ld-foot { position: relative; z-index: 2; width: min(520px, 100%); display: flex; align-items: center; gap: 12px; }
