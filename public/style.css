@@ -697,8 +697,8 @@ html, body {
 .ach.show { animation: achDrop 3.4s forwards; }
 @keyframes achDrop {
     0% { transform: translate(-50%, -110%); animation-timing-function: steps(4, jump-none); }
-    10% { transform: translate(-50%, 10px); animation-timing-function: steps(1); }
-    13%, 88% { transform: translate(-50%, 0); animation-timing-function: steps(2, jump-none); }
+    10% { transform: translate(-50%, calc(var(--ach-y, 0px) + 10px)); animation-timing-function: steps(1); }
+    13%, 88% { transform: translate(-50%, var(--ach-y, 0px)); animation-timing-function: steps(2, jump-none); }
     93%, 100% { transform: translate(-50%, -110%); }
 }
 .ach-icon {
@@ -1981,8 +1981,10 @@ html.pc .legend-badge { grid-area: badge; }
     animation: dotPop 1.2s steps(2) infinite;
 }
 @keyframes dotPop { 50% { transform: translateY(-3px); } }
-/* En la repetición, el aviso de logro baja por debajo de la banda de cine (no tapa el cartel) */
-body.replaying .ach { top: 11vh; }
+/* En la repetición, el aviso de logro baja por debajo de la banda de cine (no tapa el cartel).
+   Solo cambia hasta dónde baja: escondido sigue arriba del todo, fuera de la pantalla (con
+   "top" se quedaba asomando durante toda la repetición aunque no hubiera ningún logro) */
+body.replaying .ach { --ach-y: 11vh; }
 
 /* ---------- APERTURA DE UN MODO ----------
    El menú no responde mientras dura; el candado tiembla, se abre y sale volando; el botón
