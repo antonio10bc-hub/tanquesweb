@@ -2020,3 +2020,6 @@ body.ui-blocked .menu, body.ui-blocked .menu * { pointer-events: none !important
 .dbg-row > div { display: flex; gap: 6px; }
 .dbg-btn { font-family: var(--font); font-size: 9px; color: var(--ink); background: #e2dcff; border: 2px solid var(--ink); box-shadow: 0 3px 0 var(--ink); padding: 5px 7px; cursor: pointer; }
 .dbg-btn.on { background: #7dff4a; }
+.dbg-btn.dbg-danger { background: #ff2a3a; color: #fff; }
+.dbg-btn.dbg-danger.armed { background: var(--yellow); color: var(--ink); animation: dbgArm .3s steps(1) infinite; }
+@keyframes dbgArm { 50% { transform: translateY(-2px); } }

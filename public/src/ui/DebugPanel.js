@@ -3,6 +3,7 @@
 //   Modos: abrir o cerrar cada uno (o todos) y ver su animación de desbloqueo
 //   Tienda: todo gratis, monedas, todos los objetos o ninguno
 //   Campaña: completarla (también el modo difícil) o empezarla de cero
+//   Progreso: borrarlo todo (pulsando dos veces, como en Ajustes) y recargar
 import { UNLOCKS, isUnlocked, forceUnlock } from '../core/Unlocks.js';
 import { devFree, setDevFree } from '../core/Dev.js';
 import { Profile } from '../core/Profile.js';
@@ -70,6 +71,18 @@ export class DebugPanel {
                 Profile.save();
                 break;
             }
+            // Dos pulsaciones: la primera solo arma el botón unos segundos
+            case 'wipe':
+                if (!this.armed) {
+                    this.armed = true;
+                    this.sfx.play('warn');
+                    clearTimeout(this.armTimer);
+                    this.armTimer = setTimeout(() => { this.armed = false; this.render(); }, 3000);
+                    break;
+                }
+                Profile.reset();
+                location.reload();
+                return;
             case 'noCampaign':
                 Profile.data.campaign = { beaten: [], stars: {}, hard: { beaten: [], stars: {} } };
                 Profile.save();
@@ -93,6 +106,8 @@ export class DebugPanel {
             ${row(`${L('COINS', 'MONEDAS')}: ${Profile.coins}`, b('coins', '+100'))}
             ${row(L('ITEMS', 'OBJETOS'), b('items', L('ALL', 'TODOS')) + b('noItems', L('NONE', 'NINGUNO')))}
             <h3>${L('CAMPAIGN', 'CAMPAÑA')}</h3>
-            ${row(L('BOSSES', 'JEFES'), b('campaign', L('ALL BEATEN', 'TODOS')) + b('noCampaign', L('RESET', 'DE CERO')))}`;
+            ${row(L('BOSSES', 'JEFES'), b('campaign', L('ALL BEATEN', 'TODOS')) + b('noCampaign', L('RESET', 'DE CERO')))}
+            <h3>${L('PROGRESS', 'PROGRESO')}</h3>
+            ${row(L('EVERYTHING', 'TODO'), `<button class="dbg-btn dbg-danger${this.armed ? ' armed' : ''}" data-act="wipe">${this.armed ? L('SURE? AGAIN', '¿SEGURO? OTRA VEZ') : L('DELETE', 'BORRAR')}</button>`)}`;
     }
 }
