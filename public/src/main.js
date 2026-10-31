@@ -16,7 +16,7 @@ import { Profile } from './core/Profile.js';
 import { Achievements, achievementCount } from './core/Achievements.js';
 import { trackGame, trackGarage } from './core/GameAnalytics.js';
 import { L, applyHtmlTexts, switchLang } from './core/I18n.js';
-import { DEV, DEV_CHANGED } from './core/Dev.js';
+import { DEV_CHANGED } from './core/Dev.js';
 import { DebugPanel } from './ui/DebugPanel.js';
 import { Settings } from './core/Settings.js';
 import { analyticsAsk, setAnalyticsConsent } from './core/Analytics.js';
@@ -54,7 +54,7 @@ hud.onPlay = () => {
 };
 // Modos bloqueados hasta cumplir lo suyo (core/Unlocks.js): al pulsarlos dicen qué falta
 const locks = new ModeLocks(hud, sfx);
-if (DEV) new DebugPanel({ locks, sfx, hud });
+new DebugPanel({ locks, sfx, hud });
 document.getElementById('btn-campaign').addEventListener('click', () => {
     sfx.unlock();
     if (locks.deny('campaign')) return;

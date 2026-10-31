@@ -1,4 +1,4 @@
-// Panel de depuración (solo en el dispositivo del autor, core/Dev.js): un botón en la esquina de
+// Panel de depuración (para todo el mundo): un botón en la esquina de
 // abajo a la derecha del menú abre la lista de herramientas.
 //   Modos: abrir o cerrar cada uno (o todos) y ver su animación de desbloqueo
 //   Tienda: todo gratis, monedas, todos los objetos o ninguno

@@ -1428,6 +1428,8 @@ body.replaying #view { filter: saturate(.55) contrast(1.08); }
 }
 
 /* ---------- PANTALLA DE CARGA ---------- */
+/* Logo arriba, la escena en el centro (sol a rayas, colinas, líneas de velocidad, suelo que corre
+   y el tanque disparando cada 1,6 s) y la barra abajo. Todo a saltos (steps) como un sprite. */
 .loader {
     position: fixed;
     inset: 0;
@@ -1435,51 +1437,132 @@ body.replaying #view { filter: saturate(.55) contrast(1.08); }
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 34px;
-    /* Algo más claro que la tinta: así se ve el contorno del tanquecito */
-    background: #3b2d6b;
+    justify-content: space-between;
+    padding: max(28px, env(safe-area-inset-top)) 16px calc(max(22px, env(safe-area-inset-bottom)) + 14px);
+    background: #2a1f4f;
+    overflow: hidden;
 }
 .loader.done { animation: ldOut .45s steps(4) forwards; }
 @keyframes ldOut { to { opacity: 0; visibility: hidden; } }
-.ld-logo { font-size: clamp(26px, 9vw, 44px); white-space: nowrap; }
+.ld-logo { font-size: clamp(26px, 9vw, 52px); white-space: nowrap; position: relative; z-index: 2; }
 .ld-logo span {
     display: inline-block;
     color: var(--yellow);
-    text-shadow: 0 4px 0 #000, 3px 0 0 #000, -3px 0 0 #000, 0 -3px 0 #000;
+    text-shadow: 0 5px 0 #000, 3px 0 0 #000, -3px 0 0 #000, 0 -3px 0 #000;
     animation: ldHop .9s steps(2) infinite;
 }
 .ld-logo span:nth-child(4n+2) { color: var(--pink); animation-delay: .15s; }
 .ld-logo span:nth-child(4n+3) { color: var(--cyan); animation-delay: .3s; }
 .ld-logo span:nth-child(4n+4) { color: var(--orange); animation-delay: .45s; }
-.ld-logo span.g { color: #8e86a8; }
+.ld-logo span.g { color: #e2dcff; }
 @keyframes ldHop { 50% { transform: translateY(-4px); } }
-.ld-road { position: relative; width: min(260px, 70vw); padding-top: 44px; }
-.ld-rider { position: absolute; top: 0; left: 0; width: 88px; height: 44px; transform: translateX(-50%); }
-.ld-tank { width: 100%; height: 100%; animation: ldBump .2s steps(1) infinite; }
-@keyframes ldBump { 50% { transform: translateY(-2px); } }
-.ld-f2 { opacity: 0; }
-.ld-tank .ld-f1 { animation: ldWheel .2s steps(1) infinite; }
-.ld-tank .ld-f2 { animation: ldWheel .2s steps(1) infinite reverse; }
+
+/* La escena: ocupa todo el ancho, el tanque centrado encima del suelo */
+.ld-scene { position: absolute; inset: 0; pointer-events: none; }
+.ld-sun {
+    position: absolute; left: 50%; top: 50%;
+    width: min(440px, 80vw); aspect-ratio: 1; transform: translate(-50%, -55%);
+    border-radius: 50%;
+    background:
+        repeating-linear-gradient(180deg, transparent 0 18px, #2a1f4f 18px 26px) 0 100% / 100% 58% no-repeat,
+        linear-gradient(180deg, #ffe03a 0 30%, #ff8a1e 30% 58%, #ff3e8e 58%);
+}
+.ld-hills {
+    position: absolute; left: 0; right: 0; top: calc(50% + 14px); height: 40px; transform: translateY(-100%);
+    background:
+        linear-gradient(135deg, transparent 50%, #3b2d6b 50%) 0 100% / 40px 40px repeat-x,
+        linear-gradient(225deg, transparent 50%, #3b2d6b 50%) 20px 100% / 40px 40px repeat-x;
+    animation: ldScroll 6s steps(60) infinite;
+}
+.ld-ground {
+    position: absolute; left: 0; right: 0; top: calc(50% + 14px); bottom: 0;
+    background:
+        linear-gradient(#1b0b33 0 6px, transparent 6px) 0 0 / 100% 100% no-repeat,
+        repeating-linear-gradient(90deg, #ffe03a 0 26px, transparent 26px 64px) 0 22px / 100% 6px no-repeat,
+        repeating-linear-gradient(90deg, #4a3a85 0 6px, transparent 6px 36px) 0 52px / 100% 4px no-repeat,
+        repeating-linear-gradient(90deg, #4a3a85 0 10px, transparent 10px 72px) 0 96px / 100% 6px no-repeat,
+        repeating-linear-gradient(90deg, #4a3a85 0 14px, transparent 14px 120px) 0 160px / 100% 8px no-repeat,
+        #3b2d6b;
+    animation: ldRoad .5s steps(8) infinite;
+}
+@keyframes ldRoad { to { background-position: 0 0, -64px 22px, -36px 52px, -72px 96px, -120px 160px, 0 0; } }
+@keyframes ldScroll { to { background-position: -40px 100%, -20px 100%; } }
+.ld-speed i {
+    position: absolute; right: -80px; height: 4px; width: 60px; background: #e2dcff; opacity: .55;
+    animation: ldLine .7s steps(7) infinite;
+}
+.ld-speed i:nth-child(1) { top: 24%; animation-delay: -.1s; }
+.ld-speed i:nth-child(2) { top: 33%; width: 90px; animation-delay: -.45s; }
+.ld-speed i:nth-child(3) { top: 41%; animation-delay: -.3s; width: 40px; }
+.ld-speed i:nth-child(4) { top: 62%; width: 110px; animation-delay: -.6s; }
+.ld-speed i:nth-child(5) { top: 72%; animation-delay: -.2s; }
+@keyframes ldLine { to { transform: translateX(calc(-100vw - 200px)); } }
+
+/* El tanque: 70x36 píxeles de dibujo a 5 px (4 en pantallas pequeñas), con las ruedas en el suelo */
+.ld-hero {
+    position: absolute; left: 50%; top: calc(50% + 14px);
+    width: calc(71px * var(--ld-px)); height: calc(36px * var(--ld-px));
+    transform: translate(-58%, -94%);
+    --ld-px: 6;
+    animation: ldShake 1.6s steps(1) infinite;
+}
+@media (max-width: 480px) { .ld-hero { --ld-px: 3.6; } }
+.ld-hero-tank { width: 100%; height: 100%; overflow: visible; display: block; }
+.ld-body { animation: ldBump .24s steps(1) infinite; }
+@keyframes ldBump { 50% { transform: translateY(-1px); } }
+.ld-t2 { opacity: 0; }
+.ld-t1 { animation: ldWheel .16s steps(1) infinite; }
+.ld-t2 { animation: ldWheel .16s steps(1) infinite reverse; }
 @keyframes ldWheel { 0% { opacity: 1; } 50% { opacity: 0; } }
+.ld-turret { animation: ldRecoil 1.6s steps(1) infinite; }
+@keyframes ldRecoil { 0% { transform: translateX(-3px); } 6% { transform: translateX(-2px); } 12% { transform: translateX(-1px); } 18%, 100% { transform: none; } }
+.ld-flash { opacity: 0; animation: ldFlash 1.6s steps(1) infinite; }
+@keyframes ldFlash { 0% { opacity: 1; } 8%, 100% { opacity: 0; } }
+.ld-flag { animation: ldFlag .3s steps(1) infinite; transform-origin: 16px 1px; }
+@keyframes ldFlag { 50% { transform: scaleY(.5); } }
+.ld-bullet { animation: ldBullet 1.6s steps(12) infinite; }
+@keyframes ldBullet { 0% { transform: translateX(4px); opacity: 1; } 45% { transform: translateX(180px); opacity: 1; } 46%, 100% { transform: translateX(180px); opacity: 0; } }
+@keyframes ldShake { 0% { transform: translate(-58%, -94%) translate(-3px, 2px); } 4% { transform: translate(-58%, -94%) translate(2px, -1px); } 8%, 100% { transform: translate(-58%, -94%); } }
+/* Humo del disparo y polvo de las orugas: cuadrados que crecen y se apagan */
+.ld-smoke i, .ld-dust i { position: absolute; background: #e2dcff; }
+.ld-smoke i {
+    left: calc(60px * var(--ld-px)); top: calc(10px * var(--ld-px));
+    width: calc(4px * var(--ld-px)); height: calc(4px * var(--ld-px));
+    animation: ldSmoke 1.6s steps(6) infinite; opacity: 0;
+}
+.ld-smoke i:nth-child(2) { animation-name: ldSmoke2; }
+.ld-smoke i:nth-child(3) { animation-name: ldSmoke3; }
+@keyframes ldSmoke { 0% { opacity: .9; transform: none; } 40% { opacity: 0; transform: translate(-10px, -26px) scale(2.2); } 100% { opacity: 0; } }
+@keyframes ldSmoke2 { 0% { opacity: .9; transform: none; } 40% { opacity: 0; transform: translate(14px, -18px) scale(1.8); } 100% { opacity: 0; } }
+@keyframes ldSmoke3 { 0% { opacity: .8; transform: none; } 40% { opacity: 0; transform: translate(-2px, 14px) scale(1.5); } 100% { opacity: 0; } }
+.ld-dust i {
+    left: calc(4px * var(--ld-px)); top: calc(28px * var(--ld-px));
+    width: calc(3px * var(--ld-px)); height: calc(3px * var(--ld-px));
+    background: #8e86a8; animation: ldDust .6s steps(5) infinite; opacity: 0;
+}
+.ld-dust i:nth-child(2) { animation-delay: .2s; top: calc(30px * var(--ld-px)); }
+.ld-dust i:nth-child(3) { animation-delay: .4s; top: calc(26px * var(--ld-px)); }
+@keyframes ldDust { 0% { opacity: .9; transform: none; } 100% { opacity: 0; transform: translate(-60px, -14px) scale(2); } }
+
+/* Abajo: la barra a todo el ancho (con tope) y el porcentaje */
+.ld-foot { position: relative; z-index: 2; width: min(520px, 100%); display: flex; align-items: center; gap: 12px; }
 .ld-bar {
-    height: 18px;
+    flex: 1;
+    height: 26px;
     border: 4px solid #fff;
     background: var(--ink);
-    box-shadow: 0 5px 0 #000;
-    padding: 2px;
+    box-shadow: 0 6px 0 #000;
+    padding: 3px;
 }
 .ld-bar i {
     display: block;
     height: 100%;
     width: 0;
-    background: repeating-linear-gradient(90deg, var(--yellow) 0 8px, #ffb300 8px 12px);
+    background: repeating-linear-gradient(90deg, var(--yellow) 0 10px, #ffb300 10px 16px);
+    animation: ldStripes .4s steps(4) infinite;
 }
-.ld-dots { display: flex; gap: 10px; }
-.ld-dots i { width: 8px; height: 8px; background: #fff; animation: ldDot .9s steps(1) infinite; }
-.ld-dots i:nth-child(2) { animation-delay: .3s; }
-.ld-dots i:nth-child(3) { animation-delay: .6s; }
-@keyframes ldDot { 0%, 60% { opacity: 1; } 61%, 100% { opacity: .15; } }
+@keyframes ldStripes { to { background-position: 16px 0; } }
+.ld-pct { font-size: 14px; color: #fff; min-width: 4.2em; text-align: right; text-shadow: 0 3px 0 #000; }
 
 /* ---------- SUPERVIVENCIA: MEJORAS DEL AVIÓN ---------- */
 .upgrade {
@@ -1948,7 +2031,7 @@ body.ui-blocked .menu, body.ui-blocked .menu * { pointer-events: none !important
 }
 @keyframes unlockSpark { from { transform: translate(-50%, -50%); opacity: 1; } to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))); opacity: 0; } }
 
-/* ---------- DEPURACIÓN (solo en el dispositivo del autor) ---------- */
+/* ---------- DEPURACIÓN ---------- */
 .debug-btn {
     position: fixed; right: 10px; bottom: calc(max(10px, env(safe-area-inset-bottom)) + 4px); z-index: 21;
     font-family: var(--font); font-size: 9px; color: #fff; background: #ff2a3a;

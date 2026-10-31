@@ -29,10 +29,9 @@ export const DEV = state.on;
 // true/false si esta carga acaba de encenderlas o apagarlas (para avisar), si no null
 export const DEV_CHANGED = state.changed;
 
-// Panel de depuración: todo gratis en Mi Tanque (solo en el dispositivo del autor)
+// Panel de depuración: todo gratis en Mi Tanque
 const FREE_KEY = 'tankless.devfree';
 export function devFree() {
-    if (!DEV) return false;
     try {
         return localStorage.getItem(FREE_KEY) === '1';
     } catch {
